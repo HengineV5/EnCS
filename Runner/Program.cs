@@ -10,6 +10,11 @@ using System.Runtime.Intrinsics;
 
 namespace Runner
 {
+	public class ArchTypeAttribute<T1> : Attribute
+	{
+
+	}
+
 	public class ArchTypeAttribute<T1, T2> : Attribute
 	{
 
@@ -27,6 +32,11 @@ namespace Runner
 
 	[ArchType<Position, Velocity>]
 	partial struct TArchType
+	{
+	}
+
+	[ArchType<Position>]
+	partial struct TArchType2
 	{
 	}
 
@@ -53,7 +63,7 @@ namespace Runner
 
 		public void Update(Position.Ref position)
 		{
-            //position.x = Random.Shared.Next(0, 100);
+            position.x = Random.Shared.Next(0, 100);
             //position.x = MathF.Sqrt(position.x);
         }
 
@@ -63,21 +73,21 @@ namespace Runner
 		}
 	}
 
-	interface ISystem<TType, TVector, TSingle>
-		where TType : unmanaged, IComponent<TVector, TSingle>
+	interface ISystem<TComp, TVector, TSingle>
+		where TComp : unmanaged, IComponent<TComp, TVector, TSingle>
 		where TVector : unmanaged
 		where TSingle : unmanaged
 	{
 		void Update(ref TVector vector);
 
-		void Update<TEnum>(ref ArchTypeEnumerable<TEnum, TType, TVector, TSingle> loop)
-			where TEnum : unmanaged, IArchTypeEnumerable<TEnum, TType, TVector, TSingle>;
+		void Update<TArch1>(ref ArchTypeEnumerable<TArch1, TComp, TVector, TSingle> loop)
+			where TArch1 : unmanaged, IArchType<TArch1, TComp, TVector, TSingle>;
 	}
 
 	partial class PositionSystem : ISystem<Position, Position.Vectorized, Position.Array>
 	{
-		public void Update<TEnum>(ref ArchTypeEnumerable<TEnum, Position, Position.Vectorized, Position.Array> loop)
-			where TEnum : unmanaged, IArchTypeEnumerable<TEnum, Position, Position.Vectorized, Position.Array>
+		public void Update<TArch1>(ref ArchTypeEnumerable<TArch1, Position, Position.Vectorized, Position.Array> loop)
+			where TArch1 : unmanaged, IArchType<TArch1, Position, Position.Vectorized, Position.Array>
 		{
 			var en = loop.GetEnumerator();
 			while (en.MoveNext())
@@ -85,45 +95,82 @@ namespace Runner
 				var item = en.Current;
 				for (int i = 0; i < Position.Array.Size; i++)
 				{
-					Update(new(ref item.item1s.x[i], ref item.item1s.y[i], ref item.item1s.z[i]));
+					Update(new(ref item.item1Single.x[i], ref item.item1Single.y[i], ref item.item1Single.z[i]));
 				}
-				Update(ref item.item1);
+				Update(ref item.item1Vec);
+			}
+		}
+
+		public void Update<TArch1, TArch2>(ref ArchTypeEnumerable<TArch1, TArch2, Position, Position.Vectorized, Position.Array> loop)
+			where TArch1 : unmanaged, IArchType<TArch1, Position, Position.Vectorized, Position.Array>
+			where TArch2 : unmanaged, IArchType<TArch2, Position, Position.Vectorized, Position.Array>
+		{
+			var en = loop.GetEnumerator();
+			while (en.MoveNext())
+			{
+				var item = en.Current;
+				for (int i = 0; i < Position.Array.Size; i++)
+				{
+					Update(new(ref item.item1Single.x[i], ref item.item1Single.y[i], ref item.item1Single.z[i]));
+				}
+				Update(ref item.item1Vec);
 			}
 		}
 	}
 
 	partial struct TArchType :
-		IArchType<Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array>,
-		IArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array>,
-		IArchTypeEnumerable<TArchType, Velocity, Velocity.Vectorized, Velocity.Array>
+		IArchType<TArchType, Position, Position.Vectorized, Position.Array>,
+		IArchType<TArchType, Velocity, Velocity.Vectorized, Velocity.Array>
 	{
 		public Position.Vectorized position;
 		public Velocity.Vectorized velocity;
 
-		static ref Position.Array IArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array>.GetSingle(ref TArchType arch)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static ref Position.Array IArchType<TArchType, Position, Position.Vectorized, Position.Array>.GetSingle(ref TArchType arch)
 		{
 			return ref Unsafe.As<Position.Vectorized, Position.Array>(ref arch.position);
 		}
 
-		static ref Position.Vectorized IArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array>.GetVec(ref TArchType arch)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static ref Position.Vectorized IArchType<TArchType, Position, Position.Vectorized, Position.Array>.GetVec(ref TArchType arch)
 		{
 			return ref arch.position;
 		}
 
-		static ref Velocity.Array IArchTypeEnumerable<TArchType, Velocity, Velocity.Vectorized, Velocity.Array>.GetSingle(ref TArchType arch)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static ref Velocity.Array IArchType<TArchType, Velocity, Velocity.Vectorized, Velocity.Array>.GetSingle(ref TArchType arch)
 		{
 			return ref Unsafe.As<Velocity.Vectorized, Velocity.Array>(ref arch.velocity);
 		}
 
-		static ref Velocity.Vectorized IArchTypeEnumerable<TArchType, Velocity, Velocity.Vectorized, Velocity.Array>.GetVec(ref TArchType arch)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static ref Velocity.Vectorized IArchType<TArchType, Velocity, Velocity.Vectorized, Velocity.Array>.GetVec(ref TArchType arch)
 		{
 			return ref arch.velocity;
 		}
 	}
 
-	partial struct Position : IComponent<Position.Vectorized, Position.Array>
+	partial struct TArchType2
+		: IArchType<TArchType2, Position, Position.Vectorized, Position.Array>
 	{
-        public struct Vectorized
+		public Position.Vectorized position;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static ref Position.Array IArchType<TArchType2, Position, Position.Vectorized, Position.Array>.GetSingle(ref TArchType2 arch)
+		{
+			return ref Unsafe.As<Position.Vectorized, Position.Array>(ref arch.position);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static ref Position.Vectorized IArchType<TArchType2, Position, Position.Vectorized, Position.Array>.GetVec(ref TArchType2 arch)
+		{
+			return ref arch.position;
+		}
+	}
+
+	partial struct Position : IComponent<Position, Position.Vectorized, Position.Array>
+	{
+		public struct Vectorized
 		{
 			public Vector256<float> x;
 			public Vector256<int> y;
@@ -153,9 +200,21 @@ namespace Runner
 				this.z = ref z;
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Position, Vectorized, Array>
+		{
+			return ref TArch.GetVec(ref arch);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Position, Vectorized, Array>
+		{
+			return ref TArch.GetSingle(ref arch);
+		}
 	}
 
-	partial struct Velocity : IComponent<Velocity.Vectorized, Velocity.Array>
+	partial struct Velocity : IComponent<Velocity, Velocity.Vectorized, Velocity.Array>
 	{
 		public static uint Id => 0;
 
@@ -177,6 +236,60 @@ namespace Runner
 			public FixedArray8<int> y;
 			public FixedArray8<int> z;
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Velocity, Vectorized, Array>
+		{
+			return ref TArch.GetVec(ref arch);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Velocity, Vectorized, Array>
+		{
+			return ref TArch.GetSingle(ref arch);
+		}
+	}
+
+	struct EcsContainerManager
+	{
+		ArchTypeContainer<TArchType, Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array> container1;
+		ArchTypeContainer<TArchType2, Position, Position.Vectorized, Position.Array> container2;
+
+        public EcsContainerManager()
+        {
+			container1 = new(10);
+			container2 = new(10);
+        }
+
+		public EcsContainerManager(nuint size)
+		{
+			container1 = new(size);
+			container2 = new(size);
+		}
+
+		public bool GetEnumerable(out ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array> e)
+		{
+			e = new(container1.AsSpan());
+			return true;
+		}
+
+		public bool GetEnumerable(out ArchTypeEnumerable<TArchType, Velocity, Velocity.Vectorized, Velocity.Array> e)
+		{
+			e = new(container1.AsSpan());
+			return true;
+		}
+
+		public bool GetEnumerable(out ArchTypeEnumerable<TArchType, TArchType2, Position, Position.Vectorized, Position.Array> e)
+		{
+			e = new(container1.AsSpan(), container2.AsSpan());
+			return true;
+		}
+
+		public bool GetEnumerable(out ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array> e)
+		{
+			e = new(container1.AsSpan());
+			return true;
+		}
 	}
 
 	internal class Program
@@ -187,25 +300,22 @@ namespace Runner
 			BenchmarkRunner.Run<PerfTests>();
 			return;
 #endif
-
-			Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-
-			Position.Vectorized t = new();
-			ref Position.Array ta = ref Unsafe.As<Position.Vectorized, Position.Array>(ref t);
-
-            ContainerManager<TArchType, Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array> container = new(2);
+			EcsContainerManager containerManager = new(2);
 
 			PositionSystem system = new();
-			var e = new ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array>(container.container1.AsSpan());
+			containerManager.GetEnumerable(out ArchTypeEnumerable<TArchType, TArchType2, Position, Position.Vectorized, Position.Array> e);
+
 			system.Update(ref e);
 
-			foreach (var item in e)
+			containerManager.GetEnumerable(out ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array> e2);
+
+			foreach (var item in e2)
 			{
 				for (int i = 0; i < Position.Array.Size; i++)
 				{
-					Console.WriteLine($"Actual: {item.item1s.x[i]}");
+					Console.WriteLine($"Actual: {item.item1Single.x[i]}");
 				}
-            }
+			}
 		}
 	}
 
@@ -213,35 +323,36 @@ namespace Runner
 	[MemoryDiagnoser]
 	public class PerfTests
 	{
-		ContainerManager<TArchType, Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array> container;
+		EcsContainerManager container;
 		float val;
 		PositionSystem system = new();
 
 		[GlobalSetup]
 		public void Setup()
 		{
-			container = new(1_000_000);
+			container = new(1_000_000 / 8);
 		}
 
-		//[Benchmark(Baseline = true)]
+		[Benchmark(Baseline = true)]
 		public void Baseline()
 		{
-			for (int i = 0; i < 1_000_000 * 8; i++)
+			for (int i = 0; i < 1_000_000; i++)
 			{
 				val = Random.Shared.Next(0, 100);
 				val = MathF.Sqrt(val);
 			}
 		}
 
-		//[Benchmark]
+		[Benchmark]
 		public void AddManual()
 		{
-			foreach (var vel in new ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array>(container.container1.AsSpan()))
+			container.GetEnumerable(out ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array> e);
+			foreach (var vel in e)
 			{
 				for (int i = 0; i < Position.Array.Size; i++)
 				{
-					vel.item1s.x[i] = Random.Shared.Next(0, 100);
-					vel.item1s.x[i] = MathF.Sqrt(vel.item1s.x[i]);
+					vel.item1Single.x[i] = Random.Shared.Next(0, 100);
+					vel.item1Single.x[i] = MathF.Sqrt(vel.item1Single.x[i]);
 				}
 			}
         }
@@ -249,10 +360,11 @@ namespace Runner
 		[Benchmark]
 		public void AddSystem()
 		{
-			var e = new ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array>(container.container1.AsSpan());
+			container.GetEnumerable(out ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array> e);
 			system.Update(ref e);
         }
 
+		/*
 		[Benchmark]
 		public void AddSystemParalell()
 		{
@@ -262,9 +374,10 @@ namespace Runner
 			{
 				var s = container.container1.AsSpan().Slice(x * chunk, chunk);
 
-				var e = new ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array>(s);
+				var e = new ComponentEnumerable<TArchType, Position, Position.Vectorized, Position.Array>(s);
 				system.Update(ref e);
 			});
         }
+		*/
 	}
 }

@@ -2,9 +2,9 @@
 
 namespace EnCS
 {
-	public unsafe struct ArchTypeContainer<TArch, T1Component, T1Vec, T1Single> : IContainer<TArch, T1Component, T1Vec, T1Single>
-		where TArch : unmanaged, IArchType<T1Component, T1Vec, T1Single>
-		where T1Component : unmanaged, IComponent<T1Vec, T1Single>
+	public unsafe struct ArchTypeContainer<TArch, T1Comp, T1Vec, T1Single> : IContainer<TArch, T1Comp, T1Vec, T1Single>
+		where TArch : unmanaged, IArchType<TArch, T1Comp, T1Vec, T1Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
 	{
@@ -25,12 +25,12 @@ namespace EnCS
 		}
     }
 
-	public unsafe struct ArchTypeContainer<TArch, T1Component, T1Vec, T1Single, T2Component, T2Vec, T2Single> : IContainer<TArch, T1Component, T1Vec, T1Single, T2Component, T2Vec, T2Single>
-		where TArch : unmanaged, IArchType<T1Component, T1Vec, T1Single, T2Component, T2Vec, T2Single>
-		where T1Component : unmanaged, IComponent<T1Vec, T1Single>
+	public unsafe struct ArchTypeContainer<TArch, T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single> : IContainer<TArch, T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single>
+		where TArch : unmanaged, IArchType<TArch, T1Comp, T1Vec, T1Single>, IArchType<TArch, T2Comp, T2Vec, T2Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Component : unmanaged, IComponent<T2Vec, T2Single>
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
 	{

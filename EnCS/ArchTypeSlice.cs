@@ -2,62 +2,38 @@
 
 namespace EnCS
 {
-	struct ItemGetter<TFrom, T1Get, T1GetVec, T1GetSingle>
-		where TFrom : unmanaged, IArchTypeEnumerable<TFrom, T1Get, T1GetVec, T1GetSingle>
-		where T1Get : unmanaged, IComponent<T1GetVec, T1GetSingle>
-		where T1GetVec : unmanaged
-		where T1GetSingle : unmanaged
-	{
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref T1GetVec GetVec(ref TFrom archType)
-		{
-			return ref TFrom.GetVec(ref archType);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref T1GetSingle GetSingle(ref TFrom archType)
-		{
-			return ref TFrom.GetSingle(ref archType);
-		}
-	}
-
-	public ref struct ArchTypeSlice<TArch, T1, T1Vec, T1Single>
-		where TArch : unmanaged, IArchTypeEnumerable<TArch, T1, T1Vec, T1Single>
-		where T1 : unmanaged, IComponent<T1Vec, T1Single>
+	public ref struct ArchTypeSliceNew<T1Vec, T1Single>
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
 	{
-		public ref T1Vec item1;
-		public ref T1Single item1s;
+		public ref T1Vec item1Vec;
+		public ref T1Single item1Single;
 
-		public ArchTypeSlice(ref TArch archType)
+		public ArchTypeSliceNew(ref T1Vec item1Vec, ref T1Single item1Single)
 		{
-			item1 = ref ItemGetter<TArch, T1, T1Vec, T1Single>.GetVec(ref archType);
-			item1s = ref ItemGetter<TArch, T1, T1Vec, T1Single>.GetSingle(ref archType);
+			this.item1Vec = ref item1Vec;
+			this.item1Single = ref item1Single;
 		}
 	}
 
-	public ref struct ArchTypeSlice<TArch, T1, T1Vec, T1Single, T2, T2Vec, T2Single>
-		where TArch : unmanaged, IArchTypeEnumerable<TArch, T1, T1Vec, T1Single>, IArchTypeEnumerable<TArch, T2, T2Vec, T2Single>
-		where T1 : unmanaged, IComponent<T1Vec, T1Single>
+	public ref struct ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single>
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2 : unmanaged, IComponent<T2Vec, T2Single>
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
 	{
-		public ref T1Vec item1;
-		public ref T1Single item1s;
+		public ref T1Vec item1Vec;
+		public ref T1Single item1Single;
 
-		public ref T2Vec item2;
-		public ref T2Single item2s;
+		public ref T2Vec item2Vec;
+		public ref T2Single item2Single;
 
-		public ArchTypeSlice(ref TArch archType)
+		public ArchTypeSlice(ref T1Vec item1Vec, ref T1Single item1Single, ref T2Vec item2Vec, ref T2Single item2Single)
 		{
-			item1 = ref ItemGetter<TArch, T1, T1Vec, T1Single>.GetVec(ref archType);
-			item1s = ref ItemGetter<TArch, T1, T1Vec, T1Single>.GetSingle(ref archType);
-			item2 = ref ItemGetter<TArch, T2, T2Vec, T2Single>.GetVec(ref archType);
-			item2s = ref ItemGetter<TArch, T2, T2Vec, T2Single>.GetSingle(ref archType);
+			this.item1Vec = ref item1Vec;
+			this.item1Single = ref item1Single;
+			this.item2Vec = ref item2Vec;
+			this.item2Single = ref item2Single;
 		}
 	}
 }
