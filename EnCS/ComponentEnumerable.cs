@@ -3,61 +3,15 @@ using System.Runtime.CompilerServices;
 
 namespace EnCS
 {
-	public ref struct ArchTypeEnumerable<T1Arch, T1Comp, T1Vec, T1Single>
-		where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single>
 		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
 	{
-		public ref struct Enumerator
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
 		{
-			public ArchTypeSliceNew<T1Vec, T1Single> Current
-			{
-				get
-				{
-					return enumerator1.Current;
-				}
-			}
-
-			ComponentEnumerable<T1Arch, T1Comp, T1Vec, T1Single>.Enumerator enumerator1;
-
-			public Enumerator(ComponentEnumerable<T1Arch, T1Comp, T1Vec, T1Single> e1)
-			{
-				enumerator1 = e1.GetEnumerator();
-			}
-
-			public bool MoveNext()
-			 => enumerator1.MoveNext();
-		}
-
-		ComponentEnumerable<T1Arch, T1Comp, T1Vec, T1Single> e1;
-
-		public ArchTypeEnumerable(ComponentEnumerable<T1Arch, T1Comp, T1Vec, T1Single> e1)
-		{
-			this.e1 = e1;
-		}
-
-		public ArchTypeEnumerable(Span<T1Arch> span1)
-		{
-			this.e1 = new(span1);
-		}
-
-		public Enumerator GetEnumerator()
-		{
-			return new Enumerator(e1);
-		}
-	}
-
-	public ref struct ArchTypeEnumerable<T1Arch, T2Arch, T1Comp, T1Vec, T1Single>
-		where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
-		where T2Arch : unmanaged, IArchType<T2Arch, T1Comp, T1Vec, T1Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
-		where T1Vec : unmanaged
-		where T1Single : unmanaged
-	{
-		public ref struct Enumerator
-		{
-			public ArchTypeSliceNew<T1Vec, T1Single> Current
+			public ArchTypeSlice<T1Vec, T1Single> Current
 			{
 				get
 				{
@@ -65,25 +19,20 @@ namespace EnCS
 				}
 			}
 
-			ArchTypeSliceNew<T1Vec, T1Single> slice;
-			ComponentEnumerable<T1Arch, T1Comp, T1Vec, T1Single>.Enumerator enumerator1;
-			ComponentEnumerable<T2Arch, T1Comp, T1Vec, T1Single>.Enumerator enumerator2;
+			ArchTypeSlice<T1Vec, T1Single> slice;
 
-			public Enumerator(ComponentEnumerable<T1Arch, T1Comp, T1Vec, T1Single> e1, ComponentEnumerable<T2Arch, T1Comp, T1Vec, T1Single> e2)
+			Span<T1Arch>.Enumerator e1;
+
+			public Enumerator(Span<T1Arch> span1)
 			{
-				enumerator1 = e1.GetEnumerator();
-				enumerator2 = e2.GetEnumerator();
+				e1 = span1.GetEnumerator();
 			}
 
 			public bool MoveNext()
 			{
-				if (enumerator1.MoveNext())
+				if (e1.MoveNext())
 				{
-					slice = enumerator1.Current;
-				}
-				else if (enumerator2.MoveNext())
-				{
-					slice = enumerator2.Current;
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current));
 				}
 				else
 				{
@@ -94,27 +43,63 @@ namespace EnCS
 			}
 		}
 
-		ComponentEnumerable<T1Arch, T1Comp, T1Vec, T1Single> e1;
-		ComponentEnumerable<T2Arch, T1Comp, T1Vec, T1Single> e2;
-
-		public ArchTypeEnumerable(ComponentEnumerable<T1Arch, T1Comp, T1Vec, T1Single> e1, ComponentEnumerable<T2Arch, T1Comp, T1Vec, T1Single> e2)
+		public ref struct Enumerator<T1Arch, T2Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
+			where T2Arch : unmanaged, IArchType<T2Arch, T1Comp, T1Vec, T1Single>
 		{
-			this.e1 = e1;
-			this.e2 = e2;
+			public ArchTypeSlice<T1Vec, T1Single> Current
+			{
+				get
+				{
+					return slice;
+				}
+			}
+
+			ArchTypeSlice<T1Vec, T1Single> slice;
+
+			Span<T1Arch>.Enumerator e1;
+			Span<T2Arch>.Enumerator e2;
+
+			public Enumerator(Span<T1Arch> span1, Span<T2Arch> span2)
+			{
+				e1 = span1.GetEnumerator();
+				e2 = span2.GetEnumerator();
+			}
+
+			public bool MoveNext()
+			{
+				if (e1.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current));
+				}
+				else if(e2.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e2.Current), ref T1Comp.GetSingle(ref e2.Current));
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
 		}
 
-		public ArchTypeEnumerable(Span<T1Arch> span1, Span<T2Arch> span2)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
 		{
-			this.e1 = new(span1);
-			this.e2 = new(span2);
+			return new (span1);
 		}
 
-		public Enumerator GetEnumerator()
+		public Enumerator<T1Arch, T2Arch> GetEnumerator<T1Arch, T2Arch>(Span<T1Arch> span1, Span<T2Arch> span2)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
+			where T2Arch : unmanaged, IArchType<T2Arch, T1Comp, T1Vec, T1Single>
 		{
-			return new Enumerator(e1, e2);
+			return new (span1, span2);
 		}
 	}
 
+	/*
 	public ref struct ComponentEnumerable<TArch, T1Comp, T1Vec, T1Single>
 		where TArch : unmanaged, IArchType<TArch, T1Comp, T1Vec, T1Single>
 		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
@@ -123,7 +108,7 @@ namespace EnCS
 	{
 		public ref struct Enumerator
 		{
-			public ArchTypeSliceNew<T1Vec, T1Single> Current
+			public ArchTypeSlice<T1Vec, T1Single> Current
 			{
 				get
 				{
@@ -158,7 +143,7 @@ namespace EnCS
 		}
 	}
 
-	public ref struct ArchTypeEnumerable<TArch, T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single>
+	public ref struct ComponentEnumerable<TArch, T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single>
 		where TArch : unmanaged, IArchType<TArch, T1Comp, T1Vec, T1Single>, IArchType<TArch, T2Comp, T2Vec, T2Single>
 		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
 		where T1Vec : unmanaged
@@ -195,7 +180,7 @@ namespace EnCS
 
 		Span<TArch> span;
 
-		public ArchTypeEnumerable(Span<TArch> span)
+		public ComponentEnumerable(Span<TArch> span)
 		{
 			this.span = span;
 		}
@@ -205,4 +190,5 @@ namespace EnCS
 			return new Enumerator(span);
 		}
 	}
+	*/
 }

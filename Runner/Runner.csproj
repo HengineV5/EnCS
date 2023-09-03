@@ -7,14 +7,15 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>preview</LangVersion>
+	<Features>InterceptorsPreview</Features>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.6" />
+    <PackageReference Include="TemplateGen" Version="1.0.22" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EnCS\EnCS.csproj" />
   </ItemGroup>
-
 </Project>

@@ -61,4 +61,16 @@ namespace EnCS
 			return ref Unsafe.AsRef(_element0);
 		}
 	}
+
+	[InlineArray(64)]
+	public struct FixedArray64<T>
+	{
+		T _element0;
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public ref T GetPinnableReference()
+		{
+			return ref Unsafe.AsRef(_element0);
+		}
+	}
 }

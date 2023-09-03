@@ -2,14 +2,14 @@
 
 namespace EnCS
 {
-	public ref struct ArchTypeSliceNew<T1Vec, T1Single>
+	public ref struct ArchTypeSlice<T1Vec, T1Single>
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
 	{
 		public ref T1Vec item1Vec;
 		public ref T1Single item1Single;
 
-		public ArchTypeSliceNew(ref T1Vec item1Vec, ref T1Single item1Single)
+		public ArchTypeSlice(ref T1Vec item1Vec, ref T1Single item1Single)
 		{
 			this.item1Vec = ref item1Vec;
 			this.item1Single = ref item1Single;

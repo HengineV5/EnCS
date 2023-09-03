@@ -12,4 +12,11 @@ namespace EnCS
 
 		static abstract ref TTypeSingle GetSingle(ref TArch arch);
 	}
+
+	public interface IArchTypeNew<TArch, TTypeVec>
+		where TArch : unmanaged, IArchTypeNew<TArch, TTypeVec>
+		where TTypeVec : unmanaged
+	{
+		static abstract ref TTypeVec GetVec(ref TArch arch);
+	}
 }
