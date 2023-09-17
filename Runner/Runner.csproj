@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.6" />
-    <PackageReference Include="TemplateGen" Version="1.0.22" />
+    <PackageReference Include="TemplateGen" Version="1.0.30" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,16 +1,25 @@
 ﻿using System.Buffers;
+using System.Formats.Tar;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace EnCS
 {
-	public struct Ref<TArch> where TArch : unmanaged
+	public struct ArchRef<TArch> where TArch : unmanaged
 	{
-		internal nuint idx;
+		public readonly nuint idx;
 
-		internal Ref(nuint idx)
+		internal ArchRef(nuint idx)
 		{
 			this.idx = idx;
+		}
+	}
+
+	public static class ContainerExtensions
+	{
+		public static void Set<T, TType, TTypeVec, TTypeSingle>()
+		{
+
 		}
 	}
 
@@ -19,8 +28,9 @@ namespace EnCS
 		static nuint DataSize = (nuint)sizeof(TArch);
 
 		TArch* buff;
-		nuint count;
 		nuint length;
+
+		nuint entityCount;
 
 		nuint[] map;
 		Stack<nuint> deleted;
@@ -30,41 +40,41 @@ namespace EnCS
 			buff = (TArch*)NativeMemory.AllocZeroed(10 * DataSize);
 			map = new nuint[10];
 			length = 10;
-			count = 0;
+			entityCount = 0;
 
 			deleted = new();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Ref<TArch> Create(in TArch data)
+		public ArchRef<TArch> Create(in TArch data)
 		{
-			nuint idx = count;
+			nuint idx = entityCount;
 
 			if (deleted.Count > 0)
 				idx = deleted.Pop();
 
-			buff[count] = data;
-			map[idx] = count;
+			//buff[entityCount] = data;
+			map[idx] = entityCount >> 3;
 
-			count++;
+			entityCount++;
 
-			return new Ref<TArch>(idx);
+			return new ArchRef<TArch>(idx);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Delete(ref Ref<TArch> ptr)
+		public void Delete(ref ArchRef<TArch> ptr)
 		{
-			count--;
+			entityCount--;
 
 			// Replace deleted element with last element
-			buff[ptr.idx] = buff[count];
-			map[count] = ptr.idx;
+			buff[ptr.idx] = buff[entityCount];
+			map[entityCount] = ptr.idx;
 
 			deleted.Push(ptr.idx);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ref TArch Get(ref Ref<TArch> ptr)
+		public ref TArch GetVec(ArchRef<TArch> ptr)
 		{
 			return ref buff[map[ptr.idx]];
 		}
@@ -72,7 +82,7 @@ namespace EnCS
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Span<TArch> AsSpan()
 		{
-			return new Span<TArch>(buff, (int)count);
+			return new Span<TArch>(buff, (int)entityCount);
 		}
 	}
 
@@ -104,23 +114,23 @@ namespace EnCS
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Ref<TArch> Create(in TArch data)
+		public ArchRef<TArch> Create()
 		{
-			nuint idx = entityCount;
+			nuint idx = entityCount >> 3;
 
 			if (deleted.Count > 0)
 				idx = deleted.Pop();
 
-			buff[entityCount] = data;
+			buff[entityCount & 7] = default;
 			map[idx] = entityCount;
 
 			entityCount++;
 
-			return new Ref<TArch>(idx);
+			return new ArchRef<TArch>(idx);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Delete(ref Ref<TArch> ptr)
+		public void Delete(ref ArchRef<TArch> ptr)
 		{
 			entityCount--;
 
@@ -132,7 +142,7 @@ namespace EnCS
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ref TArch Get(ref Ref<TArch> ptr)
+		public ref TArch Get(ref ArchRef<TArch> ptr)
 		{
 			return ref buff[map[ptr.idx]];
 		}

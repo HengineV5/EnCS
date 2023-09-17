@@ -10,31 +10,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
-namespace System.Runtime.CompilerServices
-{
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-	sealed class InterceptsLocationAttribute(string filePath, int line, int column) : Attribute
-	{
-	}
-}
-
 namespace Runner
 {
-	struct PosComp : IComponentNew<PosComp, PosComp.Vectorized, float>
-	{
-		public struct Vectorized
-		{
-			public Vector256<float> x;
-
-		}
-
-		public static ref Vectorized GetVec<TArch>(ref TArch arch)
-			where TArch : unmanaged, IArchTypeNew<TArch, Vectorized>
-		{
-			return ref TArch.GetVec(ref arch);
-		}
-	}
-
 	[Component]
 	partial struct Position
 	{
@@ -91,7 +68,7 @@ namespace Runner
 		static void Main(string[] args)
 		{
 #if RELEASE
-			BenchmarkRunner.Run<PerfTests>();
+			//BenchmarkRunner.Run<PerfTests>();
 			return;
 #endif
 			new EcsBuilder()
@@ -116,10 +93,27 @@ namespace Runner
 			Ecs ecs = new();
 
 			ref Ecs.MainWorld mainWorld = ref ecs.GetMainWorld();
+			ArchRef<Ecs.Tile> r = mainWorld.Create(new Ecs.Tile());
 			mainWorld.Create(new Ecs.Tile());
 
-			mainWorld.Loop(position);
+			ArchRef<Ecs.Wall> r2 = mainWorld.Create(new Ecs.Wall());
+
+			Ecs.Tile.Ref tile = mainWorld.Get(r);
+			Ecs.Wall.Ref wall = mainWorld.Get(r2);
+
+            Console.WriteLine("Single:");
+            Console.WriteLine(tile.Position.x);
+			wall.Position.x = 1;
+            Console.WriteLine(tile.Position.x);
+
+            Console.WriteLine("Systems:");
+
+            mainWorld.Loop(position);
+			tile.Position.x = 20;
 			mainWorld.Loop(new PrintSystem());
+
+			//ArchTypeContainerNew<Ecs.Tile, Position, Position.Vectorized, Position.Array> testContainer = new();
+			//testContainer.Set(r, new Position());
 
 			/*
 			PositionSystem system = new();
