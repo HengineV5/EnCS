@@ -82,7 +82,7 @@ namespace EnCS
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Span<TArch> AsSpan()
 		{
-			return new Span<TArch>(buff, (int)entityCount);
+            return new Span<TArch>(buff, ((int)entityCount >> 3) + 1);
 		}
 	}
 

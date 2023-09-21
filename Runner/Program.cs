@@ -93,23 +93,25 @@ namespace Runner
 			Ecs ecs = new();
 
 			ref Ecs.MainWorld mainWorld = ref ecs.GetMainWorld();
-			ArchRef<Ecs.Tile> r = mainWorld.Create(new Ecs.Tile());
-			mainWorld.Create(new Ecs.Tile());
+			ArchRef<Ecs.Tile> tile1 = mainWorld.Create(new Ecs.Tile());
+			ArchRef<Ecs.Tile> tile2 = mainWorld.Create(new Ecs.Tile());
 
-			ArchRef<Ecs.Wall> r2 = mainWorld.Create(new Ecs.Wall());
+			ArchRef<Ecs.Wall> wall1 = mainWorld.Create(new Ecs.Wall());
 
-			Ecs.Tile.Ref tile = mainWorld.Get(r);
-			Ecs.Wall.Ref wall = mainWorld.Get(r2);
+			Ecs.Tile.Ref tile1Ref = mainWorld.Get(tile1);
+			Ecs.Tile.Ref tile2Ref = mainWorld.Get(tile2);
+			Ecs.Wall.Ref wall1Ref = mainWorld.Get(wall1);
 
             Console.WriteLine("Single:");
-            Console.WriteLine(tile.Position.x);
-			wall.Position.x = 1;
-            Console.WriteLine(tile.Position.x);
+            Console.WriteLine(tile1Ref.Position.x);
+			wall1Ref.Position.x = 1;
+            Console.WriteLine(tile1Ref.Position.x);
 
             Console.WriteLine("Systems:");
 
-            mainWorld.Loop(position);
-			tile.Position.x = 20;
+            //mainWorld.Loop(position);
+			tile1Ref.Position.x = 20;
+			tile2Ref.Position.x = 12;
 			mainWorld.Loop(new PrintSystem());
 
 			//ArchTypeContainerNew<Ecs.Tile, Position, Position.Vectorized, Position.Array> testContainer = new();

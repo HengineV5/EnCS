@@ -43,11 +43,25 @@ namespace EnCS
 			}
 		}
 
-		public ref struct Enumerator<T1Arch, T2Arch>
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
-			where T2Arch : unmanaged, IArchType<T2Arch, T1Comp, T1Vec, T1Single>
 		{
-			public ArchTypeSlice<T1Vec, T1Single> Current
+			return new (span1);
+		}
+	}
+
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Vec : unmanaged
+		where T1Single : unmanaged
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Vec : unmanaged
+		where T2Single : unmanaged
+	{
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>
+		{
+			public ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single> Current
 			{
 				get
 				{
@@ -55,26 +69,20 @@ namespace EnCS
 				}
 			}
 
-			ArchTypeSlice<T1Vec, T1Single> slice;
+			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
-			Span<T2Arch>.Enumerator e2;
 
-			public Enumerator(Span<T1Arch> span1, Span<T2Arch> span2)
+			public Enumerator(Span<T1Arch> span1)
 			{
 				e1 = span1.GetEnumerator();
-				e2 = span2.GetEnumerator();
 			}
 
 			public bool MoveNext()
 			{
 				if (e1.MoveNext())
 				{
-					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current));
-				}
-				else if(e2.MoveNext())
-				{
-					slice = new(ref T1Comp.GetVec(ref e2.Current), ref T1Comp.GetSingle(ref e2.Current));
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current));
 				}
 				else
 				{
@@ -86,16 +94,517 @@ namespace EnCS
 		}
 
 		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
-			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>
 		{
-			return new (span1);
+			return new(span1);
+		}
+	}
+
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Vec : unmanaged
+		where T1Single : unmanaged
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Vec : unmanaged
+		where T2Single : unmanaged
+		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Vec : unmanaged
+		where T3Single : unmanaged
+	{
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>
+		{
+			public ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single> Current
+			{
+				get
+				{
+					return slice;
+				}
+			}
+
+			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single> slice;
+
+			Span<T1Arch>.Enumerator e1;
+
+			public Enumerator(Span<T1Arch> span1)
+			{
+				e1 = span1.GetEnumerator();
+			}
+
+			public bool MoveNext()
+			{
+				if (e1.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current));
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
 		}
 
-		public Enumerator<T1Arch, T2Arch> GetEnumerator<T1Arch, T2Arch>(Span<T1Arch> span1, Span<T2Arch> span2)
-			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
-			where T2Arch : unmanaged, IArchType<T2Arch, T1Comp, T1Vec, T1Single>
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>
 		{
-			return new (span1, span2);
+			return new(span1);
+		}
+	}
+
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Vec : unmanaged
+		where T1Single : unmanaged
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Vec : unmanaged
+		where T2Single : unmanaged
+		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Vec : unmanaged
+		where T3Single : unmanaged
+		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Vec : unmanaged
+		where T4Single : unmanaged
+	{
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>
+		{
+			public ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single> Current
+			{
+				get
+				{
+					return slice;
+				}
+			}
+
+			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single> slice;
+
+			Span<T1Arch>.Enumerator e1;
+
+			public Enumerator(Span<T1Arch> span1)
+			{
+				e1 = span1.GetEnumerator();
+			}
+
+			public bool MoveNext()
+			{
+				if (e1.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current));
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
+		}
+
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>
+		{
+			return new(span1);
+		}
+	}
+
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Vec : unmanaged
+		where T1Single : unmanaged
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Vec : unmanaged
+		where T2Single : unmanaged
+		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Vec : unmanaged
+		where T3Single : unmanaged
+		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Vec : unmanaged
+		where T4Single : unmanaged
+		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Vec : unmanaged
+		where T5Single : unmanaged
+	{
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>
+		{
+			public ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single> Current
+			{
+				get
+				{
+					return slice;
+				}
+			}
+
+			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single> slice;
+
+			Span<T1Arch>.Enumerator e1;
+
+			public Enumerator(Span<T1Arch> span1)
+			{
+				e1 = span1.GetEnumerator();
+			}
+
+			public bool MoveNext()
+			{
+				if (e1.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current));
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
+		}
+
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>
+		{
+			return new(span1);
+		}
+	}
+
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Vec : unmanaged
+		where T1Single : unmanaged
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Vec : unmanaged
+		where T2Single : unmanaged
+		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Vec : unmanaged
+		where T3Single : unmanaged
+		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Vec : unmanaged
+		where T4Single : unmanaged
+		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Vec : unmanaged
+		where T5Single : unmanaged
+		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Vec : unmanaged
+		where T6Single : unmanaged
+	{
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>
+		{
+			public ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single> Current
+			{
+				get
+				{
+					return slice;
+				}
+			}
+
+			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single> slice;
+
+			Span<T1Arch>.Enumerator e1;
+
+			public Enumerator(Span<T1Arch> span1)
+			{
+				e1 = span1.GetEnumerator();
+			}
+
+			public bool MoveNext()
+			{
+				if (e1.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current));
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
+		}
+
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>
+		{
+			return new(span1);
+		}
+	}
+
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Vec : unmanaged
+		where T1Single : unmanaged
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Vec : unmanaged
+		where T2Single : unmanaged
+		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Vec : unmanaged
+		where T3Single : unmanaged
+		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Vec : unmanaged
+		where T4Single : unmanaged
+		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Vec : unmanaged
+		where T5Single : unmanaged
+		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Vec : unmanaged
+		where T6Single : unmanaged
+		where T7Comp : unmanaged, IComponent<T7Comp, T7Vec, T7Single>
+		where T7Vec : unmanaged
+		where T7Single : unmanaged
+	{
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>
+		{
+			public ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single> Current
+			{
+				get
+				{
+					return slice;
+				}
+			}
+
+			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single> slice;
+
+			Span<T1Arch>.Enumerator e1;
+
+			public Enumerator(Span<T1Arch> span1)
+			{
+				e1 = span1.GetEnumerator();
+			}
+
+			public bool MoveNext()
+			{
+				if (e1.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current), ref T7Comp.GetVec(ref e1.Current), ref T7Comp.GetSingle(ref e1.Current));
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
+		}
+
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>
+		{
+			return new(span1);
+		}
+	}
+
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Vec : unmanaged
+		where T1Single : unmanaged
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Vec : unmanaged
+		where T2Single : unmanaged
+		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Vec : unmanaged
+		where T3Single : unmanaged
+		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Vec : unmanaged
+		where T4Single : unmanaged
+		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Vec : unmanaged
+		where T5Single : unmanaged
+		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Vec : unmanaged
+		where T6Single : unmanaged
+		where T7Comp : unmanaged, IComponent<T7Comp, T7Vec, T7Single>
+		where T7Vec : unmanaged
+		where T7Single : unmanaged
+		where T8Comp : unmanaged, IComponent<T8Comp, T8Vec, T8Single>
+		where T8Vec : unmanaged
+		where T8Single : unmanaged
+	{
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>, IArchType<T1Arch, T8Comp, T8Vec, T8Single>
+		{
+			public ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single> Current
+			{
+				get
+				{
+					return slice;
+				}
+			}
+
+			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single> slice;
+
+			Span<T1Arch>.Enumerator e1;
+
+			public Enumerator(Span<T1Arch> span1)
+			{
+				e1 = span1.GetEnumerator();
+			}
+
+			public bool MoveNext()
+			{
+				if (e1.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current), ref T7Comp.GetVec(ref e1.Current), ref T7Comp.GetSingle(ref e1.Current), ref T8Comp.GetVec(ref e1.Current), ref T8Comp.GetSingle(ref e1.Current));
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
+		}
+
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>, IArchType<T1Arch, T8Comp, T8Vec, T8Single>
+		{
+			return new(span1);
+		}
+	}
+
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single, T9Comp, T9Vec, T9Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Vec : unmanaged
+		where T1Single : unmanaged
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Vec : unmanaged
+		where T2Single : unmanaged
+		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Vec : unmanaged
+		where T3Single : unmanaged
+		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Vec : unmanaged
+		where T4Single : unmanaged
+		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Vec : unmanaged
+		where T5Single : unmanaged
+		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Vec : unmanaged
+		where T6Single : unmanaged
+		where T7Comp : unmanaged, IComponent<T7Comp, T7Vec, T7Single>
+		where T7Vec : unmanaged
+		where T7Single : unmanaged
+		where T8Comp : unmanaged, IComponent<T8Comp, T8Vec, T8Single>
+		where T8Vec : unmanaged
+		where T8Single : unmanaged
+		where T9Comp : unmanaged, IComponent<T9Comp, T9Vec, T9Single>
+		where T9Vec : unmanaged
+		where T9Single : unmanaged
+	{
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>, IArchType<T1Arch, T8Comp, T8Vec, T8Single>, IArchType<T1Arch, T9Comp, T9Vec, T9Single>
+		{
+			public ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single, T9Vec, T9Single> Current
+			{
+				get
+				{
+					return slice;
+				}
+			}
+
+			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single, T9Vec, T9Single> slice;
+
+			Span<T1Arch>.Enumerator e1;
+
+			public Enumerator(Span<T1Arch> span1)
+			{
+				e1 = span1.GetEnumerator();
+			}
+
+			public bool MoveNext()
+			{
+				if (e1.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current), ref T7Comp.GetVec(ref e1.Current), ref T7Comp.GetSingle(ref e1.Current), ref T8Comp.GetVec(ref e1.Current), ref T8Comp.GetSingle(ref e1.Current), ref T9Comp.GetVec(ref e1.Current), ref T9Comp.GetSingle(ref e1.Current));
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
+		}
+
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>, IArchType<T1Arch, T8Comp, T8Vec, T8Single>, IArchType<T1Arch, T9Comp, T9Vec, T9Single>
+		{
+			return new(span1);
+		}
+	}
+
+	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single, T9Comp, T9Vec, T9Single, T10Comp, T10Vec, T10Single>
+		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Vec : unmanaged
+		where T1Single : unmanaged
+		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Vec : unmanaged
+		where T2Single : unmanaged
+		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Vec : unmanaged
+		where T3Single : unmanaged
+		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Vec : unmanaged
+		where T4Single : unmanaged
+		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Vec : unmanaged
+		where T5Single : unmanaged
+		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Vec : unmanaged
+		where T6Single : unmanaged
+		where T7Comp : unmanaged, IComponent<T7Comp, T7Vec, T7Single>
+		where T7Vec : unmanaged
+		where T7Single : unmanaged
+		where T8Comp : unmanaged, IComponent<T8Comp, T8Vec, T8Single>
+		where T8Vec : unmanaged
+		where T8Single : unmanaged
+		where T9Comp : unmanaged, IComponent<T9Comp, T9Vec, T9Single>
+		where T9Vec : unmanaged
+		where T9Single : unmanaged
+		where T10Comp : unmanaged, IComponent<T10Comp, T10Vec, T10Single>
+		where T10Vec : unmanaged
+		where T10Single : unmanaged
+	{
+		public ref struct Enumerator<T1Arch>
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>, IArchType<T1Arch, T8Comp, T8Vec, T8Single>, IArchType<T1Arch, T9Comp, T9Vec, T9Single>, IArchType<T1Arch, T10Comp, T10Vec, T10Single>
+		{
+			public ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single, T9Vec, T9Single, T10Vec, T10Single> Current
+			{
+				get
+				{
+					return slice;
+				}
+			}
+
+			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single, T9Vec, T9Single, T10Vec, T10Single> slice;
+
+			Span<T1Arch>.Enumerator e1;
+
+			public Enumerator(Span<T1Arch> span1)
+			{
+				e1 = span1.GetEnumerator();
+			}
+
+			public bool MoveNext()
+			{
+				if (e1.MoveNext())
+				{
+					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current), ref T7Comp.GetVec(ref e1.Current), ref T7Comp.GetSingle(ref e1.Current), ref T8Comp.GetVec(ref e1.Current), ref T8Comp.GetSingle(ref e1.Current), ref T9Comp.GetVec(ref e1.Current), ref T9Comp.GetSingle(ref e1.Current), ref T10Comp.GetVec(ref e1.Current), ref T10Comp.GetSingle(ref e1.Current));
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
+		}
+
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>, IArchType<T1Arch, T8Comp, T8Vec, T8Single>, IArchType<T1Arch, T9Comp, T9Vec, T9Single>, IArchType<T1Arch, T10Comp, T10Vec, T10Single>
+		{
+			return new(span1);
 		}
 	}
 }
