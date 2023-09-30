@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace EnCS
@@ -19,13 +20,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -33,6 +44,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -43,10 +55,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
 		{
-			return new (span1);
+			return new (span1, count);
 		}
 	}
 
@@ -69,13 +81,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -83,6 +105,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -93,10 +116,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>
 		{
-			return new(span1);
+			return new(span1, count);
 		}
 	}
 
@@ -122,13 +145,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -136,6 +169,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -146,10 +180,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>
 		{
-			return new(span1);
+			return new(span1, count);
 		}
 	}
 
@@ -178,13 +212,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -192,6 +236,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -202,10 +247,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>
 		{
-			return new(span1);
+			return new(span1, count);
 		}
 	}
 
@@ -237,13 +282,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -251,6 +306,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -261,10 +317,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>
 		{
-			return new(span1);
+			return new(span1, count);
 		}
 	}
 
@@ -299,13 +355,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -313,6 +379,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -323,10 +390,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>
 		{
-			return new(span1);
+			return new(span1, count);
 		}
 	}
 
@@ -364,13 +431,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -378,6 +455,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current), ref T7Comp.GetVec(ref e1.Current), ref T7Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -388,10 +466,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>
 		{
-			return new(span1);
+			return new(span1, count);
 		}
 	}
 
@@ -432,13 +510,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -446,6 +534,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current), ref T7Comp.GetVec(ref e1.Current), ref T7Comp.GetSingle(ref e1.Current), ref T8Comp.GetVec(ref e1.Current), ref T8Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -456,10 +545,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>, IArchType<T1Arch, T8Comp, T8Vec, T8Single>
 		{
-			return new(span1);
+			return new(span1, count);
 		}
 	}
 
@@ -503,13 +592,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single, T9Vec, T9Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -517,6 +616,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current), ref T7Comp.GetVec(ref e1.Current), ref T7Comp.GetSingle(ref e1.Current), ref T8Comp.GetVec(ref e1.Current), ref T8Comp.GetSingle(ref e1.Current), ref T9Comp.GetVec(ref e1.Current), ref T9Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -527,10 +627,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>, IArchType<T1Arch, T8Comp, T8Vec, T8Single>, IArchType<T1Arch, T9Comp, T9Vec, T9Single>
 		{
-			return new(span1);
+			return new(span1, count);
 		}
 	}
 
@@ -577,13 +677,23 @@ namespace EnCS
 				}
 			}
 
+			public int Remaining
+			{
+				get
+				{
+					return Math.Min(8, remaining);
+				}
+			}
+
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single, T9Vec, T9Single, T10Vec, T10Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			int remaining;
 
-			public Enumerator(Span<T1Arch> span1)
+			public Enumerator(Span<T1Arch> span1, int count)
 			{
 				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 
 			public bool MoveNext()
@@ -591,6 +701,7 @@ namespace EnCS
 				if (e1.MoveNext())
 				{
 					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current), ref T2Comp.GetVec(ref e1.Current), ref T2Comp.GetSingle(ref e1.Current), ref T3Comp.GetVec(ref e1.Current), ref T3Comp.GetSingle(ref e1.Current), ref T4Comp.GetVec(ref e1.Current), ref T4Comp.GetSingle(ref e1.Current), ref T5Comp.GetVec(ref e1.Current), ref T5Comp.GetSingle(ref e1.Current), ref T6Comp.GetVec(ref e1.Current), ref T6Comp.GetSingle(ref e1.Current), ref T7Comp.GetVec(ref e1.Current), ref T7Comp.GetSingle(ref e1.Current), ref T8Comp.GetVec(ref e1.Current), ref T8Comp.GetSingle(ref e1.Current), ref T9Comp.GetVec(ref e1.Current), ref T9Comp.GetSingle(ref e1.Current), ref T10Comp.GetVec(ref e1.Current), ref T10Comp.GetSingle(ref e1.Current));
+					remaining -= 8;
 				}
 				else
 				{
@@ -601,10 +712,10 @@ namespace EnCS
 			}
 		}
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1)
+		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
 			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>, IArchType<T1Arch, T2Comp, T2Vec, T2Single>, IArchType<T1Arch, T3Comp, T3Vec, T3Single>, IArchType<T1Arch, T4Comp, T4Vec, T4Single>, IArchType<T1Arch, T5Comp, T5Vec, T5Single>, IArchType<T1Arch, T6Comp, T6Vec, T6Single>, IArchType<T1Arch, T7Comp, T7Vec, T7Single>, IArchType<T1Arch, T8Comp, T8Vec, T8Single>, IArchType<T1Arch, T9Comp, T9Vec, T9Single>, IArchType<T1Arch, T10Comp, T10Vec, T10Single>
 		{
-			return new(span1);
+			return new(span1, count);
 		}
 	}
 }

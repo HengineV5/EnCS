@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnCS", "EnCS\EnCS.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Runner", "Runner\Runner.csproj", "{909DABC2-CF18-4803-9631-0925CEC8DFF7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnCS.Generator", "EnCS.Generator\EnCS.Generator.csproj", "{1A07AA7F-4D35-4DAC-BCB7-032CBA60FBC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnCS.Generator.Tests", "EnCS.Generator.Tests\EnCS.Generator.Tests.csproj", "{0D437010-18B7-4318-B5CA-5DBA5D257501}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{909DABC2-CF18-4803-9631-0925CEC8DFF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{909DABC2-CF18-4803-9631-0925CEC8DFF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{909DABC2-CF18-4803-9631-0925CEC8DFF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A07AA7F-4D35-4DAC-BCB7-032CBA60FBC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A07AA7F-4D35-4DAC-BCB7-032CBA60FBC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A07AA7F-4D35-4DAC-BCB7-032CBA60FBC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A07AA7F-4D35-4DAC-BCB7-032CBA60FBC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D437010-18B7-4318-B5CA-5DBA5D257501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D437010-18B7-4318-B5CA-5DBA5D257501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D437010-18B7-4318-B5CA-5DBA5D257501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D437010-18B7-4318-B5CA-5DBA5D257501}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

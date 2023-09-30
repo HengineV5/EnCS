@@ -10,7 +10,7 @@ namespace EnCS
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public ref T GetPinnableReference()
 		{
-			return ref Unsafe.AsRef(_element0);
+			return ref Unsafe.AsRef(ref _element0);
 		}
 	}
 
@@ -22,7 +22,7 @@ namespace EnCS
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public ref T GetPinnableReference()
 		{
-			return ref Unsafe.AsRef(_element0);
+			return ref Unsafe.AsRef(ref _element0);
 		}
 	}
 
@@ -34,7 +34,7 @@ namespace EnCS
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public ref T GetPinnableReference()
 		{
-			return ref Unsafe.AsRef(_element0);
+			return ref Unsafe.AsRef(ref _element0);
 		}
 	}
 
@@ -46,7 +46,7 @@ namespace EnCS
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public ref T GetPinnableReference()
 		{
-			return ref Unsafe.AsRef(_element0);
+			return ref Unsafe.AsRef(ref _element0);
 		}
 	}
 
@@ -58,7 +58,7 @@ namespace EnCS
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public ref T GetPinnableReference()
 		{
-			return ref Unsafe.AsRef(_element0);
+			return ref Unsafe.AsRef(ref _element0);
 		}
 	}
 
@@ -70,7 +70,7 @@ namespace EnCS
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public ref T GetPinnableReference()
 		{
-			return ref Unsafe.AsRef(_element0);
+			return ref Unsafe.AsRef(ref _element0);
 		}
 	}
 }

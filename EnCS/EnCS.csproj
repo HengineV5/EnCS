@@ -7,19 +7,26 @@
 		<LangVersion>preview</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>0.0.7</Version>
+		<Version>0.0.10</Version>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="EnCS.Generator" Version="0.0.10" PrivateAssets="all" GeneratePathProperty="true" />
+	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>$(DefineConstants);ERROR_CHECK</DefineConstants>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="TemplateGen" Version="1.0.35" PrivateAssets="all" GeneratePathProperty="true" />
-	</ItemGroup>
+	<PropertyGroup>
+		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+	</PropertyGroup>
 
-	<ItemGroup>
-		<None Include="$(PkgTemplateGen)\analyzers\dotnet\cs\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-	</ItemGroup>
-
+	<Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
+		<ItemGroup>
+			<!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
+			<None Include="$(PkgEnCS_Generator)\analyzers\dotnet\cs\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		</ItemGroup>
+	</Target>
+	
 </Project>
