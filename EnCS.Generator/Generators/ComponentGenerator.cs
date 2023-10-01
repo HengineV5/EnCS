@@ -47,7 +47,7 @@ namespace EnCS.Generator
 			return node.Identifier.ToString();
 		}
 
-		static Model<ReturnType>[] GetMembers(StructDeclarationSyntax node)
+		static List<Model<ReturnType>> GetMembers(StructDeclarationSyntax node)
 		{
 			var models = new List<Model<ReturnType>>();
 
@@ -68,7 +68,7 @@ namespace EnCS.Generator
 				models.Add(model);
 			}
 
-			return models.ToArray();
+			return models;
 		}
 
 		static string GetTypeName<T>(T type) where T : TypeSyntax

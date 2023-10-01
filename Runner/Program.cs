@@ -6,9 +6,11 @@ using EnCS.Attributes;
 using System;
 using System.Buffers;
 using System.ComponentModel;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Text.Json;
 
 namespace Runner
 {
@@ -16,15 +18,17 @@ namespace Runner
 	partial struct Position
 	{
 		public float x;
-		public int y;
-		public int z;
+		public float y;
+		public float z;
 
-		public Position(float x, int y, int z)
+		public Position(float x, float y, float z)
 		{
 			this.x = x;
 			this.y = y;
 			this.z = z;
 		}
+
+		public static implicit operator Position(Vector3 v) => new Position(v.X, v.Y, v.Z);
 	}
 
 	[Component]
@@ -124,7 +128,7 @@ namespace Runner
 
 			Ecs ecs = new();
 
-			ref Ecs.MainWorld mainWorld = ref ecs.GetMainWorld();
+			Ecs.MainWorld mainWorld = ecs.GetMainWorld();
 			ArchRef<Ecs.Tile> tile1 = mainWorld.Create(new Ecs.Tile());
 			ArchRef<Ecs.Tile> tile2 = mainWorld.Create(new Ecs.Tile());
 
@@ -195,7 +199,7 @@ namespace Runner
 		{
 			ecs = new();
 
-			ref Ecs.MainWorld mainWorld = ref ecs.GetMainWorld();
+			Ecs.MainWorld mainWorld = ecs.GetMainWorld();
 			for (int i = 0; i < 1_000_000; i++)
 			{
 				mainWorld.Create(new Ecs.Wall());
@@ -215,7 +219,7 @@ namespace Runner
 		[Benchmark]
 		public void AddSystem()
 		{
-			ref Ecs.MainWorld mainWorld = ref ecs.GetMainWorld();
+			Ecs.MainWorld mainWorld = ecs.GetMainWorld();
 			mainWorld.Loop(system);
 		}
 	}

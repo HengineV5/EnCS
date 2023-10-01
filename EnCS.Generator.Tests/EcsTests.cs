@@ -62,6 +62,17 @@ public partial struct Velocity
 	public decimal z;
 }
 
+[ComponentAttribute]
+public partial struct Scale
+{
+	public float x;
+	public float y;
+	public float z;
+
+	public static implicit operator Scale(Vector3 v) => new Scale(v.X, v.Y, v.Z);
+	public static implicit operator Scale(Vector2 v) => new Scale(v.X, v.Y, 0);
+}
+
 [SystemAttribute]
 public partial class PositionSystem
 {
@@ -139,7 +150,7 @@ namespace Test
 
 			var source3 = File.ReadAllText("Files/TestFile.txt");
 
-			return TestHelper.Verify(source3);
+			return TestHelper.Verify(source);
 		}
 	}
 }

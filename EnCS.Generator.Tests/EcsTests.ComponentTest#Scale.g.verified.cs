@@ -1,17 +1,17 @@
-﻿//HintName: Position.g.cs
+﻿//HintName: Scale.g.cs
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
 
-namespace Runner
+namespace Project.Primitives
 {
-	public partial struct Position : IComponent<Position, Position.Vectorized, Position.Array>
+	public partial struct Scale : IComponent<Scale, Scale.Vectorized, Scale.Array>
 	{
 		public struct Vectorized
 		{
 			public Vector256<float> x;
-			public Vector256<int> y;
-			public Vector256<int> z;
+			public Vector256<float> y;
+			public Vector256<float> z;
 		}
 
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
@@ -20,17 +20,17 @@ namespace Runner
 			public const int Size = 8;
 
 			public FixedArray8<float> x;
-			public FixedArray8<int> y;
-			public FixedArray8<int> z;
+			public FixedArray8<float> y;
+			public FixedArray8<float> z;
 		}
 
 		public ref struct Ref
 		{
 			public ref float x;
-			public ref int y;
-			public ref int z;
+			public ref float y;
+			public ref float z;
 			
-			public Ref(ref float x, ref int y, ref int z)
+			public Ref(ref float x, ref float y, ref float z)
 			{
 				this.x = ref x;
 				this.y = ref y;
@@ -38,11 +38,11 @@ namespace Runner
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public void Set(in Position data)
+			public void Set(in Scale data)
 			{
-				this.x = data.x;
-				this.y = data.y;
-				this.z = data.z;
+				this.x = ref data.x;
+				this.y = ref data.y;
+				this.z = ref data.z;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,13 +53,13 @@ namespace Runner
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Position, Vectorized, Array>
+		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Scale, Vectorized, Array>
 		{
 			return ref TArch.GetVec(ref arch);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Position, Vectorized, Array>
+		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Scale, Vectorized, Array>
 		{
 			return ref TArch.GetSingle(ref arch);
 		}
