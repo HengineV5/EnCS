@@ -31,7 +31,7 @@ namespace $namespace
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Set(in $compName data)
 			{
-				$members~>this.$name = ref data.$name;<~~>\n				<~
+				$members~>this.$name = data.$name;<~~>\n				<~
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

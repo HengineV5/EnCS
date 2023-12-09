@@ -28,6 +28,12 @@ namespace EnCS.Generator.Tests
 using namespace Project.Primitives;
 
 [ComponentAttribute]
+public partial struct InvalidComp
+{
+	public string x;
+}
+
+[ComponentAttribute]
 public partial struct Position
 {
 	public int x;

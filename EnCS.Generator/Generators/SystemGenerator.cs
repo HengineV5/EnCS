@@ -13,9 +13,10 @@ namespace EnCS.Generator
 	{
 		public string Template => ResourceReader.GetResource("System.tcs");
 
-		public Model<ReturnType> CreateModel(Compilation compilation, ClassDeclarationSyntax node)
+		public bool TryCreateModel(Compilation compilation, ClassDeclarationSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
-			var model = new Model<ReturnType>();
+			diagnostics = new List<Diagnostic>();
+			model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
 			model.Set("name".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
 
@@ -25,7 +26,7 @@ namespace EnCS.Generator
 			var methods = GetMethods(node);
 			model.Set("methods".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(methods.Select(x => x.GetModel())));
 
-			return model;
+			return true;
 		}
 
 		public bool Filter(ClassDeclarationSyntax node)

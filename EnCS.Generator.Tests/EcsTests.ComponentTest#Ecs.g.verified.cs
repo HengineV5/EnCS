@@ -30,7 +30,7 @@ namespace Test
 
 	static class Ecs_Intercept
 	{
-		[InterceptsLocation(@"", 85, 5)]
+		[InterceptsLocation(@"", 91, 5)]
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public static Ecs InterceptBuild(this EcsBuilder builder)

@@ -15,8 +15,9 @@ namespace EnCS.Generator
 
 		public string Template => ResourceReader.GetResource("World.tcs");
 
-        public Model<ReturnType> CreateModel(Compilation compilation, IdentifierNameSyntax node)
+        public bool TryCreateModel(Compilation compilation, IdentifierNameSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
+			diagnostics = new List<Diagnostic>();
 			var builderRoot = EcsGenerator.GetBuilderRoot(node);
 
 			var builderSteps = builderRoot.DescendantNodes()
@@ -28,16 +29,16 @@ namespace EnCS.Generator
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 
 			var systems = GetSystems(systemStep);
-			var archTypes = ArchTypeGenerator.GetArchTypes(compilation, archTypeStep);
+			var archTypeSuccess = ArchTypeGenerator.TryGetArchTypes(compilation, archTypeStep, diagnostics, out List<ArchType> archTypes);
 
-			var model = new Model<ReturnType>();
+			model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
 			model.Set("ecsName".AsSpan(), new Parameter<string>(EcsGenerator.GetEcsName(node)));
 
 			var worlds = GetWorlds(compilation, worldStep, systems, archTypes);
 			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(worlds.Select(x => x.GetModel())));
 
-			return model;
+			return true;
 		}
 
 		public bool Filter(IdentifierNameSyntax node)

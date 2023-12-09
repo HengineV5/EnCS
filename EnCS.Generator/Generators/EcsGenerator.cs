@@ -13,8 +13,9 @@ namespace EnCS.Generator
 	{
 		public string Template => ResourceReader.GetResource("Ecs.tcs");
 
-		public Model<ReturnType> CreateModel(Compilation compilation, IdentifierNameSyntax node)
+		public bool TryCreateModel(Compilation compilation, IdentifierNameSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
+			diagnostics = new List<Diagnostic>();
 			var builderRoot = GetBuilderRoot(node);
 
 			var builderSteps = builderRoot.DescendantNodes()
@@ -25,7 +26,7 @@ namespace EnCS.Generator
 			var worldStep = builderSteps.First(x => x.Name.Identifier.Text == "World");
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 
-			var model = new Model<ReturnType>();
+			model = new Model<ReturnType>();
 
 			// Ecs Info
 			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
@@ -34,7 +35,7 @@ namespace EnCS.Generator
 			var worlds = GetWorlds(worldStep);
 			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(worlds.Select(x => x.GetModel())));
 
-			var archTypes = ArchTypeGenerator.GetArchTypes(compilation, archTypeStep);
+			var archTypeSuccess = ArchTypeGenerator.TryGetArchTypes(compilation, archTypeStep, diagnostics, out List<ArchType> archTypes);
 			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(archTypes.Select(x => x.GetModel())));
 
 			// Intercept info
@@ -45,7 +46,7 @@ namespace EnCS.Generator
 			model.Set("line".AsSpan(), Parameter.Create<float>(loc.StartLinePosition.Line + 1));
 			model.Set("character".AsSpan(), Parameter.Create<float>(loc.StartLinePosition.Character + 1));
 
-			return model;
+			return true;
 		}
 
 		public bool Filter(IdentifierNameSyntax node)

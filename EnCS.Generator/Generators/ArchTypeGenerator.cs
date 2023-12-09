@@ -4,18 +4,25 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using TemplateGenerator;
 
 namespace EnCS.Generator
 {
+	static class ArchTypeGeneratorDiagnostics
+	{
+		public static readonly DiagnosticDescriptor ArchTypeMustBeValidComponent = new("ECS003", "Archtype can only contain valid components", "Archtype member is not valid component", "ArchTypeGenerator", DiagnosticSeverity.Error, true);
+	}
+
 	class ArchTypeGenerator : ITemplateSourceGenerator<IdentifierNameSyntax>
 	{
 		public Guid Id { get; } = Guid.NewGuid();
 
 		public string Template => ResourceReader.GetResource("ArchType.tcs");
 
-        public Model<ReturnType> CreateModel(Compilation compilation, IdentifierNameSyntax node)
+        public bool TryCreateModel(Compilation compilation, IdentifierNameSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
+			diagnostics = new List<Diagnostic>();
 			var builderRoot = EcsGenerator.GetBuilderRoot(node);
 
 			var builderSteps = builderRoot.DescendantNodes()
@@ -24,14 +31,14 @@ namespace EnCS.Generator
 
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 
-			var model = new Model<ReturnType>();
+			model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
 			model.Set("ecsName".AsSpan(), new Parameter<string>(EcsGenerator.GetEcsName(node)));
 
-			var archTypes = GetArchTypes(compilation, archTypeStep);
+			var archTypeSuccess = TryGetArchTypes(compilation, archTypeStep, diagnostics, out List<ArchType> archTypes);
 			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(archTypes.Select(x => x.GetModel())));
 
-			return model;
+			return true;
 		}
 
 		public bool Filter(IdentifierNameSyntax node)
@@ -44,9 +51,9 @@ namespace EnCS.Generator
 			return $"{EcsGenerator.GetEcsName(node)}_ArchType";
 		}
 
-		public static List<ArchType> GetArchTypes(Compilation compilation, MemberAccessExpressionSyntax step)
+		public static bool TryGetArchTypes(Compilation compilation, MemberAccessExpressionSyntax step, List<Diagnostic> diagnostics, out List<ArchType> models)
 		{
-			var models = new List<ArchType>();
+			models = new List<ArchType>();
 
 			var parentExpression = step.Parent as InvocationExpressionSyntax;
 			var lambda = parentExpression.ArgumentList.Arguments.Single().Expression as SimpleLambdaExpressionSyntax;
@@ -68,24 +75,33 @@ namespace EnCS.Generator
 				var nameArg = invocation.ArgumentList.Arguments[0].Expression as LiteralExpressionSyntax;
 				var nameToken = nameArg.Token.ValueText;
 
+				if (!TryGetComponents(compilation, genericName, diagnostics, out List<Component> components))
+					continue;
+
 				models.Add(new ArchType()
 				{
 					name = nameToken,
-					components = GetComponents(compilation, genericName)
+					components = components
 				});
 			}
 
-			return models;
+			return models.Count > 0;
 		}
 
-		static List<Component> GetComponents(Compilation compilation, GenericNameSyntax name)
+		static bool TryGetComponents(Compilation compilation, GenericNameSyntax name, List<Diagnostic> diagnostics, out List<Component> models)
 		{
 			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
-			var models = new List<Component>();
+			models = new List<Component>();
 
 			foreach (IdentifierNameSyntax comp in name.TypeArgumentList.Arguments)
 			{
 				var compNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == comp.Identifier.Text);
+
+				if (!ComponentGenerator.IsValidComponent(compNode))
+				{
+					diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, comp.GetLocation(), ""));
+					continue;
+				}	
 
 				models.Add(new Component()
 				{
@@ -94,7 +110,7 @@ namespace EnCS.Generator
 				});
 			}
 
-			return models;
+			return models.Count > 0;
 		}
 	}
 

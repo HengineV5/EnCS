@@ -15,6 +15,12 @@ using System.Text.Json;
 namespace Runner
 {
 	[Component]
+	partial struct TestComp123
+	{
+		//public string wow;
+	}
+
+	[Component]
 	partial struct Position
 	{
 		public float x;
@@ -145,6 +151,7 @@ namespace Runner
 			wall1Ref.Position.x = 1;
 			wall2Ref.Position.x = 3;
 			wall1Ref.Position.Set(new Position(2, 0, 0));
+			tile1Ref.Position.Set(new Position(2, 0, 0));
             Console.WriteLine(tile1Ref.Position.x);
 
             Console.WriteLine("Systems:");

@@ -40,9 +40,9 @@ namespace Project.Primitives
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Set(in Velocity data)
 			{
-				this.x = ref data.x;
-				this.y = ref data.y;
-				this.z = ref data.z;
+				this.x = data.x;
+				this.y = data.y;
+				this.z = data.z;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

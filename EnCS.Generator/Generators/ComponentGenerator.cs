@@ -9,22 +9,37 @@ using TemplateGenerator;
 
 namespace EnCS.Generator
 {
+	static class ComponentGeneratorDiagnostics
+	{
+		public static readonly DiagnosticDescriptor InvalidComponentMemberType = new("ECS001", "Invalid component member type", "Component member of type '{0}' is not supported", "ComponentGenerator", DiagnosticSeverity.Error, true);
+		
+		public static readonly DiagnosticDescriptor ComponentMustBePartial = new("ECS002", "Component struct must be partial", "Component struct is not partial", "ComponentGenerator", DiagnosticSeverity.Error, true);
+	}
+
 	class ComponentGenerator : ITemplateSourceGenerator<StructDeclarationSyntax>
 	{
 		const int MAX_SIMD_BUFFER_BITS = 512;
 
 		public string Template => ResourceReader.GetResource("Component.tcs");
 
-		public Model<ReturnType> CreateModel(Compilation compilation, StructDeclarationSyntax node)
+		public bool TryCreateModel(Compilation compilation, StructDeclarationSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
-			var model = new Model<ReturnType>();
+			diagnostics = new List<Diagnostic>();
+			model = new Model<ReturnType>();
+
+			if (!IsValidComponent(node))
+			{
+				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.ComponentMustBePartial, node.GetLocation(), ""));
+				return false;
+			}
+
 			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
 			model.Set("compName".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
 
-			var members = GetMembers(node);
+			var membersResult = TryGetMembers(node, diagnostics, out var members);
 			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(members.Select(x => x.GetModel())));
 
-			return model;
+			return membersResult;
 		}
 
 		public bool Filter(StructDeclarationSyntax node)
@@ -49,19 +64,28 @@ namespace EnCS.Generator
 			return node.Identifier.ToString();
 		}
 
-		static List<ComponentMember> GetMembers(StructDeclarationSyntax node)
+		public static bool IsValidComponent(StructDeclarationSyntax node)
 		{
-			var models = new List<ComponentMember>();
+			return node.Modifiers.Any(x => x.Value == "partial") &&
+				node.AttributeLists.SelectMany(x => x.Attributes).Select(x => x.Name as SimpleNameSyntax).Any(x => x.Identifier.Text == "ComponentAttribute" || x.Identifier.Text == "Attribute");
+		}
+
+		static bool TryGetMembers(StructDeclarationSyntax node, List<Diagnostic> diagnostics, out List<ComponentMember> members)
+		{
+			members = new List<ComponentMember>();
 
 			foreach (var member in node.Members.Where(x => x is FieldDeclarationSyntax).Select(x => x as FieldDeclarationSyntax))
 			{
-				string typeName = GetTypeName(member.Declaration.Type);
-				int size = GetTypeSize(member.Declaration.Type);
+				if (!TryGetTypeName(member.Declaration.Type, diagnostics, out string typeName))
+					continue;
+
+				if (!TryGetTypeSize(member.Declaration.Type, diagnostics, out int size))
+					continue;
 
 				int bits = Math.Min(size * 8 * 8, MAX_SIMD_BUFFER_BITS);
 				int arraySize = (size * 8 * 8) / MAX_SIMD_BUFFER_BITS;
 
-				models.Add(new ComponentMember()
+				members.Add(new ComponentMember()
 				{
 					name = member.Declaration.Variables[0].ToString(),
 					type = typeName,
@@ -70,14 +94,15 @@ namespace EnCS.Generator
 				});
 			}
 
-			return models;
+			return members.Count > 0;
 		}
 
-		static string GetTypeName<T>(T type) where T : TypeSyntax
+		static bool TryGetTypeName<T>(T type, List<Diagnostic> diagnostics, out string name) where T : TypeSyntax
 		{
 			if (type is PredefinedTypeSyntax predefined)
 			{
-				return predefined.Keyword.Text;
+				name = predefined.Keyword.Text;
+				return true;
 			}
 			else if (type is GenericNameSyntax generic)
 			{
@@ -89,24 +114,39 @@ namespace EnCS.Generator
 					sb.Append('<');
 					foreach (TypeSyntax arg in generic.TypeArgumentList.Arguments)
 					{
-						sb.Append(GetTypeName(arg));
+						if (!TryGetTypeName(arg, diagnostics, out var nestedName))
+						{
+							name = "";
+							return false;
+						}
+
+						sb.Append(nestedName);
 					}
 					sb.Append('>');
 				}
 
-				return sb.ToString();
+				name = sb.ToString();
+				return true;
 			}
 			else
 			{
-				throw new Exception("Unexpected type declaration");
+				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
+				name = "";
+				return false;
 			}
 		}
 
-		static int GetTypeSize<T>(T type) where T : TypeSyntax
+		static bool TryGetTypeSize<T>(T type, List<Diagnostic> diagnostics, out int size) where T : TypeSyntax
 		{
 			if (type is PredefinedTypeSyntax predefined)
 			{
-				return GetSize(predefined.Keyword.Text);
+				if (!TryGetSize(predefined.Keyword.Text, out size))
+				{
+					diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
+					return false;
+				}
+
+				return true;
 			}
 			else if (type is GenericNameSyntax generic)
 			{
@@ -115,44 +155,70 @@ namespace EnCS.Generator
 				if ((nameLength == 11 || nameLength == 12) && generic.Identifier.Text.StartsWith("FixedArray"))
 				{
 					int arrayLength = int.Parse(generic.Identifier.Text.Substring(10));
-					int typeSize = GetSize(GetTypeName(generic.TypeArgumentList.Arguments[0]));
 
-					return arrayLength * typeSize;
+					if (!TryGetTypeName(generic.TypeArgumentList.Arguments[0], diagnostics, out string typeName))
+					{
+						size = 0;
+						return false;
+					}	
+
+					if (!TryGetSize(typeName, out int typeSize))
+					{
+						size = 0;
+						return false;
+					}
+
+					size = arrayLength * typeSize;
+					return true;
 				}
 
-				throw new Exception("Unexpected type declaration");
+				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
+
+				size = 0;
+				return false;
 			}
 			else
 			{
-				throw new Exception("Unexpected type declaration");
+				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
+
+				size = 0;
+				return false;
 			}
 		}
 
-		static int GetSize(string numericTypeName)
+		static bool TryGetSize(string numericTypeName, out int size)
 		{
 			switch (numericTypeName)
 			{
 				case "sbyte":
 				case "byte":
 				case "char":
-					return 1;
+					size = 1;
+					return true;
 				case "short":
 				case "ushort":
-					return 2;
+					size = 2;
+					return true;
 				case "int":
 				case "uint":
-					return 4;
+					size = 4;
+					return true;
 				case "long":
 				case "ulong":
-					return 8;
+					size = 8;
+					return true;
 				case "float":
-					return 4;
+					size = 4;
+					return true;
 				case "double":
-					return 8;
+					size = 8;
+					return true;
 				case "decimal":
-					return 16;
+					size = 16;
+					return true;
 				default:
-					throw new Exception($"Invalid numeric type '{numericTypeName}'");
+					size = 0;
+					return false;
 			}
 		}
 
