@@ -24,7 +24,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" Pack="true" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" Pack="true" PrivateAssets="all" />
-		<PackageReference Include="TemplateGen" Version="1.0.47" Pack="true" GeneratePathProperty="true" />
+		<PackageReference Include="TemplateGen" Version="1.0.48" Pack="true" GeneratePathProperty="true" />
 	</ItemGroup>
 
 	<ItemGroup>

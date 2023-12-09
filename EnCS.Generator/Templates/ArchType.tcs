@@ -6,36 +6,36 @@ namespace $namespace
 {
 	public partial class $ecsName
 	{
-		$archTypes~>public struct $archTypeName : $components~>IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array><~~>, <~
+		$archTypes~>public struct $archTypeName : $archTypeComponents~>IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array><~~>, <~
 		{
-			$components~>public |$compName|.Vectorized $varName;<~~>\n			<~
+			$archTypeComponents~>public |$compName|.Vectorized $compVarName;<~~>\n			<~
 
-			$components~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			$archTypeComponents~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			static ref |$compName|.Array IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref $archTypeName arch)
 			{
-				return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch.$varName);
+				return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch.$compVarName);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			static ref |$compName|.Vectorized IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref $archTypeName arch)
 			{
-				return ref arch.$varName;
+				return ref arch.$compVarName;
 			}<~~>\n\n			<~
 
 			public ref struct Ref
 			{
-				$components~>public |$compName|.Ref $varName;<~~>\n				<~
+				$archTypeComponents~>public |$compName|.Ref $compVarName;<~~>\n				<~
 
-				public Ref($components~>|$compName|.Ref $varName<~~>, <~)
+				public Ref($archTypeComponents~>|$compName|.Ref $compVarName<~~>, <~)
 				{
-					$components~>this.$varName = $varName;<~~>\n					<~
+					$archTypeComponents~>this.$compVarName = $compVarName;<~~>\n					<~
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static Ref FromArchType(ref $archTypeName archType, int idx)
 				{
-					return new Ref($components~>
-						|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$varName), idx)<~~>, <~
+					return new Ref($archTypeComponents~>
+						|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$compVarName), idx)<~~>, <~
 					);
 				}
 			}

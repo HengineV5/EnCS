@@ -25,17 +25,22 @@ namespace EnCS.Generator
 			var worldStep = builderSteps.First(x => x.Name.Identifier.Text == "World");
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 
-			var builderLocation = buildStep.Name.GetLocation();
-			var loc = builderLocation.GetMappedLineSpan();
-
 			var model = new Model<ReturnType>();
+
 			// Ecs Info
 			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
 			model.Set("name".AsSpan(), Parameter.Create(GetEcsName(node)));
-			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetWorlds(worldStep)));
-			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(ArchTypeGenerator.GetArchTypes(compilation, archTypeStep)));
+
+			var worlds = GetWorlds(worldStep);
+			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(worlds.Select(x => x.GetModel())));
+
+			var archTypes = ArchTypeGenerator.GetArchTypes(compilation, archTypeStep);
+			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(archTypes.Select(x => x.GetModel())));
 
 			// Intercept info
+			var builderLocation = buildStep.Name.GetLocation();
+			var loc = builderLocation.GetMappedLineSpan();
+
 			model.Set("path".AsSpan(), Parameter.Create(loc.Path));
 			model.Set("line".AsSpan(), Parameter.Create<float>(loc.StartLinePosition.Line + 1));
 			model.Set("character".AsSpan(), Parameter.Create<float>(loc.StartLinePosition.Character + 1));
@@ -75,9 +80,9 @@ namespace EnCS.Generator
 			return genricName.TypeArgumentList.Arguments[0].ToString();
 		}
 
-		static List<Model<ReturnType>> GetWorlds(MemberAccessExpressionSyntax step)
+		static List<World> GetWorlds(MemberAccessExpressionSyntax step)
 		{
-			List<Model<ReturnType>> models = new();
+			List<World> models = new();
 
 			var parentExpression = step.Parent as InvocationExpressionSyntax;
 			var lambda = parentExpression.ArgumentList.Arguments.Single().Expression as SimpleLambdaExpressionSyntax;
@@ -102,13 +107,13 @@ namespace EnCS.Generator
 				var nameArg = invocation.ArgumentList.Arguments[0].Expression as LiteralExpressionSyntax;
 				var nameToken = nameArg.Token.ValueText;
 
-				var archTypes = WorldGenerator.GetArchTypes(genericName);
+				var archTypes = WorldGenerator.GetWorldArchTypes(genericName);
 
-				var model = new Model<ReturnType>();
-				model.Set("worldName".AsSpan(), Parameter.Create(nameToken));
-				model.Set("archTypes".AsSpan(), Parameter.CreateEnum(archTypes.ToParameter().ToModel("archTypeName").ToList()));
-
-				models.Add(model);
+				models.Add(new World()
+				{
+					name = nameToken,
+					archTypes = archTypes
+				});
 			}
 
 			return models;

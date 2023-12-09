@@ -5,6 +5,7 @@
 		public delegate void ArchTypeAction(EcsArchType archType);
 		public delegate void SystemAction(EcsSystem system);
 		public delegate void WorldAction(EcsWorld world);
+		public delegate void HookAction(EcsHook hook);
 
 		public ref struct EcsArchType
 		{
@@ -95,6 +96,14 @@
 			}
 		}
 
+		public ref struct EcsHook
+		{
+			public EcsHook Hook<TIn, TOut>() where TIn : unmanaged where TOut : unmanaged
+			{
+				return this;
+			}
+		}
+
         public EcsBuilder()
         {
             
@@ -111,6 +120,11 @@
 		}
 
 		public EcsBuilder World(WorldAction system)
+		{
+			return this;
+		}
+
+		EcsBuilder Hook(HookAction hook)
 		{
 			return this;
 		}

@@ -27,13 +27,15 @@ namespace EnCS.Generator
 			var systemStep = builderSteps.First(x => x.Name.Identifier.Text == "System");
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 
-			var systems = GetSystemNames(systemStep);
-			var archTypeComponents = GetArchTypeComponents(archTypeStep);
+			var systems = GetSystems(systemStep);
+			var archTypes = ArchTypeGenerator.GetArchTypes(compilation, archTypeStep);
 
 			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
 			model.Set("ecsName".AsSpan(), new Parameter<string>(EcsGenerator.GetEcsName(node)));
-			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetWorlds(compilation, worldStep, systems, archTypeComponents)));
+
+			var worlds = GetWorlds(compilation, worldStep, systems, archTypes);
+			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(worlds.Select(x => x.GetModel())));
 
 			return model;
 		}
@@ -48,9 +50,9 @@ namespace EnCS.Generator
 			return $"{EcsGenerator.GetEcsName(node)}_World";
 		}
 
-		static List<Model<ReturnType>> GetWorlds(Compilation compilation, MemberAccessExpressionSyntax step, List<string> systems, Dictionary<string, List<string>> archTypeComponents)
+		static List<World> GetWorlds(Compilation compilation, MemberAccessExpressionSyntax step, List<SystemName> allSystems, List<ArchType> allArchTypes)
 		{
-			var models = new List<Model<ReturnType>>();
+			var models = new List<World>();
 
 			var parentExpression = step.Parent as InvocationExpressionSyntax;
 			var lambda = parentExpression.ArgumentList.Arguments.Single().Expression as SimpleLambdaExpressionSyntax;
@@ -76,14 +78,15 @@ namespace EnCS.Generator
 				var nameArg = invocation.ArgumentList.Arguments[0].Expression as LiteralExpressionSyntax;
 				var nameToken = nameArg.Token.ValueText;
 
-				var archTypes = GetArchTypes(genericName);
+				var worldArchTypes = GetWorldArchTypes(genericName);
+				var worldSystems = GetWorldSystems(compilation, worldArchTypes, allSystems, allArchTypes);
 
-				var model = new Model<ReturnType>();
-				model.Set("worldName".AsSpan(), Parameter.Create(nameToken));
-				model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(archTypes.ToParameter().ToModel("archTypeName").ToList()));
-				model.Set("systems".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetSystems(compilation, archTypes, systems, archTypeComponents)));
-
-				models.Add(model);
+				models.Add(new World()
+				{
+					name = nameToken,
+					archTypes = worldArchTypes,
+					systems = worldSystems
+				});
 
 				i++;
 			}
@@ -91,21 +94,27 @@ namespace EnCS.Generator
 			return models;
 		}
 
-		public static List<string> GetArchTypes(GenericNameSyntax name)
+		public static List<ArchTypeName> GetWorldArchTypes(GenericNameSyntax name)
 		{
-			var archTypes = new List<string>();
+			var archTypes = new List<ArchTypeName>();
 
 			foreach (TypeSyntax comp in name.TypeArgumentList.Arguments)
 			{
 				if (comp is IdentifierNameSyntax ident)
 				{
-					archTypes.Add(ident.Identifier.Text);
+					archTypes.Add(new ArchTypeName()
+					{
+						name = ident.Identifier.Text
+					});
 					continue;
 				}
 				else if (comp is QualifiedNameSyntax qual)
 				{
 					var right = qual.Right as IdentifierNameSyntax;
-					archTypes.Add(right.Identifier.Text);
+					archTypes.Add(new ArchTypeName()
+					{
+						name = right.Identifier.Text
+					});
 					continue;
 				}
 			}
@@ -113,58 +122,57 @@ namespace EnCS.Generator
 			return archTypes;
 		}
 
-		static List<Model<ReturnType>> GetSystems(Compilation compilation, List<string> worldArchTypes, List<string> systems, Dictionary<string, List<string>> archTypeComponents)
+		static List<System> GetWorldSystems(Compilation compilation, List<ArchTypeName> worldArchTypes, List<SystemName> allSystems, List<ArchType> allArchTypes)
 		{
-			var models = new List<Model<ReturnType>>();
+			var models = new List<System>();
 
-			var worldComponents = worldArchTypes.SelectMany(x => archTypeComponents[x]).ToList();
+			var worldComponents = worldArchTypes.SelectMany(x => allArchTypes.First(y => y.name == x.name).components).ToList();
+			var worldComponentNames = worldComponents.Select(x => x.name);
 
-			foreach (string system in systems)
+			foreach (SystemName system in allSystems)
 			{
 				var systemComps = GetSystemComponents(compilation, system);
 
-				if (!systemComps.Select(x => x.Split('.').Last()).All(worldComponents.Contains))
+				// Filter out all systems wich this world cannot support
+				if (!systemComps.Select(x => x.name).All(worldComponentNames.Contains))
 					continue;
 
-				var model = new Model<ReturnType>();
-				model.Set("containers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetComptaibleContainers(systemComps, worldArchTypes, archTypeComponents)));
-				model.Set("systemName".AsSpan(), Parameter.Create(system));
-
-				models.Add(model);
+				models.Add(new System()
+				{
+					name = system.name,
+					containers = GetComptaibleContainers(worldArchTypes, systemComps, allArchTypes)
+				});
 			}
 
 			return models;
 		}
 
-		static List<Model<ReturnType>> GetComptaibleContainers(List<string> systemComps, List<string> worldArchTypes, Dictionary<string, List<string>> archTypeComponents)
+		static List<Container> GetComptaibleContainers(List<ArchTypeName> worldArchTypes, List<ComponentName> systemComps, List<ArchType> allArchTypes)
 		{
-			List<Model<ReturnType>> models = new();
+			List<Container> models = new();
 
-			var systemCompsWithoutNamespace = systemComps.Select(x => x.Split('.').Last());
-
-			foreach (var archType in worldArchTypes)
+			foreach (var archTypeName in worldArchTypes)
 			{
-				if (!systemCompsWithoutNamespace.All(archTypeComponents[archType].Contains))
+				var components = allArchTypes.First(x => x.name == archTypeName.name).components;
+				if (!systemComps.All(x => components.Any(y => y.name == x.name)))
 					continue;
 
-				var compModels = systemComps.ToParameter().ToModel("compName").ToList();
-
-				var model = new Model<ReturnType>();
-				model.Set("archTypeName".AsSpan(), Parameter.Create(archType));
-				model.Set("components".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(compModels));
-
-				models.Add(model);
+				models.Add(new Container()
+				{
+					name = archTypeName.name,
+					components = systemComps
+				});
 			}
 
 			return models;
 		}
 
-		static List<string> GetSystemComponents(Compilation compilation, string name)
+		static List<ComponentName> GetSystemComponents(Compilation compilation, SystemName system)
 		{
 			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
-			var systemNode = nodes.FindNode<ClassDeclarationSyntax>(x => x.Identifier.Text == name);
+			var systemNode = nodes.FindNode<ClassDeclarationSyntax>(x => x.Identifier.Text == system.name);
 
-			List<string> names = new List<string>();
+			List<ComponentName> names = new List<ComponentName>();
 			foreach (var method in systemNode.Members.Where(x => x is MethodDeclarationSyntax).Select(x => x as MethodDeclarationSyntax))
 			{
 				if (method.Identifier.Text != "Update")
@@ -177,8 +185,10 @@ namespace EnCS.Generator
 
 					var compNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == compName);
 
-					names.Add($"{compNode.GetNamespace()}.{compName}");
-					//names.Add(compName);
+					names.Add(new ComponentName()
+					{
+						name = $"{compNode.GetNamespace()}.{compName}"
+					});
 				}
 
 				// TODO: Only do first method for now
@@ -188,9 +198,9 @@ namespace EnCS.Generator
 			return names;
 		}
 
-		static List<string> GetSystemNames(MemberAccessExpressionSyntax step)
+		static List<SystemName> GetSystems(MemberAccessExpressionSyntax step)
 		{
-			var systems = new List<string>();
+			var systems = new List<SystemName>();
 
 			var parentExpression = step.Parent as InvocationExpressionSyntax;
 			var lambda = parentExpression.ArgumentList.Arguments.Single().Expression as SimpleLambdaExpressionSyntax;
@@ -211,47 +221,108 @@ namespace EnCS.Generator
 
 				foreach (IdentifierNameSyntax comp in genericName.TypeArgumentList.Arguments)
 				{
-					systems.Add(comp.Identifier.Text);
+					systems.Add(new SystemName()
+					{
+						name = comp.Identifier.Text
+					});
 				}
 			}
 
 			return systems;
 		}
+	}
 
-		static Dictionary<string, List<string>> GetArchTypeComponents(MemberAccessExpressionSyntax step)
+	struct World
+	{
+		public string name;
+		public List<ArchTypeName> archTypes;
+		public List<System> systems;
+
+		public Model<ReturnType> GetModel()
 		{
-			Dictionary<string, List<string>> archTypeComponents = new();
+			var model = new Model<ReturnType>();
 
-			var parentExpression = step.Parent as InvocationExpressionSyntax;
-			var lambda = parentExpression.ArgumentList.Arguments.Single().Expression as SimpleLambdaExpressionSyntax;
+			model.Set("worldName".AsSpan(), Parameter.Create(name));
+			model.Set("worldArchTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(archTypes.Select(x => x.GetModel())));
 
-			foreach (var archType in lambda.Block.Statements.Where(x => x is ExpressionStatementSyntax).Cast<ExpressionStatementSyntax>())
-			{
-				if (archType.Expression is not InvocationExpressionSyntax invocation)
-					continue;
+			if (systems != null)
+				model.Set("worldSystems".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(systems.Select(x => x.GetModel())));
 
-				if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
-					continue;
+			return model;
+		}
+	}
 
-				if (memberAccess.Name is not GenericNameSyntax genericName)
-					continue;
+	struct ArchTypeName
+	{
+		public string name;
 
-				if (genericName.Identifier.Text != "ArchType")
-					continue;
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
 
-				var nameArg = invocation.ArgumentList.Arguments[0].Expression as LiteralExpressionSyntax;
+			model.Set("archTypeName".AsSpan(), Parameter.Create(name));
 
-				var components = new List<string>();
-				foreach (IdentifierNameSyntax comp in genericName.TypeArgumentList.Arguments)
-				{
-					components.Add(comp.Identifier.Text);
-				}
+			return model;
+		}
+	}
 
-				archTypeComponents.Add(nameArg.Token.ValueText, components);
+	struct System
+	{
+		public string name;
+		public List<Container> containers;
 
-			}
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
 
-			return archTypeComponents;
+			model.Set("systemName".AsSpan(), Parameter.Create(name));
+			model.Set("systemContainers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(containers.Select(x => x.GetModel())));
+
+			return model;
+		}
+	}
+
+	struct SystemName
+	{
+		public string name;
+
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
+
+			model.Set("systemName".AsSpan(), Parameter.Create(name));
+
+			return model;
+		}
+	}
+
+	struct Container
+	{
+		public string name;
+		public List<ComponentName> components;
+
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
+
+			model.Set("containerName".AsSpan(), Parameter.Create(name));
+			model.Set("containerComponents".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(components.Select(x => x.GetModel())));
+
+			return model;
+		}
+	}
+
+	struct ComponentName
+	{
+		public string name;
+
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
+
+			model.Set("compName".AsSpan(), Parameter.Create(name));
+
+			return model;
 		}
 	}
 }

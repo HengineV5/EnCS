@@ -4,25 +4,6 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace EnCS.Generator.Tests
 {
-	public class AdditionalTemplate : AdditionalText
-	{
-		public override string Path => name;
-
-		string name;
-		string content;
-
-        public AdditionalTemplate(string name, string content)
-        {
-			this.name = name.EndsWith(".tcs") ? name : $"{name}.tcs";
-			this.content = content;
-        }
-
-        public override SourceText? GetText(CancellationToken cancellationToken = default)
-		{
-			return SourceText.From(content, System.Text.Encoding.UTF8);
-		}
-	}
-
 	public static class TestHelper
 	{
 		public static Task Verify(string source)

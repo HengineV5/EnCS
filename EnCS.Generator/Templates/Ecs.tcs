@@ -15,7 +15,7 @@ namespace $namespace
 		$worlds~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public $worldName Get|$worldName|()
 		{
-			return new |$worldName|($archTypes~>ref container|$archTypeName|<~~>, <~);
+			return new |$worldName|($worldArchTypes~>ref container|$archTypeName|<~~>, <~);
 		}<~~>\n\n		<~
 	}
 

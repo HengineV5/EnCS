@@ -15,6 +15,18 @@ namespace EnCS.Generator
 
 		public string Template => ResourceReader.GetResource("Component.tcs");
 
+		public Model<ReturnType> CreateModel(Compilation compilation, StructDeclarationSyntax node)
+		{
+			var model = new Model<ReturnType>();
+			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
+			model.Set("compName".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
+
+			var members = GetMembers(node);
+			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(members.Select(x => x.GetModel())));
+
+			return model;
+		}
+
 		public bool Filter(StructDeclarationSyntax node)
 		{
 			foreach (AttributeListSyntax attributeListSyntax in node.AttributeLists)
@@ -32,24 +44,14 @@ namespace EnCS.Generator
 			return false;
 		}
 
-		public Model<ReturnType> CreateModel(Compilation compilation, StructDeclarationSyntax node)
-		{
-			var model = new Model<ReturnType>();
-			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
-			model.Set("compName".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
-			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMembers(node)));
-
-			return model;
-		}
-
 		public string GetName(StructDeclarationSyntax node)
 		{
 			return node.Identifier.ToString();
 		}
 
-		static List<Model<ReturnType>> GetMembers(StructDeclarationSyntax node)
+		static List<ComponentMember> GetMembers(StructDeclarationSyntax node)
 		{
-			var models = new List<Model<ReturnType>>();
+			var models = new List<ComponentMember>();
 
 			foreach (var member in node.Members.Where(x => x is FieldDeclarationSyntax).Select(x => x as FieldDeclarationSyntax))
 			{
@@ -59,13 +61,13 @@ namespace EnCS.Generator
 				int bits = Math.Min(size * 8 * 8, MAX_SIMD_BUFFER_BITS);
 				int arraySize = (size * 8 * 8) / MAX_SIMD_BUFFER_BITS;
 
-				var model = new Model<ReturnType>();
-				model.Set("name".AsSpan(), Parameter.Create(member.Declaration.Variables[0].ToString()));
-				model.Set("type".AsSpan(), Parameter.Create(typeName));
-				model.Set("bits".AsSpan(), Parameter.Create<float>(bits));
-				model.Set("arraySize".AsSpan(), Parameter.Create<float>(arraySize));
-
-				models.Add(model);
+				models.Add(new ComponentMember()
+				{
+					name = member.Declaration.Variables[0].ToString(),
+					type = typeName,
+					bits = bits,
+					arraySize = arraySize,
+				});
 			}
 
 			return models;
@@ -175,6 +177,26 @@ namespace EnCS.Generator
 					return false;
 
 			}
+		}
+	}
+
+	struct ComponentMember
+	{
+		public string name;
+		public string type;
+		public int bits;
+		public int arraySize;
+
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
+
+			model.Set("name".AsSpan(), Parameter.Create(name));
+			model.Set("type".AsSpan(), Parameter.Create(type));
+			model.Set("bits".AsSpan(), Parameter.Create<float>(bits));
+			model.Set("arraySize".AsSpan(), Parameter.Create<float>(arraySize));
+
+			return model;
 		}
 	}
 }

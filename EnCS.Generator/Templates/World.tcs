@@ -8,14 +8,14 @@ namespace $namespace
 	{
 		$worlds~>public ref struct $worldName
 		{
-			$archTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n			<~
+			$worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n			<~
 
-			public $worldName($archTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|<~~>, <~)
+			public $worldName($worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|<~~>, <~)
 			{
-				$archTypes~>this.container|$archTypeName| = ref container|$archTypeName|;<~~>\n				<~
+				$worldArchTypes~>this.container|$archTypeName| = ref container|$archTypeName|;<~~>\n				<~
 			}
 
-			$archTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			$worldArchTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public ArchRef<$archTypeName> Create(in |$archTypeName| data)
 			{
 				return container|$archTypeName|.Create(data);
@@ -27,12 +27,12 @@ namespace $namespace
 				return container|$archTypeName|.Get(ptr);
 			}<~~>\n\n			<~
 
-			$systems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop($systemName system)
 			{
-				$containers~>var enum|$archTypeName| = new ComponentEnumerableNew<$components~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<$archTypeName>(container|$archTypeName|.AsSpan(), (int)container|$archTypeName|.Entities);
+				$systemContainers~>var enum|$containerName| = new ComponentEnumerableNew<$containerComponents~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<$containerName>(container|$containerName|.AsSpan(), (int)container|$containerName|.Entities);
 				<~
-				$containers~>system.Update(ref enum|$archTypeName|);<~~>\n				<~
+				$systemContainers~>system.Update(ref enum|$containerName|);<~~>\n				<~
 			}<~~>\n\n			<~
 		}<~~>\n\n		<~
 	}

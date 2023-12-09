@@ -18,8 +18,12 @@ namespace EnCS.Generator
 			var model = new Model<ReturnType>();
 			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
 			model.Set("name".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
-			model.Set("components".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetComponents(compilation, node)));
-			model.Set("methods".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(GetMethods(node)));
+
+			var components = GetComponents(compilation, node);
+			model.Set("components".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(components.Select(x => x.GetModel())));
+
+			var methods = GetMethods(node);
+			model.Set("methods".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(methods.Select(x => x.GetModel())));
 
 			return model;
 		}
@@ -46,9 +50,9 @@ namespace EnCS.Generator
 			return node.Identifier.ToString();
 		}
 
-		static List<Model<ReturnType>> GetComponents(Compilation compilation, ClassDeclarationSyntax node)
+		static List<SystemComponent> GetComponents(Compilation compilation, ClassDeclarationSyntax node)
 		{
-			var models = new List<Model<ReturnType>>();
+			var models = new List<SystemComponent>();
 
 			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
 
@@ -62,14 +66,14 @@ namespace EnCS.Generator
 				{
 					var paramType = parameter.Type as QualifiedNameSyntax;
 					var paramName = (paramType.Left as IdentifierNameSyntax).Identifier.Text;
-
-					var model = new Model<ReturnType>();
-
 					var componentNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == paramName);
-					model.Set("compName".AsSpan(), Parameter.Create($"{componentNode.GetNamespace()}.{paramName}"));
-					model.Set("compIdx".AsSpan(), Parameter.Create<float>(idx));
 
-					models.Add(model);
+					models.Add(new SystemComponent()
+					{
+						name = $"{componentNode.GetNamespace()}.{paramName}",
+						idx = idx,
+					});
+
 					idx++;
 				}
 
@@ -80,27 +84,58 @@ namespace EnCS.Generator
 			return models;
 		}
 
-		static List<Model<ReturnType>> GetMethods(ClassDeclarationSyntax node)
+		static List<SystemMethod> GetMethods(ClassDeclarationSyntax node)
 		{
-			var models = new List<Model<ReturnType>>();
+			var models = new List<SystemMethod>();
 
 			foreach (var method in node.Members.Where(x => x is MethodDeclarationSyntax).Select(x => x as MethodDeclarationSyntax))
 			{
 				if (method.Identifier.Text != "Update" && !method.Identifier.Text.StartsWith("Update"))
 					continue;
 
-				var model = new Model<ReturnType>();
-
 				var paramType = method.ParameterList.Parameters[0].Type as QualifiedNameSyntax;
 				var name = paramType.Right as IdentifierNameSyntax;
 
-				model.Set("methodName".AsSpan(), Parameter.Create(method.Identifier.Text));
-				model.Set("methodType".AsSpan(), Parameter.Create(name.Identifier.Text == "Ref" ? "Single" : "Vector"));
-
-				models.Add(model);
+				models.Add(new SystemMethod()
+				{
+					name = method.Identifier.Text,
+					type = name.Identifier.Text == "Ref" ? "Single" : "Vector"
+				});
 			}
 
 			return models;
+		}
+	}
+
+	struct SystemMethod
+	{
+		public string name;
+		public string type;
+
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
+
+			model.Set("methodName".AsSpan(), Parameter.Create(name));
+			model.Set("methodType".AsSpan(), Parameter.Create(type));
+
+			return model;
+		}
+	}
+
+	struct SystemComponent
+	{
+		public string name;
+		public int idx;
+
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
+
+			model.Set("compName".AsSpan(), Parameter.Create(name));
+			model.Set("compIdx".AsSpan(), Parameter.Create<float>(idx));
+
+			return model;
 		}
 	}
 }
