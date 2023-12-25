@@ -8,29 +8,34 @@ namespace Test
 	{
 		ArchTypeContainer<Wall> containerWall;
 		ArchTypeContainer<Tile> containerTile;
+		
+		Project.Primitives.MeshResourceManager MeshResourceManager;
 
-		public Ecs()
+		public Ecs(Project.Primitives.MeshResourceManager MeshResourceManager)
 		{
 			containerWall = new ArchTypeContainer<Wall>();
 			containerTile = new ArchTypeContainer<Tile>();
+
+			this.MeshResourceManager = MeshResourceManager;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Main GetMain()
 		{
-			return new Main(ref containerWall, ref containerTile);
+			return new Main(ref containerWall, ref containerTile, MeshResourceManager);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public World2 GetWorld2()
 		{
-			return new World2(ref containerWall);
+			return new World2(ref containerWall, MeshResourceManager);
 		}
 	}
 
+	/*
 	static class Ecs_Intercept
 	{
-		[InterceptsLocation(@"", 91, 5)]
+		[InterceptsLocation(@"", 121, 5)]
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public static Ecs InterceptBuild(this EcsBuilder builder)
@@ -38,4 +43,5 @@ namespace Test
 			return new Ecs();
 		}
 	}
+	*/
 }

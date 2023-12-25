@@ -13,12 +13,14 @@ namespace EnCS.Generator
 			var archTypeGenerator = new ArchTypeGenerator();
 			var systemGenerator = new SystemGenerator();
 			var worldGenerator = new WorldGenerator();
+			var resourceManagerGenerator = new ResourceManagerGenerator();
 
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, compGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, systemGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, worldGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator);
+			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, resourceManagerGenerator);
 		}
 	}
 }

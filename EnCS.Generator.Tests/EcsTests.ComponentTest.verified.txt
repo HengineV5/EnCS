@@ -5,12 +5,24 @@
       Title: Invalid component member type,
       Severity: Error,
       WarningLevel: 0,
-      Location: : (6,8)-(6,14),
+      Location: : (17,8)-(17,14),
       Description: ,
       HelpLink: ,
       MessageFormat: Component member of type '{0}' is not supported,
       Message: Component member of type 'string' is not supported,
       Category: ComponentGenerator
+    },
+    {
+      Id: ECS003,
+      Title: Archtype can only contain valid components,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (100,15)-(100,26),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: Archtype member is not valid component,
+      Message: Archtype member is not valid component,
+      Category: ArchTypeGenerator
     }
   ]
 }

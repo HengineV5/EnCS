@@ -7,10 +7,14 @@ namespace Test
 	public partial class Ecs2
 	{
 		ArchTypeContainer<Tile> containerTile;
+		
+		
 
 		public Ecs2()
 		{
 			containerTile = new ArchTypeContainer<Tile>();
+
+			
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -20,9 +24,10 @@ namespace Test
 		}
 	}
 
+	/*
 	static class Ecs2_Intercept
 	{
-		[InterceptsLocation(@"", 106, 5)]
+		[InterceptsLocation(@"", 139, 5)]
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public static Ecs2 InterceptBuild(this EcsBuilder builder)
@@ -30,4 +35,5 @@ namespace Test
 			return new Ecs2();
 		}
 	}
+	*/
 }

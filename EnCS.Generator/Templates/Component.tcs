@@ -14,7 +14,7 @@ namespace $namespace
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public struct Array
 		{
-			public const int Size = 8;
+			public const int Size = $arraySize;
 
 			$members~>public FixedArray8<$type> $name;<~~>\n			<~
 		}

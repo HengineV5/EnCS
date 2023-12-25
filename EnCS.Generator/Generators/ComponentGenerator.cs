@@ -3,8 +3,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using TemplateGenerator;
 
 namespace EnCS.Generator
@@ -19,6 +21,8 @@ namespace EnCS.Generator
 	class ComponentGenerator : ITemplateSourceGenerator<StructDeclarationSyntax>
 	{
 		const int MAX_SIMD_BUFFER_BITS = 512;
+		const int ARRAY_ELEMENTS = 8;
+		const int BITS_PER_BYTE = 8;
 
 		public string Template => ResourceReader.GetResource("Component.tcs");
 
@@ -27,14 +31,12 @@ namespace EnCS.Generator
 			diagnostics = new List<Diagnostic>();
 			model = new Model<ReturnType>();
 
-			if (!IsValidComponent(node))
-			{
-				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.ComponentMustBePartial, node.GetLocation(), ""));
+			if (!IsValidComponent(node, diagnostics))
 				return false;
-			}
 
 			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
 			model.Set("compName".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
+			model.Set("arraySize".AsSpan(), new Parameter<float>(ARRAY_ELEMENTS));
 
 			var membersResult = TryGetMembers(node, diagnostics, out var members);
 			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(members.Select(x => x.GetModel())));
@@ -64,10 +66,23 @@ namespace EnCS.Generator
 			return node.Identifier.ToString();
 		}
 
-		public static bool IsValidComponent(StructDeclarationSyntax node)
+		public static bool IsValidComponent(StructDeclarationSyntax node, List<Diagnostic> diagnostics)
 		{
-			return node.Modifiers.Any(x => x.Value == "partial") &&
-				node.AttributeLists.SelectMany(x => x.Attributes).Select(x => x.Name as SimpleNameSyntax).Any(x => x.Identifier.Text == "ComponentAttribute" || x.Identifier.Text == "Attribute");
+			bool hasAttribute = node.AttributeLists.SelectMany(x => x.Attributes).Select(x => x.Name as SimpleNameSyntax).Any(x => x.Identifier.Text == "ComponentAttribute" || x.Identifier.Text == "Component");
+			bool hasProperties = node.Members.Any(x => x is PropertyDeclarationSyntax);
+
+			bool fieldsValid = true;
+			foreach (var member in node.Members.Where(x => x is FieldDeclarationSyntax).Select(x => x as FieldDeclarationSyntax))
+			{
+				if (!TryGetTypeName(member.Declaration.Type, diagnostics, out string typeName))
+					fieldsValid = false;
+
+				if (!TryGetTypeSize(member.Declaration.Type, diagnostics, out int size))
+					fieldsValid = false;
+			}
+
+			return hasAttribute && !hasProperties && fieldsValid;
+			//return node.Modifiers.Any(x => x.Value == "partial");
 		}
 
 		static bool TryGetMembers(StructDeclarationSyntax node, List<Diagnostic> diagnostics, out List<ComponentMember> members)
@@ -82,15 +97,15 @@ namespace EnCS.Generator
 				if (!TryGetTypeSize(member.Declaration.Type, diagnostics, out int size))
 					continue;
 
-				int bits = Math.Min(size * 8 * 8, MAX_SIMD_BUFFER_BITS);
-				int arraySize = (size * 8 * 8) / MAX_SIMD_BUFFER_BITS;
+				int bitsPerVector = Math.Min(size * BITS_PER_BYTE * ARRAY_ELEMENTS, MAX_SIMD_BUFFER_BITS);
+				int vectorArraySize = (size * BITS_PER_BYTE * ARRAY_ELEMENTS) / MAX_SIMD_BUFFER_BITS;
 
 				members.Add(new ComponentMember()
 				{
 					name = member.Declaration.Variables[0].ToString(),
 					type = typeName,
-					bits = bits,
-					arraySize = arraySize,
+					bits = bitsPerVector,
+					arraySize = vectorArraySize
 				});
 			}
 
@@ -160,7 +175,7 @@ namespace EnCS.Generator
 					{
 						size = 0;
 						return false;
-					}	
+					}
 
 					if (!TryGetSize(typeName, out int typeSize))
 					{

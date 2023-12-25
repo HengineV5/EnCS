@@ -6,7 +6,7 @@ namespace $namespace
 {
 	public partial class $name
 	{
-		public void Update<T1Arch>(ref ComponentEnumerableNew<$components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<T1Arch> en)
+		public void Update<T1Arch>(ref ComponentEnumerableNew<$components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<T1Arch> en$resourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
 			where T1Arch : unmanaged, $components~>IArchType<T1Arch, |$compName|, |$compName|.Vectorized, |$compName|.Array><~~>, <~
 		{
 			while (en.MoveNext())
@@ -15,8 +15,8 @@ namespace $namespace
 				var remaining = en.Remaining;
 				$methods|$methodType == "Single"|~>for (int i = 0; i < remaining; i++)
 				{
-					$methodName($components~>|$compName|.Ref.FromArray(ref item.item|$compIdx|Single, i)<~~>, <~);
-				}<~|$methodType == "Vector"|~>$methodName($components~>ref item.item|$compIdx|Vec<~~>, <~);<~~>\n				<~\n
+					$methodName($components|$compType == "Component"|~>|$compName|.Ref.FromArray(ref item.item|$compIdx|Single, i)<~|$compType == "Resource"|~>ref |$compName|.Ref.FromArray(ref item.item|$compIdx|Single, i, |$compResourceManager.resourceManagerName|).$compResourceManager.resourceManagerType<~~>, <~ );
+				}<~|$methodType == "Vector"|~>$methodName($components|$compType == "Component"|~>ref item.item|$compIdx|Vec<~~>, <~ );<~~>\n				<~\n
 			}
 		}
 	}

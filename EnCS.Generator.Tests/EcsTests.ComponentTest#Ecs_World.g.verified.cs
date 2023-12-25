@@ -12,10 +12,14 @@ namespace Test
 			ref ArchTypeContainer<Wall> containerWall;
 			ref ArchTypeContainer<Tile> containerTile;
 
-			public Main(ref ArchTypeContainer<Wall> containerWall, ref ArchTypeContainer<Tile> containerTile)
+			Project.Primitives.MeshResourceManager MeshResourceManager;
+
+			public Main(ref ArchTypeContainer<Wall> containerWall, ref ArchTypeContainer<Tile> containerTile, Project.Primitives.MeshResourceManager MeshResourceManager)
 			{
 				this.containerWall = ref containerWall;
 				this.containerTile = ref containerTile;
+
+				this.MeshResourceManager = MeshResourceManager;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -27,7 +31,7 @@ namespace Test
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Wall.Ref Get(in ArchRef<Wall> ptr)
 			{
-				return containerWall.Get(ptr);
+				return containerWall.Get(ptr, MeshResourceManager);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -59,15 +63,27 @@ namespace Test
 				
 				system.Update(ref enumWall);
 			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public void Loop(ResourceSystem system)
+			{
+				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array, Project.Primitives.MeshResourceManager.Mesh, Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array>.Enumerator<Wall>(containerWall.AsSpan(), (int)containerWall.Entities);
+				
+				system.Update(ref enumWall, MeshResourceManager);
+			}
 		}
 
 		public ref struct World2
 		{
 			ref ArchTypeContainer<Wall> containerWall;
 
-			public World2(ref ArchTypeContainer<Wall> containerWall)
+			Project.Primitives.MeshResourceManager MeshResourceManager;
+
+			public World2(ref ArchTypeContainer<Wall> containerWall, Project.Primitives.MeshResourceManager MeshResourceManager)
 			{
 				this.containerWall = ref containerWall;
+
+				this.MeshResourceManager = MeshResourceManager;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -79,7 +95,7 @@ namespace Test
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Wall.Ref Get(in ArchRef<Wall> ptr)
 			{
-				return containerWall.Get(ptr);
+				return containerWall.Get(ptr, MeshResourceManager);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,6 +112,14 @@ namespace Test
 				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.Enumerator<Wall>(containerWall.AsSpan(), (int)containerWall.Entities);
 				
 				system.Update(ref enumWall);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public void Loop(ResourceSystem system)
+			{
+				var enumWall = new ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array, Project.Primitives.MeshResourceManager.Mesh, Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array>.Enumerator<Wall>(containerWall.AsSpan(), (int)containerWall.Entities);
+				
+				system.Update(ref enumWall, MeshResourceManager);
 			}
 		}
 	}

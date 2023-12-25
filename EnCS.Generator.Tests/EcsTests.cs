@@ -13,7 +13,7 @@ namespace EnCS.Generator.Tests
 
 			GeneratorDriver driver = CSharpGeneratorDriver.Create(new TemplateGenerator());
 			driver = driver.RunGenerators(compilation);
-
+			
 			return Verifier.Verify(driver);
 		}
 	}
@@ -27,7 +27,18 @@ namespace EnCS.Generator.Tests
 			string source = @"
 using namespace Project.Primitives;
 
-[ComponentAttribute]
+public struct Mesh
+{
+	public string name;
+}
+
+[ResourceManager]
+public partial class MeshResourceManager : IResourceManager<Mesh>
+{
+
+}
+
+[Component]
 public partial struct InvalidComp
 {
 	public string x;
@@ -88,6 +99,19 @@ public partial class VelocitySystem
 	}
 }
 
+[SystemAttribute]
+[UsingResource<MeshResourceManager>]
+public partial class ResourceSystem
+{
+	public void Update(Position.Ref position, Velocity.Ref velocity, ref Mesh mesh)
+	{
+    }
+
+	public void Update(ref Position.Vectorized position, ref Velocity.Vectorized velocity)
+	{
+	}
+}
+
 public partial struct Ecs
 {
 
@@ -100,19 +124,25 @@ namespace Test
 		new EcsBuilder()
 			.ArchType(x =>
 			{
-				x.ArchType<Position, Velocity>(""Wall"");
+				x.ArchType<InvalidComp>(""IsWrong"");
+				x.ArchType<Position, Velocity, Mesh>(""Wall"");
 				x.ArchType<Position>(""Tile"");
 			})
 			.System(x =>
 			{
 				x.System<PositionSystem>();
 				x.System<VelocitySystem>();
+				x.System<ResourceSystem>();
 			})
 			.World(x =>
 			{
 				x.World<Ecs.Wall, Ecs.Tile>(""Main"");
 				x.World<Ecs.Wall>(""World2"");
 				x.World<Ecs.Wall>();
+			})
+			.Resource(x =>
+			{
+				x.ResourceManager<MeshResourceManager>();
 			})
 			.Build<Ecs>();
 
@@ -128,6 +158,9 @@ namespace Test
 			.World(x =>
 			{
 				x.World<Ecs.Tile>(""Main"");
+			})
+			.Resource(x =>
+			{
 			})
 			.Build<Ecs2>();
 	}

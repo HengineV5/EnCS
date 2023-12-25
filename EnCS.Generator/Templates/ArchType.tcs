@@ -32,11 +32,9 @@ namespace $namespace
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public static Ref FromArchType(ref $archTypeName archType, int idx)
+				public static Ref FromArchType(ref $archTypeName archType, int idx$archTypeResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
 				{
-					return new Ref($archTypeComponents~>
-						|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$compVarName), idx)<~~>, <~
-					);
+					return new Ref($archTypeComponents|$compType == "Component"|~>|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$compVarName), idx)<~|$compType == "Resource"|~>|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$compVarName), idx, |$compResourceManager.resourceManagerName|)<~~>, \n						<~ );
 				}
 			}
 		}<~~>\n\n		<~
@@ -47,9 +45,9 @@ namespace $namespace
 		// TODO: Generate create method
 
 		$archTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static |$ecsName|.|$archTypeName|.Ref Get(this ref ArchTypeContainer<|$ecsName|.$archTypeName> container, ArchRef<|$ecsName|.$archTypeName> ptr)
+		public static |$ecsName|.|$archTypeName|.Ref Get(this ref ArchTypeContainer<|$ecsName|.$archTypeName> container, ArchRef<|$ecsName|.$archTypeName> ptr$archTypeResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
 		{
-			return |$ecsName|.|$archTypeName|.Ref.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7);
+			return |$ecsName|.|$archTypeName|.Ref.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7$archTypeResourceManagers~>, $resourceManagerName<~);
 		}<~~>\n\n		<~
 	}
 }

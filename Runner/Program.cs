@@ -14,6 +14,33 @@ using System.Text.Json;
 
 namespace Runner
 {
+	public struct TestResource
+	{
+		public string name;
+	}
+
+	[ResourceManager]
+	public partial class MeshResourceManager : IResourceManager<TestResource>
+	{
+		Memory<Runner.TestResource> resource = new Runner.TestResource[8];
+
+        public MeshResourceManager()
+        {
+			resource.Span[0] = new() { name = "yay" };
+			resource.Span[1] = new() { name = "nay" };
+        }
+
+        public ref Runner.TestResource Get(uint id)
+		{
+			return ref resource.Span[(int)id];
+		}
+
+		public uint Store(in Runner.TestResource resource)
+		{
+			return resource.name == "yay" ? 0u : 1u;
+		}
+	}
+
 	[Component]
 	partial struct TestComp123
 	{
@@ -70,13 +97,15 @@ namespace Runner
 	}
 
 	[System]
+	[UsingResource<MeshResourceManager>]
 	partial class PositionSystem
 	{
 		static Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
-		public void Update(Position.Ref position)
+		public void Update(Position.Ref position, ref TestResource resource)
 		{
             position.x = Random.Shared.Next(0, 100);
+            Console.WriteLine(resource.name);
             //position.x = MathF.Sqrt(position.x);
         }
 
@@ -115,8 +144,8 @@ namespace Runner
 			new EcsBuilder()
 				.ArchType(x =>
 				{
-					x.ArchType<Position, Velocity>("Wall");
-					x.ArchType<Position>("Tile");
+					x.ArchType<Position, Velocity, TestResource>("Wall");
+					x.ArchType<Position, TestResource>("Tile");
 				})
 				.System(x =>
 				{
@@ -128,11 +157,16 @@ namespace Runner
 				{
 					x.World<Ecs.Wall, Ecs.Tile>("MainWorld");
 				})
+				.Resource(x =>
+				{
+					x.ResourceManager<MeshResourceManager>();
+				})
 				.Build<Ecs>();
 
 			PositionSystem position = new();
 
-			Ecs ecs = new();
+			MeshResourceManager meshResourceManager = new();
+			Ecs ecs = new(meshResourceManager);
 
 			Ecs.MainWorld mainWorld = ecs.GetMainWorld();
 			ArchRef<Ecs.Tile> tile1 = mainWorld.Create(new Ecs.Tile());
@@ -146,6 +180,14 @@ namespace Runner
 			Ecs.Wall.Ref wall1Ref = mainWorld.Get(wall1);
 			Ecs.Wall.Ref wall2Ref = mainWorld.Get(wall2);
 
+			var r = new TestResource()
+			{
+				name = "nay"
+			};
+
+			tile1Ref.TestResource.Set(r);
+			tile2Ref.TestResource.Set(r);
+
             Console.WriteLine("Single:");
             Console.WriteLine(tile1Ref.Position.x);
 			wall1Ref.Position.x = 1;
@@ -156,7 +198,7 @@ namespace Runner
 
             Console.WriteLine("Systems:");
 
-            //mainWorld.Loop(position);
+            mainWorld.Loop(position);
 			tile1Ref.Position.x = 20;
 			tile2Ref.Position.x = 12;
 			mainWorld.Loop(new PrintSystem());
@@ -204,7 +246,8 @@ namespace Runner
 		[GlobalSetup]
 		public void Setup()
 		{
-			ecs = new();
+			MeshResourceManager meshResourceManager = new();
+			ecs = new(meshResourceManager);
 
 			Ecs.MainWorld mainWorld = ecs.GetMainWorld();
 			for (int i = 0; i < 1_000_000; i++)

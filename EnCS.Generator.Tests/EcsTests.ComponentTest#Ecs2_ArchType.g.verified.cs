@@ -35,9 +35,7 @@ namespace Test
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static Ref FromArchType(ref Tile archType, int idx)
 				{
-					return new Ref(
-						Project.Primitives.Position.Ref.FromArray(ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref archType.Position), idx)
-					);
+					return new Ref(Project.Primitives.Position.Ref.FromArray(ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref archType.Position), idx));
 				}
 			}
 		}

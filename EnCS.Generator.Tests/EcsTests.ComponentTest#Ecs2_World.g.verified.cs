@@ -11,9 +11,13 @@ namespace Test
 		{
 			ref ArchTypeContainer<Tile> containerTile;
 
+			
+
 			public Main(ref ArchTypeContainer<Tile> containerTile)
 			{
 				this.containerTile = ref containerTile;
+
+				
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

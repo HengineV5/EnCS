@@ -6,55 +6,56 @@
 		public delegate void SystemAction(EcsSystem system);
 		public delegate void WorldAction(EcsWorld world);
 		public delegate void HookAction(EcsHook hook);
+		public delegate void ResourceAction(EcsResource resource);
 
 		public ref struct EcsArchType
 		{
-			public EcsArchType ArchType<T1>(string name) where T1 : unmanaged
+			public EcsArchType ArchType<T1>(string name)
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2>(string name) where T1 : unmanaged where T2 : unmanaged
+			public EcsArchType ArchType<T1, T2>(string name)
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged
+			public EcsArchType ArchType<T1, T2, T3>(string name)
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged
+			public EcsArchType ArchType<T1, T2, T3, T4>(string name)
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged where T5 : unmanaged
+			public EcsArchType ArchType<T1, T2, T3, T4, T5>(string name)
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged where T5 : unmanaged where T6 : unmanaged
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6>(string name)
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged where T5 : unmanaged where T6 : unmanaged where T7 : unmanaged
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7>(string name)
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged where T5 : unmanaged where T6 : unmanaged where T7 : unmanaged where T8 : unmanaged
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8>(string name)
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged where T5 : unmanaged where T6 : unmanaged where T7 : unmanaged where T8 : unmanaged where T9 : unmanaged
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string name)
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged where T5 : unmanaged where T6 : unmanaged where T7 : unmanaged where T8 : unmanaged where T9 : unmanaged where T10 : unmanaged
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string name)
 			{
 				return this;
 			}
@@ -104,7 +105,15 @@
 			}
 		}
 
-        public EcsBuilder()
+		public ref struct EcsResource
+		{
+			public EcsResource ResourceManager<T>() where T : class
+			{
+				return this;
+			}
+		}
+
+		public EcsBuilder()
         {
             
         }
@@ -124,6 +133,11 @@
 			return this;
 		}
 
+		public EcsBuilder Resource(ResourceAction resource)
+		{
+			return this;
+		}
+
 		EcsBuilder Hook(HookAction hook)
 		{
 			return this;
@@ -131,7 +145,8 @@
 
 		public T Build<T>() where T : class
 		{
-			throw new NotImplementedException();
+			return default;
+			//throw new NotImplementedException();
 		}
 	}
 }
