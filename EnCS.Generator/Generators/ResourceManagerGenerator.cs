@@ -62,6 +62,24 @@ namespace EnCS.Generator
 				if (s.Type is not GenericNameSyntax g)
 					continue;
 
+				string inType;
+				string outType;
+
+				if (g.TypeArgumentList.Arguments.Count == 1)
+				{
+					inType = g.TypeArgumentList.Arguments[0].ToString();
+					outType = inType;
+				}
+				else if (g.TypeArgumentList.Arguments.Count == 2)
+				{
+					inType = g.TypeArgumentList.Arguments[0].ToString();
+					outType = g.TypeArgumentList.Arguments[1].ToString();
+				}
+				else
+				{
+					throw new Exception("Invalid number of type arguments for resource managers, must be 1 or 2");
+				}
+
 				var typeName = g.TypeArgumentList.Arguments[0].ToString();
 				var typeNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == typeName);
 
@@ -69,7 +87,9 @@ namespace EnCS.Generator
 				{
 					name = resourceManager.Identifier.Text,
 					ns = resourceManager.GetNamespace(),
-					type = typeName,
+					//type = typeName,
+					inType = inType,
+					outType = outType,
 					typeNs = typeNode.GetNamespace()
 				});
 			}
@@ -82,7 +102,9 @@ namespace EnCS.Generator
 	{
 		public string name;
 		public string ns;
-		public string type;
+		//public string type;
+		public string inType;
+		public string outType;
 		public string typeNs;
 
 		public Model<ReturnType> GetModel()
@@ -91,7 +113,9 @@ namespace EnCS.Generator
 
 			model.Set("resourceManagerName".AsSpan(), Parameter.Create(name));
 			model.Set("resourceManagerNamespace".AsSpan(), Parameter.Create(ns));
-			model.Set("resourceManagerType".AsSpan(), Parameter.Create(type));
+			//model.Set("resourceManagerType".AsSpan(), Parameter.Create(type));
+			model.Set("resourceManagerInType".AsSpan(), Parameter.Create(inType));
+			model.Set("resourceManagerOutType".AsSpan(), Parameter.Create(outType));
 			model.Set("resourceManagerTypeNamespace".AsSpan(), Parameter.Create(typeNs));
 
 			return model;

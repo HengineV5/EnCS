@@ -19,20 +19,28 @@ namespace Runner
 		public string name;
 	}
 
+	public struct TestResourceId
+	{
+		public uint id;
+	}
+
 	[ResourceManager]
-	public partial class MeshResourceManager : IResourceManager<TestResource>
+	public partial class MeshResourceManager : IResourceManager<TestResource, TestResourceId>
 	{
 		Memory<Runner.TestResource> resource = new Runner.TestResource[8];
+		Memory<Runner.TestResourceId> resourceids = new Runner.TestResourceId[8];
 
         public MeshResourceManager()
         {
 			resource.Span[0] = new() { name = "yay" };
+			resourceids.Span[0] = new() { id = 0 };
 			resource.Span[1] = new() { name = "nay" };
+			resourceids.Span[1] = new() { id = 1 };
         }
 
-        public ref Runner.TestResource Get(uint id)
+        public ref Runner.TestResourceId Get(uint id)
 		{
-			return ref resource.Span[(int)id];
+			return ref resourceids.Span[(int)id];
 		}
 
 		public uint Store(in Runner.TestResource resource)
@@ -102,10 +110,10 @@ namespace Runner
 	{
 		static Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
-		public void Update(Position.Ref position, ref TestResource resource)
+		public void Update(Position.Ref position, ref TestResourceId resource)
 		{
             position.x = Random.Shared.Next(0, 100);
-            Console.WriteLine(resource.name);
+            Console.WriteLine(resource.id);
             //position.x = MathF.Sqrt(position.x);
         }
 

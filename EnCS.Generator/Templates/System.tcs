@@ -15,7 +15,7 @@ namespace $namespace
 				var remaining = en.Remaining;
 				$methods|$methodType == "Single"|~>for (int i = 0; i < remaining; i++)
 				{
-					$methodName($components|$compType == "Component"|~>|$compName|.Ref.FromArray(ref item.item|$compIdx|Single, i)<~|$compType == "Resource"|~>ref |$compName|.Ref.FromArray(ref item.item|$compIdx|Single, i, |$compResourceManager.resourceManagerName|).$compResourceManager.resourceManagerType<~~>, <~ );
+					$methodName($components|$compType == "Component"|~>|$compName|.Ref.FromArray(ref item.item|$compIdx|Single, i)<~|$compType == "Resource"|~>ref |$compResourceManager.resourceManagerNamespace|.|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerInType|.Ref.FromArray(ref item.item|$compIdx|Single, i, |$compResourceManager.resourceManagerName|).$compResourceManager.resourceManagerInType<~~>, <~ );
 				}<~|$methodType == "Vector"|~>$methodName($components|$compType == "Component"|~>ref item.item|$compIdx|Vec<~~>, <~ );<~~>\n				<~\n
 			}
 		}

@@ -16,7 +16,7 @@ namespace Project.Primitives
 				var remaining = en.Remaining;
 				for (int i = 0; i < remaining; i++)
 				{
-					Update(Project.Primitives.Position.Ref.FromArray(ref item.item1Single, i), Project.Primitives.Velocity.Ref.FromArray(ref item.item2Single, i), ref Project.Primitives.MeshResourceManager.Mesh.Ref.FromArray(ref item.item3Single, i, MeshResourceManager).Mesh);
+					Update(Project.Primitives.Position.Ref.FromArray(ref item.item1Single, i), Project.Primitives.Velocity.Ref.FromArray(ref item.item2Single, i), ref Project.Primitives.MeshResourceManager.Mesh.Ref.FromArray(ref item.item3Single, i, MeshResourceManager).MeshId);
 				}
 				Update(ref item.item1Vec, ref item.item2Vec);
 			}

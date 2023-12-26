@@ -29,7 +29,7 @@ namespace Project.Primitives
 
 			public ref struct Ref
 			{
-				public readonly ref Project.Primitives.Mesh Mesh => ref resourceManager.Get(id);
+				public ref Project.Primitives.MeshId Mesh => ref resourceManager.Get(id);
 
 				ref uint id;
 				MeshResourceManager resourceManager;

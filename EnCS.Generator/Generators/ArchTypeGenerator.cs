@@ -175,7 +175,7 @@ namespace EnCS.Generator
 
 				models.Add(new ResourceComponent()
 				{
-					name = $"{resourceManager.ns}.{resourceManager.name}.{comp.Identifier.Text}",
+					name = $"{resourceManager.ns}.{resourceManager.name}.{resourceManager.inType}",
 					varName = comp.Identifier.Text,
 					resourceManager = resourceManager
 				});
@@ -186,12 +186,12 @@ namespace EnCS.Generator
 
 		static bool IsResource(StructDeclarationSyntax comp, List<ResourceManager> resourceManagers)
 		{
-			return resourceManagers.Any(x => x.type == comp.Identifier.Text);
+			return resourceManagers.Any(x => x.inType == comp.Identifier.Text);
 		}
 
 		static bool TryGetResourceManager(StructDeclarationSyntax comp, List<ResourceManager> resourceManagers, out ResourceManager resourceManager)
 		{
-			resourceManager = resourceManagers.FirstOrDefault(x => x.type == comp.Identifier.Text);
+			resourceManager = resourceManagers.FirstOrDefault(x => x.inType == comp.Identifier.Text);
 			return IsResource(comp, resourceManagers);
 		}
 	}

@@ -16,6 +16,8 @@ namespace EnCS.Generator
 		public static readonly DiagnosticDescriptor SystemUpdateMethodsMustBeEqual = new("ECS004", "All system update methods must be equal", "", "SystemGenerator", DiagnosticSeverity.Error, true);
 
 		public static readonly DiagnosticDescriptor MethodArgumentsMustBeConcistent = new("ECS005", "All system update methods must only use Vector or Single types", "", "SystemGenerator", DiagnosticSeverity.Error, true);
+
+		public static readonly DiagnosticDescriptor MethodArgumentMustBeComponentOrResource = new("ECS007", "All system method arguments must be a valid component or resource", "", "SystemGenerator", DiagnosticSeverity.Error, true);
 	}
 
 	class SystemGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax>
@@ -159,11 +161,18 @@ namespace EnCS.Generator
 
 		static bool TryGetResourceComponent(IdentifierNameSyntax type, List<ResourceManager> resourceManagers, int idx, List<Diagnostic> diagnostics, out SystemComponent component)
 		{
-			var resourceManager = resourceManagers.First(x => x.type == type.Identifier.Text);
+			if (!resourceManagers.Any(x => x.outType == type.Identifier.Text))
+			{
+				diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodArgumentMustBeComponentOrResource, type.GetLocation(), ""));
+				component = default;
+				return false;
+			}
+
+			var resourceManager = resourceManagers.First(x => x.outType == type.Identifier.Text);
 
 			component = new SystemComponent()
 			{
-				name = $"{resourceManager.ns}.{resourceManager.name}.{resourceManager.type}",
+				name = $"{resourceManager.ns}.{resourceManager.name}.{resourceManager.inType}",
 				idx = idx,
 				type = "Resource",
 				resourceManager = resourceManager

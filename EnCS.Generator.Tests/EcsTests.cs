@@ -32,8 +32,13 @@ public struct Mesh
 	public string name;
 }
 
+public struct MeshId
+{
+	public uint id;
+}
+
 [ResourceManager]
-public partial class MeshResourceManager : IResourceManager<Mesh>
+public partial class MeshResourceManager : IResourceManager<Mesh, MeshId>
 {
 
 }
@@ -103,7 +108,7 @@ public partial class VelocitySystem
 [UsingResource<MeshResourceManager>]
 public partial class ResourceSystem
 {
-	public void Update(Position.Ref position, Velocity.Ref velocity, ref Mesh mesh)
+	public void Update(Position.Ref position, Velocity.Ref velocity, ref MeshId mesh)
 	{
     }
 

@@ -153,7 +153,7 @@ namespace EnCS.Generator
 			var models = new List<System>();
 
 			var worldComponentNames = worldArchTypes.SelectMany(x => x.components).Select(x => x.name);
-			var resourceComponentNames = worldArchTypes.SelectMany(x => x.resourceComponents).Select(x => x.name);
+			var resourceComponentNames = worldArchTypes.SelectMany(x => x.resourceComponents).Select(x => $"{x.resourceManager.ns}.{x.resourceManager.name}.{x.resourceManager.inType}");
 
 			var names = worldComponentNames.Concat(resourceComponentNames);
 
@@ -205,7 +205,8 @@ namespace EnCS.Generator
 		{
 			foreach (var component in components)
 			{
-				if (!archType.components.Any(x => x.name == component.name) && !archType.resourceComponents.Any(x => x.name == component.name))
+				string compResourceName = $"{component.resourceManager.ns}.{component.resourceManager.name}.{component.resourceManager.inType}";
+				if (!archType.components.Any(x => x.name == component.name) && !archType.resourceComponents.Any(x => x.name == compResourceName))
 					return false;
 			}
 

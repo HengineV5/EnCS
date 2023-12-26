@@ -9,7 +9,7 @@ namespace $namespace
 	public partial class $name
 	{
 		$resourceManagers~>[Component]
-		public struct $resourceManagerType : IComponent<$resourceManagerType, |$resourceManagerType|.Vectorized, |$resourceManagerType|.Array>
+		public struct $resourceManagerInType : IComponent<$resourceManagerInType, |$resourceManagerInType|.Vectorized, |$resourceManagerInType|.Array>
 		{
 			public uint id;
 
@@ -28,7 +28,7 @@ namespace $namespace
 
 			public ref struct Ref
 			{
-				public ref |$resourceManagerTypeNamespace|.|$resourceManagerType| |$resourceManagerType| => ref resourceManager.Get(id);
+				public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| |$resourceManagerInType| => ref resourceManager.Get(id);
 
 				ref uint id;
 				$resourceManagerName resourceManager;
@@ -40,7 +40,7 @@ namespace $namespace
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public void Set(in |$resourceManagerTypeNamespace|.|$resourceManagerType| data)
+				public void Set(in |$resourceManagerTypeNamespace|.|$resourceManagerInType| data)
 				{
 					this.id = resourceManager.Store(data);
 				}
@@ -53,13 +53,13 @@ namespace $namespace
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerType|, Vectorized, Array>
+			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerInType|, Vectorized, Array>
 			{
 				return ref TArch.GetVec(ref arch);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerType|, Vectorized, Array>
+			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerInType|, Vectorized, Array>
 			{
 				return ref TArch.GetSingle(ref arch);
 			}
