@@ -37,6 +37,22 @@ public struct MeshId
 	public uint id;
 }
 
+public struct Kaki
+{
+	public string name;
+}
+
+public struct KakiId
+{
+	public uint id;
+}
+
+[ResourceManager]
+public partial class TestResourceManager : IResourceManager<Kaki, KakiId>
+{
+
+}
+
 [ResourceManager]
 public partial class MeshResourceManager : IResourceManager<Mesh, MeshId>
 {
@@ -77,16 +93,69 @@ public partial struct Scale
 }
 
 [SystemAttribute]
+[UsingResource<MeshResourceManager>]
+[UsingResource<TestResourceManager>]
+public partial class ResourceSystem
+{
+	[SystemPreLoop, SystemLayer(0)]
+	public void PreLoop1()
+	{
+
+	}
+
+	[SystemUpdate, SystemLayer(1)]
+	public void Update(ref Scale.Vectorized scale)
+	{
+    }
+
+	[SystemUpdate, SystemLayer(1)]
+	public void Update(Scale.Ref scale)
+	{
+    }
+
+	[SystemPostLoop, SystemLayer(0)]
+	public void PostLoop1()
+	{
+
+	}
+
+	[SystemPreLoop, SystemLayer(1)]
+	public void PreLoop()
+	{
+
+	}
+
+	[SystemUpdate, SystemLayer(0, 16)]
+	public void Update(Position.Ref position, Velocity.Ref velocity, ref MeshId mesh, ref KakiId kaki)
+	{
+    }
+
+	[SystemUpdate, SystemLayer(0, 16)]
+	public void Update(ref Position.Vectorized position, ref Velocity.Vectorized velocity)
+	{
+	}
+
+	[SystemPostLoop, SystemLayer(1)]
+	public void PostLoop()
+	{
+
+	}
+}
+
+[SystemAttribute]
 public partial class PositionSystem
 {
+	[SystemUpdate]
 	public void Update(Position.Ref position)
 	{
     }
 
+	[SystemUpdate]
 	public void Update(ref Position.Vectorized position)
 	{
 	}
 
+	[SystemUpdate]
 	public void UpdateAfter(Position.Ref position)
 	{
     }
@@ -95,26 +164,22 @@ public partial class PositionSystem
 [SystemAttribute]
 public partial class VelocitySystem
 {
+	[SystemUpdate]
 	public void Update(Position.Ref position, Velocity.Ref velocity)
 	{
     }
 
+	[SystemUpdate]
 	public void Update(ref Position.Vectorized position,ref Velocity.Vectorized velocity)
 	{
 	}
 }
 
-[SystemAttribute]
-[UsingResource<MeshResourceManager>]
-public partial class ResourceSystem
+[ComposedSystem<VelocitySystem>(layer = 0)]
+[ComposedSystem<ResourceSystem>(layer = 1, chunk = 8)]
+public partial class ComposedSystem
 {
-	public void Update(Position.Ref position, Velocity.Ref velocity, ref MeshId mesh)
-	{
-    }
 
-	public void Update(ref Position.Vectorized position, ref Velocity.Vectorized velocity)
-	{
-	}
 }
 
 public partial struct Ecs
@@ -130,8 +195,8 @@ namespace Test
 			.ArchType(x =>
 			{
 				x.ArchType<InvalidComp>(""IsWrong"");
-				x.ArchType<Position, Velocity, Mesh>(""Wall"");
-				x.ArchType<Position>(""Tile"");
+				x.ArchType<Position, Velocity, Mesh, Kaki>(""Wall"");
+				x.ArchType<Position, Scale>(""Tile"");
 			})
 			.System(x =>
 			{
@@ -148,6 +213,7 @@ namespace Test
 			.Resource(x =>
 			{
 				x.ResourceManager<MeshResourceManager>();
+				x.ResourceManager<TestResourceManager>();
 			})
 			.Build<Ecs>();
 

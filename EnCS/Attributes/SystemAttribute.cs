@@ -10,4 +10,22 @@ namespace EnCS.Attributes
 	{
 
 	}
+
+	public class SystemUpdateAttribute : Attribute
+	{
+
+	}
+
+	public class SystemLayerAttribute : Attribute
+	{
+        public SystemLayerAttribute(int layer)
+        {
+            
+        }
+
+		public SystemLayerAttribute(int layer, int chunk)
+		{
+
+		}
+	}
 }

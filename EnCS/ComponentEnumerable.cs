@@ -31,12 +31,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -52,6 +56,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 
@@ -92,12 +102,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -113,6 +127,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 
@@ -156,12 +176,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -177,6 +201,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 
@@ -223,12 +253,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -244,6 +278,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 
@@ -293,12 +333,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -314,6 +358,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 
@@ -366,12 +416,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -387,6 +441,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 
@@ -442,12 +502,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -463,6 +527,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 
@@ -521,12 +591,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -542,6 +616,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 
@@ -603,12 +683,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single, T9Vec, T9Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -624,6 +708,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 
@@ -688,12 +778,16 @@ namespace EnCS
 			ArchTypeSlice<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single, T5Vec, T5Single, T6Vec, T6Single, T7Vec, T7Single, T8Vec, T8Single, T9Vec, T9Single, T10Vec, T10Single> slice;
 
 			Span<T1Arch>.Enumerator e1;
+			Span<T1Arch> span1;
+			int count;
 			int remaining;
 
 			public Enumerator(Span<T1Arch> span1, int count)
 			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
+				this.span1 = span1;
+				this.count = count;
+
+				Reset();
 			}
 
 			public bool MoveNext()
@@ -709,6 +803,12 @@ namespace EnCS
 				}
 
 				return true;
+			}
+
+			public void Reset()
+			{
+				e1 = span1.GetEnumerator();
+				remaining = count + 8;
 			}
 		}
 

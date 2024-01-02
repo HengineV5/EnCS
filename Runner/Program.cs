@@ -53,6 +53,7 @@ namespace Runner
 	partial struct TestComp123
 	{
 		//public string wow;
+		public int tag;
 	}
 
 	[Component]
@@ -92,12 +93,14 @@ namespace Runner
 	{
 		static Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
+		[SystemUpdate]
 		public void Update(Position.Ref position)
 		{
 			position.x = Random.Shared.Next(0, 100);
 			//position.x = MathF.Sqrt(position.x);
 		}
 
+		[SystemUpdate]
 		public void Update(ref Position.Vectorized position)
 		{
 			position.x = Vector256.Sqrt(position.x);
@@ -110,6 +113,7 @@ namespace Runner
 	{
 		static Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
+		[SystemUpdate]
 		public void Update(Position.Ref position, ref TestResourceId resource)
 		{
             position.x = Random.Shared.Next(0, 100);
@@ -117,6 +121,7 @@ namespace Runner
             //position.x = MathF.Sqrt(position.x);
         }
 
+		[SystemUpdate]
 		public void Update(ref Position.Vectorized position)
 		{
             position.x = Vector256.Sqrt(position.x);
@@ -126,13 +131,31 @@ namespace Runner
 	[System]
 	partial class PrintSystem
 	{
+		[SystemUpdate]
 		public void Update(Position.Ref position)
 		{
             Console.WriteLine(position.x);
         }
 
+		[SystemUpdate]
 		public void Update(ref Position.Vectorized position)
 		{
+		}
+	}
+
+	[System]
+	partial class LayerSystem
+	{
+		[SystemUpdate, SystemLayer(0)]
+		public void Update1(TestComp123.Ref position)
+		{
+			Console.WriteLine($"Tag: {position.tag}");
+		}
+
+		[SystemUpdate, SystemLayer(1)]
+		public void Update2(Position.Ref position)
+		{
+			Console.WriteLine($"\t{position.x}");
 		}
 	}
 
@@ -154,16 +177,18 @@ namespace Runner
 				{
 					x.ArchType<Position, Velocity, TestResource>("Wall");
 					x.ArchType<Position, TestResource>("Tile");
+					x.ArchType<TestComp123>("Cam");
 				})
 				.System(x =>
 				{
 					x.System<PositionSystem>();
 					x.System<PrintSystem>();
 					x.System<PerfSystem>();
+					x.System<LayerSystem>();
 				})
 				.World(x =>
 				{
-					x.World<Ecs.Wall, Ecs.Tile>("MainWorld");
+					x.World<Ecs.Wall, Ecs.Tile, Ecs.Cam>("MainWorld");
 				})
 				.Resource(x =>
 				{
@@ -172,6 +197,7 @@ namespace Runner
 				.Build<Ecs>();
 
 			PositionSystem position = new();
+			LayerSystem layerSystem = new();
 
 			MeshResourceManager meshResourceManager = new();
 			Ecs ecs = new(meshResourceManager);
@@ -182,6 +208,12 @@ namespace Runner
 
 			ArchRef<Ecs.Wall> wall1 = mainWorld.Create(new Ecs.Wall());
 			ArchRef<Ecs.Wall> wall2 = mainWorld.Create(new Ecs.Wall());
+
+			var camRef1 = mainWorld.Get(mainWorld.Create(new Ecs.Cam()));
+			var camRef2 = mainWorld.Get(mainWorld.Create(new Ecs.Cam()));
+
+			camRef1.TestComp123.tag = 1;
+			camRef1.TestComp123.tag = 2;
 
 			Ecs.Tile.Ref tile1Ref = mainWorld.Get(tile1);
 			Ecs.Tile.Ref tile2Ref = mainWorld.Get(tile2);
@@ -209,7 +241,9 @@ namespace Runner
             mainWorld.Loop(position);
 			tile1Ref.Position.x = 20;
 			tile2Ref.Position.x = 12;
-			mainWorld.Loop(new PrintSystem());
+            Console.WriteLine("PrintSystem:");
+            mainWorld.Loop(new PrintSystem());
+			mainWorld.Loop(layerSystem);
 
 			//ArchTypeContainerNew<Ecs.Tile, Position, Position.Vectorized, Position.Array> testContainer = new();
 			//testContainer.Set(r, new Position());

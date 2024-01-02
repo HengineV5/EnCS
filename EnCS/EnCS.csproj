@@ -7,11 +7,11 @@
 		<LangVersion>preview</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>0.0.21</Version>
+		<Version>0.0.26</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="EnCS.Generator" Version="0.0.41" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="EnCS.Generator" Version="0.0.44" PrivateAssets="all" GeneratePathProperty="true" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

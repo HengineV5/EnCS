@@ -93,7 +93,7 @@ namespace EnCS.Generator
 					continue;
 
 				var worldSystems = GetWorldSystems(compilation, worldArchTypes, allSystems, resourceManagers, diagnostics);
-				var worldResourceManagers = worldSystems.SelectMany(x => x.resourceManagers).GroupBy(x => x.name).Select(x => x.First()).ToList();
+				var worldResourceManagers = worldSystems.SelectMany(x => x.resourceManagers).Concat(worldArchTypes.SelectMany(x => x.resourceManagers)).GroupBy(x => x.name).Select(x => x.First()).ToList();
 
 				worlds.Add(new World()
 				{
@@ -147,10 +147,10 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		static List<System> GetWorldSystems(Compilation compilation, List<ArchType> worldArchTypes, List<SystemName> allSystems, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics)
+		static List<WorldSystem> GetWorldSystems(Compilation compilation, List<ArchType> worldArchTypes, List<SystemName> allSystems, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics)
 		{
 			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
-			var models = new List<System>();
+			var models = new List<WorldSystem>();
 
 			var worldComponentNames = worldArchTypes.SelectMany(x => x.components).Select(x => x.name);
 			var resourceComponentNames = worldArchTypes.SelectMany(x => x.resourceComponents).Select(x => $"{x.resourceManager.ns}.{x.resourceManager.name}.{x.resourceManager.inType}");
@@ -160,18 +160,31 @@ namespace EnCS.Generator
 			foreach (SystemName system in allSystems)
 			{
 				var systemNode = nodes.FindNode<ClassDeclarationSyntax>(x => x.Identifier.Text == system.name);
-				SystemGenerator.TryGetComponents(compilation, systemNode, resourceManagers, diagnostics, out List<SystemComponent> systemComps);
+				//SystemGenerator.TryGetComponents(compilation, systemNode, 0, resourceManagers, diagnostics, out List<MethodComponent> systemComps);
+				SystemGenerator.TryGetSystem(compilation, systemNode, diagnostics, out System systemStruct);
 
 				// Filter out all systems wich this world cannot support
-				if (!systemComps.Select(x => x.name).All(names.Contains))
+				if (!systemStruct.groups.SelectMany(x => x.components).Select(x => x.name).All(names.Contains))
 					continue;
 
-				var systemResourceManagers = systemComps.Where(x => x.type == "Resource").Select(x => x.resourceManager).GroupBy(x => x.name).Select(x => x.First()).ToList();
+				List<ContainerGroup> systemGroupCompatibleContainers = new List<ContainerGroup>();
+				foreach (var systemGroup in systemStruct.groups)
+				{
+					systemGroupCompatibleContainers.Add(new ContainerGroup()
+					{
+						containers = GetComptaibleContainers(worldArchTypes, systemGroup.components)
+					});
+				}
 
-				models.Add(new System()
+				List<ContainerGroup> containerGroups = GetContainerCombinations(systemGroupCompatibleContainers.ToArray());
+
+				var systemContainers = systemGroupCompatibleContainers.SelectMany(x => x.containers).GroupBy(x => x.name).Select(x => x.First()).ToList();
+				var systemResourceManagers = systemContainers.SelectMany(x => x.components).Where(x => x.type == "Resource").Select(x => x.resourceManager).GroupBy(x => x.name).Select(x => x.First()).ToList();
+				models.Add(new WorldSystem()
 				{
 					name = system.name,
-					containers = GetComptaibleContainers(worldArchTypes, systemComps),
+					groups = containerGroups,
+					containers = systemContainers.ToList(),
 					resourceManagers = systemResourceManagers
 				});
 			}
@@ -179,7 +192,49 @@ namespace EnCS.Generator
 			return models;
 		}
 
-		static List<Container> GetComptaibleContainers(List<ArchType> worldArchTypes, List<SystemComponent> systemComps)
+		static List<ContainerGroup> GetContainerCombinations(Span<ContainerGroup> groups)
+		{
+			if (groups == null || groups.Length == 0)
+				return new List<ContainerGroup>();
+
+			var combinations = new List<ContainerGroup>();
+			if (groups.Length == 1)
+			{
+				foreach (var container in groups[0].containers)
+				{
+					var containers = new List<Container>();
+					containers.Add(container);
+
+					combinations.Add(new ContainerGroup()
+					{
+						containers = containers
+					});
+				}
+			}
+			else
+			{
+				var nextCombinations = GetContainerCombinations(groups.Slice(1, groups.Length - 1));
+
+				foreach (var container in groups[0].containers)
+				{
+					foreach (var nextContainer in nextCombinations)
+					{
+						var containers = new List<Container>();
+						containers.Add(container);
+						containers.AddRange(nextContainer.containers);
+
+						combinations.Add(new ContainerGroup()
+						{
+							containers = containers
+						});
+					}
+				}
+			}
+
+			return combinations;
+		}
+
+		static List<Container> GetComptaibleContainers(List<ArchType> worldArchTypes, List<MethodComponent> systemComps)
 		{
 			List<Container> models = new();
 
@@ -201,7 +256,7 @@ namespace EnCS.Generator
 			return models;
 		}
 
-		static bool IsArchTypeComatible(ArchType archType, List<SystemComponent> components)
+		static bool IsArchTypeComatible(ArchType archType, List<MethodComponent> components)
 		{
 			foreach (var component in components)
 			{
@@ -251,7 +306,7 @@ namespace EnCS.Generator
 	{
 		public string name;
 		public List<ArchType> archTypes;
-		public List<System> systems;
+		public List<WorldSystem> systems;
 		public List<ResourceManager> resourceManagers;
 
 		public Model<ReturnType> GetModel()
@@ -267,10 +322,11 @@ namespace EnCS.Generator
 		}
 	}
 
-	struct System
+	struct WorldSystem
 	{
 		public string name;
 		public List<Container> containers;
+		public List<ContainerGroup> groups;
 		public List<ResourceManager> resourceManagers;
 
 		public Model<ReturnType> GetModel()
@@ -279,6 +335,7 @@ namespace EnCS.Generator
 
 			model.Set("systemName".AsSpan(), Parameter.Create(name));
 			model.Set("systemContainers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(containers.Select(x => x.GetModel())));
+			model.Set("systemGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(groups.Select(x => x.GetModel())));
 			model.Set("systemResourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceManagers.Select(x => x.GetModel())));
 
 			return model;
@@ -299,10 +356,25 @@ namespace EnCS.Generator
 		}
 	}
 
+	struct ContainerGroup
+	{
+		public List<Container> containers;
+
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
+
+			model.Set("groupContainers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(containers.Select(x => x.GetModel())));
+			model.Set("groupResourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(containers.SelectMany(x => x.resourceManagers).GroupBy(x => x.name).Select(x => x.First()).Select(x => x.GetModel())));
+
+			return model;
+		}
+	}
+
 	struct Container
 	{
 		public string name;
-		public List<SystemComponent> components;
+		public List<MethodComponent> components;
 		public List<ResourceManager> resourceManagers;
 
 		public Model<ReturnType> GetModel()

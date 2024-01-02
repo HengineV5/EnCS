@@ -6,18 +6,26 @@ namespace $namespace
 {
 	public partial class $name
 	{
-		public void Update<T1Arch>(ref ComponentEnumerableNew<$components~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<T1Arch> en$resourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
-			where T1Arch : unmanaged, $components~>IArchType<T1Arch, |$compName|, |$compName|.Vectorized, |$compName|.Array><~~>, <~
+		public void Update<$groups~>T|$groupIdx|Arch<~~>, <~>($groups~>ref ComponentEnumerableNew<$groupComponents~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<T|$groupIdx|Arch> en|$groupIdx|<~~>, <~$resourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
+			$groups~>where T|$groupIdx|Arch : unmanaged, $groupComponents~>IArchType<T|$groupIdx|Arch, |$compName|, |$compName|.Vectorized, |$compName|.Array><~~>, <~<~~>\n			<~
 		{
-			while (en.MoveNext())
+			// Not the best, but my templating language does not handle recusion the best atm
+			$groups~>$groupPreLoops~>|$methodName|();<~~>\n				<~
+			$groupHasPreOrPostLoop~>int chunkCounter|$groupIdx| = 0;<~
+			while (en|$groupIdx|.MoveNext())
 			{
-				var item = en.Current;
-				var remaining = en.Remaining;
-				$methods|$methodType == "Single"|~>for (int i = 0; i < remaining; i++)
+				var item|$groupIdx| = en|$groupIdx|.Current;
+				var remaining|$groupIdx| = en|$groupIdx|.Remaining;
+				$groupHasPreOrPostLoop~>$groupPreLoops~>if (chunkCounter|$groupIdx| == $groupChunk) |$methodName|();<~~>\n				<~<~
+				$groupMethods|$methodType == "Single"|~>for (int i = 0; i < remaining|$groupIdx|; i++)
 				{
-					$methodName($components|$compType == "Component"|~>|$compName|.Ref.FromArray(ref item.item|$compIdx|Single, i)<~|$compType == "Resource"|~>ref |$compResourceManager.resourceManagerNamespace|.|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerInType|.Ref.FromArray(ref item.item|$compIdx|Single, i, |$compResourceManager.resourceManagerName|).$compResourceManager.resourceManagerInType<~~>, <~ );
-				}<~|$methodType == "Vector"|~>$methodName($components|$compType == "Component"|~>ref item.item|$compIdx|Vec<~~>, <~ );<~~>\n				<~\n
-			}
+					$methodName($methodComponents|$compType == "Component"|~>|$compName|.Ref.FromArray(ref item|$groupIdx|.item|$compIdx|Single, i)<~|$compType == "Resource"|~>ref |$compResourceManager.resourceManagerNamespace|.|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerInType|.Ref.FromArray(ref item|$groupIdx|.item|$compIdx|Single, i, |$compResourceManager.resourceManagerName|).$compResourceManager.resourceManagerInType<~~>, <~ );
+				}<~|$methodType == "Vector"|~>$methodName($methodComponents|$compType == "Component"|~>ref item|$groupIdx|.item|$compIdx|Vec<~~>, <~ );<~~>\n				<~\n
+				$groupHasPreOrPostLoop~>$groupPostLoops~>if (chunkCounter|$groupIdx| == $groupChunk) |$methodName|();<~~>\n				<~<~
+				$groupHasPreOrPostLoop~>chunkCounter|$groupIdx| = chunkCounter|$groupIdx| == $groupChunk ? 0 : chunkCounter|$groupIdx| + 1;<~<~~>\n\n			<~
+			$reversedGroups~>}
+			$groupPostLoops~>|$methodName|();<~~>\n				<~
+			en|$groupIdx|.Reset();<~~>\n			<~
 		}
 	}
 }
