@@ -5,7 +5,7 @@
       Title: Invalid component member type,
       Severity: Error,
       WarningLevel: 0,
-      Location: : (38,8)-(38,14),
+      Location: : (43,8)-(43,14),
       Description: ,
       HelpLink: ,
       MessageFormat: Component member of type '{0}' is not supported,
@@ -17,12 +17,24 @@
       Title: Archtype can only contain valid components,
       Severity: Error,
       WarningLevel: 0,
-      Location: : (170,15)-(170,26),
+      Location: : (189,15)-(189,26),
       Description: ,
       HelpLink: ,
       MessageFormat: Archtype member is not valid component,
       Message: Archtype member is not valid component,
       Category: ArchTypeGenerator
+    },
+    {
+      Id: ECS004,
+      Title: All system update methods within the group must be equal,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (123,0)-(135,1),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: ,
+      Message: ,
+      Category: SystemGenerator
     }
   ]
 }

@@ -10,6 +10,8 @@ namespace Project.Primitives
 		public void Update<T0Arch>(ref ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.Enumerator<T0Arch> en0)
 			where T0Arch : unmanaged, IArchType<T0Arch, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>, IArchType<T0Arch, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>
 		{
+			
+
 			// Not the best, but my templating language does not handle recusion the best atm
 			
 			

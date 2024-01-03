@@ -11,6 +11,11 @@ namespace EnCS.Attributes
 
 	}
 
+	public class SystemAttribute<T> : Attribute where T : unmanaged
+	{
+
+	}
+
 	public class SystemUpdateAttribute : Attribute
 	{
 

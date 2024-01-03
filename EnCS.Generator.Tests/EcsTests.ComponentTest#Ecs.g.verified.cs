@@ -18,7 +18,7 @@ namespace Test
 			containerTile = new ArchTypeContainer<Tile>();
 
 			this.MeshResourceManager = MeshResourceManager;
-		this.TestResourceManager = TestResourceManager;
+			this.TestResourceManager = TestResourceManager;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -37,7 +37,7 @@ namespace Test
 	/*
 	static class Ecs_Intercept
 	{
-		[InterceptsLocation(@"", 192, 5)]
+		[InterceptsLocation(@"", 211, 5)]
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public static Ecs InterceptBuild(this EcsBuilder builder)

@@ -9,33 +9,33 @@ namespace Test
 	{
 		public struct Tile : IArchType<Tile, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>
 		{
-			public Project.Primitives.Position.Vectorized Position;
+			public Project.Primitives.Position.Vectorized _Position;
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			static ref Project.Primitives.Position.Array IArchType<Tile, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetSingle(ref Tile arch)
 			{
-				return ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref arch.Position);
+				return ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref arch._Position);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			static ref Project.Primitives.Position.Vectorized IArchType<Tile, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetVec(ref Tile arch)
 			{
-				return ref arch.Position;
+				return ref arch._Position;
 			}
 
 			public ref struct Ref
 			{
-				public Project.Primitives.Position.Ref Position;
+				public Project.Primitives.Position.Ref _Position;
 
 				public Ref(Project.Primitives.Position.Ref Position)
 				{
-					this.Position = Position;
+					this._Position = Position;
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static Ref FromArchType(ref Tile archType, int idx)
 				{
-					return new Ref(Project.Primitives.Position.Ref.FromArray(ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref archType.Position), idx));
+					return new Ref(Project.Primitives.Position.Ref.FromArray(ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref archType._Position), idx));
 				}
 			}
 		}

@@ -13,7 +13,7 @@ namespace $namespace
 		{
 			$archTypes~>container|$archTypeName| = new ArchTypeContainer<$archTypeName>();<~~>\n			<~
 
-			$resourceManagers~>this.|$resourceManagerName| = $resourceManagerName;<~~>\n		<~
+			$resourceManagers~>this.|$resourceManagerName| = $resourceManagerName;<~~>\n			<~
 		}
 
 		$worlds~>[MethodImpl(MethodImplOptions.AggressiveInlining)]

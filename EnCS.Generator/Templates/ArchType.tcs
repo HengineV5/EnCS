@@ -8,18 +8,18 @@ namespace $namespace
 	{
 		$archTypes~>public struct $archTypeName : $archTypeComponents~>IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array><~~>, <~
 		{
-			$archTypeComponents~>public |$compName|.Vectorized $compVarName;<~~>\n			<~
+			$archTypeComponents~>public |$compName|.Vectorized _$compVarName;<~~>\n			<~
 
 			$archTypeComponents~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			static ref |$compName|.Array IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref $archTypeName arch)
 			{
-				return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch.$compVarName);
+				return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch._$compVarName);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			static ref |$compName|.Vectorized IArchType<$archTypeName, $compName, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref $archTypeName arch)
 			{
-				return ref arch.$compVarName;
+				return ref arch._$compVarName;
 			}<~~>\n\n			<~
 
 			public ref struct Ref
@@ -34,7 +34,7 @@ namespace $namespace
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static Ref FromArchType(ref $archTypeName archType, int idx$archTypeResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
 				{
-					return new Ref($archTypeComponents|$compType == "Component"|~>|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$compVarName), idx)<~|$compType == "Resource"|~>|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType.$compVarName), idx, |$compResourceManager.resourceManagerName|)<~~>, \n						<~ );
+					return new Ref($archTypeComponents|$compType == "Component"|~>|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType._$compVarName), idx)<~|$compType == "Resource"|~>|$compName|.Ref.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType._$compVarName), idx, |$compResourceManager.resourceManagerName|)<~~>, \n						<~ );
 				}
 			}
 		}<~~>\n\n		<~

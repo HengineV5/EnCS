@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
@@ -18,7 +19,7 @@ namespace EnCS.Generator
 
 		public static readonly DiagnosticDescriptor MethodArgumentsMustBeConcistent = new("ECS005", "All system update methods must only use Vector or Single types", "", "SystemGenerator", DiagnosticSeverity.Error, true);
 
-		public static readonly DiagnosticDescriptor MethodArgumentMustBeComponentOrResource = new("ECS007", "All system method arguments must be a valid component or resource", "", "SystemGenerator", DiagnosticSeverity.Error, true);
+		public static readonly DiagnosticDescriptor MethodArgumentMustBeComponentOrResourceOrContext = new("ECS007", "All system method arguments must be a valid component, resource or context parameter", "", "SystemGenerator", DiagnosticSeverity.Error, true);
 		
 		public static readonly DiagnosticDescriptor MethodCannotBeEmpty = new("ECS008", "System update method cannot be empty", "", "SystemGenerator", DiagnosticSeverity.Warning, true);
 
@@ -42,6 +43,7 @@ namespace EnCS.Generator
 			model.Set("resourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(system.resourceManagers.Select(x => x.GetModel())));
 			model.Set("groups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(system.groups.Select(x => x.GetModel())));
 			model.Set("reversedGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(system.groups.AsEnumerable().Reverse().Select(x => x.GetModel())));
+			model.Set("contexts".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(system.contexts.Select(x => x.GetModel())));
 
 			return systemSuccess;
 		}
@@ -52,10 +54,9 @@ namespace EnCS.Generator
 			{
 				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
 				{
-					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "SystemAttribute")
-						return true;
+					string name = attributeSyntax.Name.GetName();
 
-					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "System")
+					if (name == "SystemAttribute" || name == "System")
 						return true;
 				}
 			}
@@ -74,17 +75,41 @@ namespace EnCS.Generator
 			var uniqueResourceManagers = resourceManagers.GroupBy(x => x.name).Select(x => x.First());
 
 			TryGetPrePostLoopMethods(node, diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops);
+			TryGetSystemContexts(node, diagnostics, out List<SystemContext> contexts);
 
-			bool methodSuccess = TryGetMethods(compilation, node, resourceManagers, diagnostics, out List<SystemMethod> methods);
+			bool methodSuccess = TryGetMethods(compilation, node, resourceManagers, contexts, diagnostics, out List<SystemMethod> methods);
 			bool groupSuccess = TryGetGroups(methods, preLoops, postLoops, out List<SystemGroup> groups);
 
 			system = new System()
 			{
 				groups = groups,
-				resourceManagers = uniqueResourceManagers.ToList()
+				resourceManagers = uniqueResourceManagers.ToList(),
+				contexts = contexts
 			};
 
 			return methodSuccess && groupSuccess;
+		}
+
+		static bool TryGetSystemContexts(ClassDeclarationSyntax node, List<Diagnostic> diagnostics, out List<SystemContext> contexts)
+		{
+			var attribute = node.AttributeLists.SelectMany(x => x.Attributes).First(x => x.Name.GetName() == "System" || x.Name.GetName() == "SystemAttribute");
+			contexts = new List<SystemContext>();
+
+			if (attribute.Name is not GenericNameSyntax g)
+				return true;
+
+			foreach (TypeSyntax type in g.TypeArgumentList.Arguments)
+			{
+				if (type is not IdentifierNameSyntax i)
+					continue;
+
+				contexts.Add(new SystemContext()
+				{
+					type = i.Identifier.Text
+				});
+			}
+
+			return true;
 		}
 
 		static bool TryGetPrePostLoopMethods(ClassDeclarationSyntax node, List<Diagnostic> diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops)
@@ -193,7 +218,7 @@ namespace EnCS.Generator
 			return groups.Count > 0;
 		}
 
-		static bool TryGetComponents(Compilation compilation, ClassDeclarationSyntax node, int group, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics, out List<MethodComponent> components)
+		static bool TryGetComponents(Compilation compilation, ClassDeclarationSyntax node, int group, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<MethodComponent> components)
 		{
 			components = new List<MethodComponent>();
 
@@ -222,12 +247,26 @@ namespace EnCS.Generator
 					components.Add(component);
 					idx++;
 				}
-				else if (parameter.Type is IdentifierNameSyntax identifierType) // Assume this is a resource
+				else if (parameter.Type is IdentifierNameSyntax identifierType) // Assume this is a resource or context parameter
 				{
-					if (!TryGetResourceComponent(identifierType, resourceManagers, idx, diagnostics, out MethodComponent component))
-						continue;
+					bool resourceSuccess = TryGetResourceComponent(identifierType, resourceManagers, idx, diagnostics, out MethodComponent resourceComponent);
+					bool contextSuccess = TryGetContextComponent(identifierType, contexts, out MethodComponent contextComponent);
 
-					components.Add(component);
+					if (resourceSuccess)
+					{
+						components.Add(resourceComponent);
+					}
+					else if (contextSuccess)
+					{
+						components.Add(contextComponent);
+						continue;
+					}
+					else
+					{
+						diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodArgumentMustBeComponentOrResourceOrContext, identifierType.GetLocation(), ""));
+						continue;
+					}
+
 					idx++;
 				}
 
@@ -261,7 +300,6 @@ namespace EnCS.Generator
 		{
 			if (!resourceManagers.Any(x => x.outType == type.Identifier.Text))
 			{
-				diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodArgumentMustBeComponentOrResource, type.GetLocation(), ""));
 				component = default;
 				return false;
 			}
@@ -274,6 +312,25 @@ namespace EnCS.Generator
 				idx = idx,
 				type = "Resource",
 				resourceManager = resourceManager
+			};
+
+			return true;
+		}
+
+		static bool TryGetContextComponent(IdentifierNameSyntax type, List<SystemContext> contexts, out MethodComponent component)
+		{
+			if (!contexts.Any(x => x.type == type.Identifier.Text))
+			{
+				component = default;
+				return false;
+			}
+
+			var contextComponent = contexts.First(x => x.type == type.Identifier.Text);
+			component = new MethodComponent()
+			{
+				name = contextComponent.type,
+				idx = 0,
+				type = "Context"
 			};
 
 			return true;
@@ -297,7 +354,7 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		public static bool TryGetMethods(Compilation compilation, ClassDeclarationSyntax node, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics, out List<SystemMethod> methods)
+		public static bool TryGetMethods(Compilation compilation, ClassDeclarationSyntax node, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<SystemMethod> methods)
 		{
 			methods = new List<SystemMethod>();
 
@@ -305,9 +362,6 @@ namespace EnCS.Generator
 			{
 				if (!IsMethodSystemUpdate(method, diagnostics))
 					continue;
-
-				var paramType = method.ParameterList.Parameters[0].Type as QualifiedNameSyntax;
-				var name = paramType.Right as IdentifierNameSyntax;
 
 				if (!TryGetMethodGroup(method, out int group))
 				{
@@ -318,12 +372,13 @@ namespace EnCS.Generator
 				if (!TryGetMethodChunk(method, out int chunk))
 					continue;
 
-				TryGetComponents(compilation, node, group, resourceManagers, diagnostics, out List<MethodComponent> components);
+				if (!TryGetComponents(compilation, node, group, resourceManagers, contexts, diagnostics, out List<MethodComponent> components))
+					continue;
 
 				methods.Add(new SystemMethod()
 				{
 					name = method.Identifier.Text,
-					type = name.Identifier.Text == "Ref" ? "Single" : "Vector",
+					type = GetMethodType(method),
 					group = group,
 					chunk = chunk,
 					components = components
@@ -417,12 +472,14 @@ namespace EnCS.Generator
 
 		static bool IsMethodArgumentsConsistent(MethodDeclarationSyntax method)
 		{
-			var firstParamType = method.ParameterList.Parameters[0].Type as QualifiedNameSyntax;
-			var firstName = firstParamType.Right as IdentifierNameSyntax;
+			var args = method.ParameterList.Parameters.Where(x => x.Type is QualifiedNameSyntax);
 
-			for (int i = 0; i < method.ParameterList.Parameters.Count; i++)
+			var firstParamType = args.First();
+			var firstName = (firstParamType.Type as QualifiedNameSyntax).Right as IdentifierNameSyntax;
+
+			foreach (var item in args)
 			{
-				if (method.ParameterList.Parameters[i].Type is not QualifiedNameSyntax paramType)
+				if (item.Type is not QualifiedNameSyntax paramType)
 					continue;
 
 				var name = paramType.Right as IdentifierNameSyntax;
@@ -433,12 +490,23 @@ namespace EnCS.Generator
 
 			return true;
 		}
+
+		static string GetMethodType(MethodDeclarationSyntax method)
+		{
+			var args = method.ParameterList.Parameters.Where(x => x.Type is QualifiedNameSyntax);
+
+			var firstParamType = args.First();
+			var type = (firstParamType.Type as QualifiedNameSyntax).Right as IdentifierNameSyntax;
+
+			return type.Identifier.Text == "Ref" ? "Single" : "Vector";
+		}
 	}
 
 	struct System
 	{
 		public List<ResourceManager> resourceManagers;
 		public List<SystemGroup> groups;
+		public List<SystemContext> contexts;
 
 		public Model<ReturnType> GetModel()
 		{
@@ -447,6 +515,7 @@ namespace EnCS.Generator
 			model.Set("systemResourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceManagers.Select(x => x.GetModel())));
 			model.Set("systemGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(groups.Select(x => x.GetModel())));
 			model.Set("systemReversedGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(groups.AsEnumerable().Reverse().Select(x => x.GetModel())));
+			model.Set("systemContexts".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(contexts.Select(x => x.GetModel())));
 
 			return model;
 		}
@@ -519,6 +588,20 @@ namespace EnCS.Generator
 			model.Set("compIdx".AsSpan(), Parameter.Create<float>(idx));
 			model.Set("compType".AsSpan(), Parameter.Create(type));
 			model.Set("compResourceManager".AsSpan(), Parameter.Create((IModel<ReturnType>)resourceManager.GetModel()));
+
+			return model;
+		}
+	}
+
+	struct SystemContext
+	{
+		public string type;
+
+		public Model<ReturnType> GetModel()
+		{
+			var model = new Model<ReturnType>();
+
+			model.Set("contextType".AsSpan(), Parameter.Create(type));
 
 			return model;
 		}

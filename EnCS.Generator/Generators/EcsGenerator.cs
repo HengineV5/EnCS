@@ -42,7 +42,7 @@ namespace EnCS.Generator
 			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(archTypes.Select(x => x.GetModel())));
 
 			var systems = WorldGenerator.GetSystems(systemStep);
-			var worldSuccess = WorldGenerator.TryGetWorlds(compilation, worldStep, systems, archTypes, resourceManagers, diagnostics, out List<World> worlds);
+			var worldSuccess = WorldGenerator.TryGetWorlds(compilation, worldStep, systems, archTypes, diagnostics, out List<World> worlds);
 			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(worlds.Select(x => x.GetModel())));
 
 			// Intercept info

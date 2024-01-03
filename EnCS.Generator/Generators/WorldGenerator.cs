@@ -45,7 +45,7 @@ namespace EnCS.Generator
 			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
 			model.Set("ecsName".AsSpan(), new Parameter<string>(EcsGenerator.GetEcsName(node)));
 
-			var worldSuccess = TryGetWorlds(compilation, worldStep, systems, archTypes, resourceManagers, diagnostics, out List<World> worlds);
+			var worldSuccess = TryGetWorlds(compilation, worldStep, systems, archTypes, diagnostics, out List<World> worlds);
 			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(worlds.Select(x => x.GetModel())));
 
 			return worldSuccess;
@@ -61,7 +61,7 @@ namespace EnCS.Generator
 			return $"{EcsGenerator.GetEcsName(node)}_World";
 		}
 
-		public static bool TryGetWorlds(Compilation compilation, MemberAccessExpressionSyntax step, List<SystemName> allSystems, List<ArchType> allArchTypes, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics, out List<World> worlds)
+		public static bool TryGetWorlds(Compilation compilation, MemberAccessExpressionSyntax step, List<SystemName> allSystems, List<ArchType> allArchTypes, List<Diagnostic> diagnostics, out List<World> worlds)
 		{
 			worlds = new List<World>();
 
@@ -92,7 +92,7 @@ namespace EnCS.Generator
 				if (!TryGetWorldArchTypes(genericName, allArchTypes, diagnostics, out List<ArchType> worldArchTypes))
 					continue;
 
-				var worldSystems = GetWorldSystems(compilation, worldArchTypes, allSystems, resourceManagers, diagnostics);
+				var worldSystems = GetWorldSystems(compilation, worldArchTypes, allSystems, diagnostics);
 				var worldResourceManagers = worldSystems.SelectMany(x => x.resourceManagers).Concat(worldArchTypes.SelectMany(x => x.resourceManagers)).GroupBy(x => x.name).Select(x => x.First()).ToList();
 
 				worlds.Add(new World()
@@ -147,7 +147,7 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		static List<WorldSystem> GetWorldSystems(Compilation compilation, List<ArchType> worldArchTypes, List<SystemName> allSystems, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics)
+		static List<WorldSystem> GetWorldSystems(Compilation compilation, List<ArchType> worldArchTypes, List<SystemName> allSystems, List<Diagnostic> diagnostics)
 		{
 			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
 			var models = new List<WorldSystem>();
@@ -160,11 +160,10 @@ namespace EnCS.Generator
 			foreach (SystemName system in allSystems)
 			{
 				var systemNode = nodes.FindNode<ClassDeclarationSyntax>(x => x.Identifier.Text == system.name);
-				//SystemGenerator.TryGetComponents(compilation, systemNode, 0, resourceManagers, diagnostics, out List<MethodComponent> systemComps);
 				SystemGenerator.TryGetSystem(compilation, systemNode, diagnostics, out System systemStruct);
 
 				// Filter out all systems wich this world cannot support
-				if (!systemStruct.groups.SelectMany(x => x.components).Select(x => x.name).All(names.Contains))
+				if (!systemStruct.groups.SelectMany(x => x.components.Where(x => x.type == "Component" || x.type == "Resource")).Select(x => x.name).All(names.Contains))
 					continue;
 
 				List<ContainerGroup> systemGroupCompatibleContainers = new List<ContainerGroup>();
@@ -236,19 +235,20 @@ namespace EnCS.Generator
 
 		static List<Container> GetComptaibleContainers(List<ArchType> worldArchTypes, List<MethodComponent> systemComps)
 		{
+			List<MethodComponent> filteredComponents = systemComps.Where(x => x.type == "Component" || x.type == "Resource").ToList();
 			List<Container> models = new();
 
 			foreach (var archType in worldArchTypes)
 			{
-				if (!IsArchTypeComatible(archType, systemComps))
+				if (!IsArchTypeComatible(archType, filteredComponents))
 					continue;
 
-				var resourceManagers = systemComps.Where(x => x.type == "Resource").Select(x => x.resourceManager).GroupBy(x => x.name).Select(x => x.First()).ToList();
+				var resourceManagers = filteredComponents.Where(x => x.type == "Resource").Select(x => x.resourceManager).GroupBy(x => x.name).Select(x => x.First()).ToList();
 
 				models.Add(new Container()
 				{
 					name = archType.name,
-					components = systemComps,
+					components = filteredComponents,
 					resourceManagers = resourceManagers
 				});
 			}

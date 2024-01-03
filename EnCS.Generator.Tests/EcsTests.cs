@@ -27,6 +27,11 @@ namespace EnCS.Generator.Tests
 			string source = @"
 using namespace Project.Primitives;
 
+public struct TestContext
+{
+	public float data;
+}
+
 public struct Mesh
 {
 	public string name;
@@ -92,7 +97,7 @@ public partial struct Scale
 	public static implicit operator Scale(Vector2 v) => new Scale(v.X, v.Y, 0);
 }
 
-[SystemAttribute]
+[SystemAttribute<TestContext>]
 [UsingResource<MeshResourceManager>]
 [UsingResource<TestResourceManager>]
 public partial class ResourceSystem
@@ -126,12 +131,12 @@ public partial class ResourceSystem
 	}
 
 	[SystemUpdate, SystemLayer(0, 16)]
-	public void Update(Position.Ref position, Velocity.Ref velocity, ref MeshId mesh, ref KakiId kaki)
+	public void Update(ref TestContext context, Position.Ref position, Velocity.Ref velocity, ref MeshId mesh, ref KakiId kaki)
 	{
     }
 
 	[SystemUpdate, SystemLayer(0, 16)]
-	public void Update(ref Position.Vectorized position, ref Velocity.Vectorized velocity)
+	public void Update(ref TestContext context, ref Position.Vectorized position, ref Velocity.Vectorized velocity)
 	{
 	}
 
@@ -139,6 +144,20 @@ public partial class ResourceSystem
 	public void PostLoop()
 	{
 
+	}
+}
+
+[SystemAttribute]
+public partial class TestSystem
+{
+	[SystemUpdate]
+	public void Update(Scale.Ref scale)
+	{
+	}
+
+	[SystemUpdate]
+	public void Update(Position.Ref position, Velocity.Ref velocity)
+	{
 	}
 }
 
