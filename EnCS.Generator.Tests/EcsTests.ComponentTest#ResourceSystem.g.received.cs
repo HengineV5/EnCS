@@ -20,13 +20,13 @@ namespace Project.Primitives
 			{
 				var item0 = en0.Current;
 				var remaining0 = en0.Remaining;
+				if (chunkCounter0 == 16) PostLoop1();
 				if (chunkCounter0 == 16) PreLoop1();
 				for (int i = 0; i < remaining0; i++)
 				{
 					Update(ref contextTestContext, Project.Primitives.Position.Ref.FromArray(ref item0.item1Single, i), Project.Primitives.Velocity.Ref.FromArray(ref item0.item2Single, i), ref Project.Primitives.MeshResourceManager.Mesh.Ref.FromArray(ref item0.item3Single, i, MeshResourceManager).Mesh, ref Project.Primitives.TestResourceManager.Kaki.Ref.FromArray(ref item0.item4Single, i, TestResourceManager).Kaki);
 				}
 				Update(ref contextTestContext, ref item0.item1Vec, ref item0.item2Vec);
-				if (chunkCounter0 == 16) PostLoop1();
 				chunkCounter0 = chunkCounter0 == 16 ? 0 : chunkCounter0 + 1;
 
 			PreLoop();
@@ -36,12 +36,12 @@ namespace Project.Primitives
 				var item1 = en1.Current;
 				var remaining1 = en1.Remaining;
 				
+				
 				Update(ref item1.item1Vec);
 				for (int i = 0; i < remaining1; i++)
 				{
 					Update(Project.Primitives.Scale.Ref.FromArray(ref item1.item1Single, i));
 				}
-				
 				
 			}
 			PostLoop();

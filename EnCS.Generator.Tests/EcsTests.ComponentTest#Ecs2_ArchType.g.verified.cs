@@ -25,11 +25,11 @@ namespace Test
 
 			public ref struct Ref
 			{
-				public Project.Primitives.Position.Ref _Position;
+				public Project.Primitives.Position.Ref Position;
 
 				public Ref(Project.Primitives.Position.Ref Position)
 				{
-					this._Position = Position;
+					this.Position = Position;
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]

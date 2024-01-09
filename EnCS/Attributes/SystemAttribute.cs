@@ -33,4 +33,14 @@ namespace EnCS.Attributes
 
 		}
 	}
+
+	public class SystemPreLoopAttribute : Attribute
+	{
+
+	}
+
+	public class SystemPostLoopAttribute : Attribute
+	{
+
+	}
 }

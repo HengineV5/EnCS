@@ -64,17 +64,17 @@ namespace Test
 
 			public ref struct Ref
 			{
-				public Project.Primitives.Position.Ref _Position;
-				public Project.Primitives.Velocity.Ref _Velocity;
-				public Project.Primitives.MeshResourceManager.Mesh.Ref _Mesh;
-				public Project.Primitives.TestResourceManager.Kaki.Ref _Kaki;
+				public Project.Primitives.Position.Ref Position;
+				public Project.Primitives.Velocity.Ref Velocity;
+				public Project.Primitives.MeshResourceManager.Mesh.Ref Mesh;
+				public Project.Primitives.TestResourceManager.Kaki.Ref Kaki;
 
 				public Ref(Project.Primitives.Position.Ref Position, Project.Primitives.Velocity.Ref Velocity, Project.Primitives.MeshResourceManager.Mesh.Ref Mesh, Project.Primitives.TestResourceManager.Kaki.Ref Kaki)
 				{
-					this._Position = Position;
-					this._Velocity = Velocity;
-					this._Mesh = Mesh;
-					this._Kaki = Kaki;
+					this.Position = Position;
+					this.Velocity = Velocity;
+					this.Mesh = Mesh;
+					this.Kaki = Kaki;
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -119,13 +119,13 @@ namespace Test
 
 			public ref struct Ref
 			{
-				public Project.Primitives.Position.Ref _Position;
-				public Project.Primitives.Scale.Ref _Scale;
+				public Project.Primitives.Position.Ref Position;
+				public Project.Primitives.Scale.Ref Scale;
 
 				public Ref(Project.Primitives.Position.Ref Position, Project.Primitives.Scale.Ref Scale)
 				{
-					this._Position = Position;
-					this._Scale = Scale;
+					this.Position = Position;
+					this.Scale = Scale;
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
