@@ -241,7 +241,7 @@ namespace EnCS.Generator
 			{
 				if (parameter.Type is QualifiedNameSyntax qualifiedType)
 				{
-					if (!TryGetNormalComponent(qualifiedType, nodes, idx, diagnostics, out MethodComponent component))
+					if (!TryGetNormalComponent(compilation, qualifiedType, nodes, idx, diagnostics, out MethodComponent component))
 						continue;
 
 					components.Add(component);
@@ -275,12 +275,12 @@ namespace EnCS.Generator
 			return components.Count > 0;
 		}
 
-		static bool TryGetNormalComponent(QualifiedNameSyntax type, IEnumerable<SyntaxNode> nodes, int idx, List<Diagnostic> diagnostics, out MethodComponent component)
+		static bool TryGetNormalComponent(Compilation compilation, QualifiedNameSyntax type, IEnumerable<SyntaxNode> nodes, int idx, List<Diagnostic> diagnostics, out MethodComponent component)
 		{
 			var paramName = (type.Left as IdentifierNameSyntax).Identifier.Text;
 			var componentNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == paramName);
 
-			if (!ComponentGenerator.IsValidComponent(componentNode, diagnostics))
+			if (!ComponentGenerator.IsValidComponent(compilation, componentNode, diagnostics))
 			{
 				component = default;
 				return false;

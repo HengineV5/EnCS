@@ -142,7 +142,7 @@ namespace EnCS.Generator
 				var compNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == comp.Identifier.Text);
 
 				var discardDiagnostics = new List<Diagnostic>();
-				if (!ComponentGenerator.IsValidComponent(compNode, discardDiagnostics))
+				if (!ComponentGenerator.IsValidComponent(compilation, compNode, discardDiagnostics))
 				{
 					// Only show error if struct is not valid component and not a registerd resource.
 					if (!IsResource(compNode, resourceManagers))

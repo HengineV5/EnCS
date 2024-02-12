@@ -24,6 +24,11 @@ namespace $namespace
 			{
 				return container|$archTypeName|.Create(data);
 			}
+
+			public ArchRef<$archTypeName> Delete(in ArchRef<$archTypeName> ptr)
+			{
+				return container|$archTypeName|.Delete(ptr);
+			}
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public |$archTypeName|.Ref Get(in ArchRef<$archTypeName> ptr)

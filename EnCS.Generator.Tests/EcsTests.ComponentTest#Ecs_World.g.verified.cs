@@ -29,6 +29,11 @@ namespace Test
 			{
 				return containerWall.Create(data);
 			}
+
+			public ArchRef<Wall> Delete(in ArchRef<Wall> ptr)
+			{
+				return containerWall.Delete(ptr);
+			}
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Wall.Ref Get(in ArchRef<Wall> ptr)
@@ -40,6 +45,11 @@ namespace Test
 			public ArchRef<Tile> Create(in Tile data)
 			{
 				return containerTile.Create(data);
+			}
+
+			public ArchRef<Tile> Delete(in ArchRef<Tile> ptr)
+			{
+				return containerTile.Delete(ptr);
 			}
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -95,6 +105,11 @@ namespace Test
 			public ArchRef<Wall> Create(in Wall data)
 			{
 				return containerWall.Create(data);
+			}
+
+			public ArchRef<Wall> Delete(in ArchRef<Wall> ptr)
+			{
+				return containerWall.Delete(ptr);
 			}
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

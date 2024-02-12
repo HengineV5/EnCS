@@ -27,6 +27,12 @@ namespace EnCS.Generator.Tests
 			string source = @"
 using namespace Project.Primitives;
 
+public enum CompEnum
+{
+	Val1,
+	Val2
+}
+
 public struct TestContext
 {
 	public float data;
@@ -76,6 +82,7 @@ public partial struct Position
 	public int x;
 	public int y;
 	public FixedArray4<int> z;
+	public CompEnum e;
 }
 
 [ComponentAttribute]

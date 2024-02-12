@@ -27,7 +27,7 @@ namespace Project.Primitives
 					Update(ref contextTestContext, Project.Primitives.Position.Ref.FromArray(ref item0.item1Single, i), Project.Primitives.Velocity.Ref.FromArray(ref item0.item2Single, i), ref Project.Primitives.MeshResourceManager.Mesh.Ref.FromArray(ref item0.item3Single, i, MeshResourceManager).Mesh, ref Project.Primitives.TestResourceManager.Kaki.Ref.FromArray(ref item0.item4Single, i, TestResourceManager).Kaki);
 				}
 				Update(ref contextTestContext, ref item0.item1Vec, ref item0.item2Vec);
-				chunkCounter0 = chunkCounter0 == 16 ? 0 : chunkCounter0 + 1;
+				chunkCounter0 = chunkCounter0 == 16 ? 1 : chunkCounter0 + 1;
 
 			PreLoop();
 			

@@ -31,14 +31,14 @@ namespace EnCS.Generator
 			diagnostics = new List<Diagnostic>();
 			model = new Model<ReturnType>();
 
-			if (!IsValidComponent(node, diagnostics))
+			if (!IsValidComponent(compilation, node, diagnostics))
 				return false;
 
 			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
 			model.Set("compName".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
 			model.Set("arraySize".AsSpan(), new Parameter<float>(ARRAY_ELEMENTS));
 
-			var membersResult = TryGetMembers(node, diagnostics, out var members);
+			var membersResult = TryGetMembers(compilation, node, diagnostics, out var members);
 			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(members.Select(x => x.GetModel())));
 
 			return membersResult;
@@ -66,7 +66,7 @@ namespace EnCS.Generator
 			return node.Identifier.ToString();
 		}
 
-		public static bool IsValidComponent(StructDeclarationSyntax node, List<Diagnostic> diagnostics)
+		public static bool IsValidComponent(Compilation compilation, StructDeclarationSyntax node, List<Diagnostic> diagnostics)
 		{
 			bool hasAttribute = node.AttributeLists.SelectMany(x => x.Attributes).Select(x => x.Name as SimpleNameSyntax).Any(x => x.Identifier.Text == "ComponentAttribute" || x.Identifier.Text == "Component");
 			bool hasProperties = node.Members.Any(x => x is PropertyDeclarationSyntax);
@@ -77,7 +77,7 @@ namespace EnCS.Generator
 				if (!TryGetTypeName(member.Declaration.Type, diagnostics, out string typeName))
 					fieldsValid = false;
 
-				if (!TryGetTypeSize(member.Declaration.Type, diagnostics, out int size))
+				if (!TryGetTypeSize(compilation, member.Declaration.Type, diagnostics, out int size))
 					fieldsValid = false;
 			}
 
@@ -85,7 +85,7 @@ namespace EnCS.Generator
 			//return node.Modifiers.Any(x => x.Value == "partial");
 		}
 
-		static bool TryGetMembers(StructDeclarationSyntax node, List<Diagnostic> diagnostics, out List<ComponentMember> members)
+		static bool TryGetMembers(Compilation compilation, StructDeclarationSyntax node, List<Diagnostic> diagnostics, out List<ComponentMember> members)
 		{
 			members = new List<ComponentMember>();
 
@@ -94,7 +94,7 @@ namespace EnCS.Generator
 				if (!TryGetTypeName(member.Declaration.Type, diagnostics, out string typeName))
 					continue;
 
-				if (!TryGetTypeSize(member.Declaration.Type, diagnostics, out int size))
+				if (!TryGetTypeSize(compilation, member.Declaration.Type, diagnostics, out int size))
 					continue;
 
 				int bitsPerVector = Math.Min(size * BITS_PER_BYTE * ARRAY_ELEMENTS, MAX_SIMD_BUFFER_BITS);
@@ -117,6 +117,11 @@ namespace EnCS.Generator
 			if (type is PredefinedTypeSyntax predefined)
 			{
 				name = predefined.Keyword.Text;
+				return true;
+			}
+			else if (type is IdentifierNameSyntax identifier)
+			{
+				name = identifier.Identifier.Text;
 				return true;
 			}
 			else if (type is GenericNameSyntax generic)
@@ -151,7 +156,7 @@ namespace EnCS.Generator
 			}
 		}
 
-		static bool TryGetTypeSize<T>(T type, List<Diagnostic> diagnostics, out int size) where T : TypeSyntax
+		static bool TryGetTypeSize<T>(Compilation compilation, T type, List<Diagnostic> diagnostics, out int size) where T : TypeSyntax
 		{
 			if (type is PredefinedTypeSyntax predefined)
 			{
@@ -185,6 +190,19 @@ namespace EnCS.Generator
 
 					size = arrayLength * typeSize;
 					return true;
+				}
+
+				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
+
+				size = 0;
+				return false;
+			}
+			else if (type is IdentifierNameSyntax identifier)
+			{
+				var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
+				if (nodes.TryFindNode<EnumDeclarationSyntax>(x => x.Identifier.Text == identifier.Identifier.Text, out var _)) // If subtype is enum it is implicit int
+				{
+					return TryGetSize("int", out size);
 				}
 
 				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
