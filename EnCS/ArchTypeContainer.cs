@@ -57,7 +57,7 @@ namespace EnCS
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Delete(ref ArchRef<TArch> ptr)
+		public void Delete(in ArchRef<TArch> ptr)
 		{
 			entityCount--;
 

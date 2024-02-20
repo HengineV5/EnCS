@@ -38,6 +38,11 @@ public struct TestContext
 	public float data;
 }
 
+public struct TestContext2
+{
+	public float data;
+}
+
 public struct Mesh
 {
 	public string name;
@@ -104,13 +109,13 @@ public partial struct Scale
 	public static implicit operator Scale(Vector2 v) => new Scale(v.X, v.Y, 0);
 }
 
-[SystemAttribute<TestContext>]
-[UsingResource<MeshResourceManager>]
+[SystemAttribute<TestContext, TestContext2>]
 [UsingResource<TestResourceManager>]
+[UsingResource<MeshResourceManager>]
 public partial class ResourceSystem
 {
 	[SystemPreLoop, SystemLayer(0)]
-	public void PreLoop1()
+	public void PreLoop1(ref TestContext context)
 	{
 
 	}

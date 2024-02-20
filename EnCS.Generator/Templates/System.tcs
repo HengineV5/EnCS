@@ -6,13 +6,12 @@ namespace $namespace
 {
 	public partial class $name
 	{
-		public void Update<$groups~>T|$groupIdx|Arch<~~>, <~>($groups~>ref ComponentEnumerableNew<$groupComponents|$compType == "Component"|~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~|$compType == "Resource"|~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~ >.Enumerator<T|$groupIdx|Arch> en|$groupIdx|<~~>, <~$resourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
+		public void Update<$groups~>T|$groupIdx|Arch<~~>, <~>(
+			$groups~>ref ComponentEnumerableNew<$groupComponents|$compType == "Component"|~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~|$compType == "Resource"|~>|$compName|, |$compName|.Vectorized, |$compName|.Array<~~>, <~ >.Enumerator<T|$groupIdx|Arch> en|$groupIdx|<~~>, \n			<~$resourceManagers~>, \n			|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~$contexts~>, \n			ref $contextType context$contextType<~)
 			$groups~>where T|$groupIdx|Arch : unmanaged, $groupComponents|$compType == "Component"|~>IArchType<T|$groupIdx|Arch, |$compName|, |$compName|.Vectorized, |$compName|.Array><~|$compType == "Resource"|~>IArchType<T|$groupIdx|Arch, |$compName|, |$compName|.Vectorized, |$compName|.Array><~~>, <~ <~~>\n			<~
 		{
-			$contexts~>$contextType context$contextType = new $contextType();<~~>\n			<~
-
 			// Not the best, but my templating language does not handle recusion the best atm
-			$groups~>$groupPreLoops~>|$methodName|();<~~>\n				<~
+			$groups~>$groupPreLoops~>|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
 			$groupHasPreOrPostLoop~>int chunkCounter|$groupIdx| = 0;<~
 			while (en|$groupIdx|.MoveNext())
 			{
@@ -26,7 +25,7 @@ namespace $namespace
 				}<~|$methodType == "Vector"|~>$methodName($methodComponents|$compType == "Component"|~>ref item|$groupIdx|.item|$compIdx|Vec<~|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~\n
 				$groupHasPreOrPostLoop~>chunkCounter|$groupIdx| = chunkCounter|$groupIdx| == $groupChunk ? 1 : chunkCounter|$groupIdx| + 1;<~<~~>\n\n			<~
 			$reversedGroups~>}
-			$groupPostLoops~>|$methodName|();<~~>\n				<~
+			$groupPostLoops~>|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
 			en|$groupIdx|.Reset();<~~>\n			<~
 		}
 	}

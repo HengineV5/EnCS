@@ -25,9 +25,9 @@ namespace $namespace
 				return container|$archTypeName|.Create(data);
 			}
 
-			public ArchRef<$archTypeName> Delete(in ArchRef<$archTypeName> ptr)
+			public void Delete(in ArchRef<$archTypeName> ptr)
 			{
-				return container|$archTypeName|.Delete(ptr);
+				container|$archTypeName|.Delete(ptr);
 			}
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -37,11 +37,11 @@ namespace $namespace
 			}<~~>\n\n			<~
 
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public void Loop($systemName system)
+			public void Loop($systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
 			{
 				$systemContainers~>var enum|$containerName| = new ComponentEnumerableNew<$containerComponents~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<$containerName>(container|$containerName|.AsSpan(), (int)container|$containerName|.Entities);
 				<~
-				$systemGroups~>system.Update($groupContainers~>ref enum|$containerName|<~~>, <~$groupResourceManagers~>, $resourceManagerName<~);<~~>\n				<~
+				$systemGroups~>system.Update($groupContainers~>ref enum|$containerName|<~~>, <~$groupResourceManagers~>, $resourceManagerName<~$groupContextArguments~>, ref context$contextType<~);<~~>\n				<~
 			}<~~>\n\n			<~
 		}<~~>\n\n		<~
 	}

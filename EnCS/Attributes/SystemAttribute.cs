@@ -11,7 +11,22 @@ namespace EnCS.Attributes
 
 	}
 
-	public class SystemAttribute<T> : Attribute where T : unmanaged
+	public class SystemAttribute<T1> : Attribute where T1 : unmanaged
+	{
+
+	}
+
+	public class SystemAttribute<T1, T2> : Attribute where T1 : unmanaged where T2 : unmanaged
+	{
+
+	}
+
+	public class SystemAttribute<T1, T2, T3> : Attribute where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged
+	{
+
+	}
+
+	public class SystemAttribute<T1, T2, T3, T4> : Attribute where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged
 	{
 
 	}

@@ -7,11 +7,10 @@ namespace Project.Primitives
 {
 	public partial class PositionSystem
 	{
-		public void Update<T0Arch>(ref ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<T0Arch> en0)
+		public void Update<T0Arch>(
+			ref ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<T0Arch> en0)
 			where T0Arch : unmanaged, IArchType<T0Arch, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>
 		{
-			
-
 			// Not the best, but my templating language does not handle recusion the best atm
 			
 			

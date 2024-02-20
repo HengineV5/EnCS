@@ -26,9 +26,9 @@ namespace Test
 				return containerTile.Create(data);
 			}
 
-			public ArchRef<Tile> Delete(in ArchRef<Tile> ptr)
+			public void Delete(in ArchRef<Tile> ptr)
 			{
-				return containerTile.Delete(ptr);
+				containerTile.Delete(ptr);
 			}
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

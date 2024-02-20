@@ -171,7 +171,8 @@ namespace EnCS.Generator
 				{
 					systemGroupCompatibleContainers.Add(new ContainerGroup()
 					{
-						containers = GetComptaibleContainers(worldArchTypes, systemGroup.components)
+						containers = GetComptaibleContainers(worldArchTypes, systemGroup.components),
+						contextArguments = systemStruct.contexts
 					});
 				}
 
@@ -206,7 +207,8 @@ namespace EnCS.Generator
 
 					combinations.Add(new ContainerGroup()
 					{
-						containers = containers
+						containers = containers,
+						contextArguments = groups[0].contextArguments
 					});
 				}
 			}
@@ -224,7 +226,8 @@ namespace EnCS.Generator
 
 						combinations.Add(new ContainerGroup()
 						{
-							containers = containers
+							containers = containers,
+							contextArguments = groups[0].contextArguments
 						});
 					}
 				}
@@ -236,8 +239,8 @@ namespace EnCS.Generator
 		static List<Container> GetComptaibleContainers(List<ArchType> worldArchTypes, List<MethodComponent> systemComps)
 		{
 			List<MethodComponent> filteredComponents = systemComps.Where(x => x.type == "Component" || x.type == "Resource").ToList();
-			List<Container> models = new();
 
+			List<Container> models = new();
 			foreach (var archType in worldArchTypes)
 			{
 				if (!IsArchTypeComatible(archType, filteredComponents))
@@ -337,6 +340,7 @@ namespace EnCS.Generator
 			model.Set("systemContainers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(containers.Select(x => x.GetModel())));
 			model.Set("systemGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(groups.Select(x => x.GetModel())));
 			model.Set("systemResourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceManagers.Select(x => x.GetModel())));
+			model.Set("systemContextArguments".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(groups.SelectMany(x => x.contextArguments).GroupBy(x => x.type).Select(x => x.First()).Select(x => x.GetModel())));
 
 			return model;
 		}
@@ -359,6 +363,7 @@ namespace EnCS.Generator
 	struct ContainerGroup
 	{
 		public List<Container> containers;
+		public List<SystemContext> contextArguments;
 
 		public Model<ReturnType> GetModel()
 		{
@@ -366,6 +371,7 @@ namespace EnCS.Generator
 
 			model.Set("groupContainers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(containers.Select(x => x.GetModel())));
 			model.Set("groupResourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(containers.SelectMany(x => x.resourceManagers).GroupBy(x => x.name).Select(x => x.First()).Select(x => x.GetModel())));
+			model.Set("groupContextArguments".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(contextArguments.Select(x => x.GetModel())));
 
 			return model;
 		}

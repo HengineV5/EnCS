@@ -26,6 +26,8 @@ namespace EnCS.Generator
 		public static readonly DiagnosticDescriptor MethodCannotBeInMoreThanOneGroup = new("ECS009", "System update method cannot be in more than one group", "", "SystemGenerator", DiagnosticSeverity.Error, true);
 		
 		public static readonly DiagnosticDescriptor MethodsWithinGroupMustHaveIdenticalChunk = new("ECS010", "Methods within a group must have identical chunk sizes", "", "SystemGenerator", DiagnosticSeverity.Error, true);
+
+		public static readonly DiagnosticDescriptor PreOrPostLoopCanOnlyHaveContextArgs = new("ECS011", "Pre and post loop methods can only have system contexts as arguments", "", "SystemGenerator", DiagnosticSeverity.Error, true);
 	}
 
 	class SystemGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax>
@@ -72,13 +74,15 @@ namespace EnCS.Generator
 		public static bool TryGetSystem(Compilation compilation, ClassDeclarationSyntax node, List<Diagnostic> diagnostics, out System system)
 		{
 			TryGetResourceManagers(compilation, node, diagnostics, out List<ResourceManager> resourceManagers);
-			var uniqueResourceManagers = resourceManagers.GroupBy(x => x.name).Select(x => x.First());
 
-			TryGetPrePostLoopMethods(node, diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops);
 			TryGetSystemContexts(node, diagnostics, out List<SystemContext> contexts);
+			TryGetPrePostLoopMethods(compilation, node, resourceManagers, contexts, diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops);
 
 			bool methodSuccess = TryGetMethods(compilation, node, resourceManagers, contexts, diagnostics, out List<SystemMethod> methods);
 			bool groupSuccess = TryGetGroups(methods, preLoops, postLoops, out List<SystemGroup> groups);
+
+			var correctOrderResourceManagers = methods.SelectMany(x => x.components).Where(x => x.type == "Resource").Select(x => x.resourceManager);
+			var uniqueResourceManagers = correctOrderResourceManagers.GroupBy(x => x.name).Select(x => x.First());
 
 			system = new System()
 			{
@@ -112,7 +116,7 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		static bool TryGetPrePostLoopMethods(ClassDeclarationSyntax node, List<Diagnostic> diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops)
+		static bool TryGetPrePostLoopMethods(Compilation compilation, ClassDeclarationSyntax node, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops)
 		{
 			var systemPreLoops = node.Members.Where(x => x is MethodDeclarationSyntax m && IsMethodPreLoop(m)).Select(x => x as MethodDeclarationSyntax);
 			preLoops = new List<SystemMethod>();
@@ -124,13 +128,20 @@ namespace EnCS.Generator
 					continue;
 				}
 
+				TryGetMethodComponents(compilation, preLoop, resourceManagers, contexts, diagnostics, out List<MethodComponent> components);
+				if (components.Any(x => x.type != "Context"))
+				{
+					diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.PreOrPostLoopCanOnlyHaveContextArgs, preLoop.GetLocation(), ""));
+					continue;
+				}
+
 				preLoops.Add(new SystemMethod()
 				{
 					group = group,
 					name = preLoop.Identifier.Text,
-					type = "Unknown",
+					type = "PreLoop",
 					chunk = 0,
-					components = new List<MethodComponent>()
+					components = components
 				});
 			}
 
@@ -144,13 +155,20 @@ namespace EnCS.Generator
 					continue;
 				}
 
+				TryGetMethodComponents(compilation, postLoop, resourceManagers, contexts, diagnostics, out List<MethodComponent> components);
+				if (components.Any(x => x.type != "Context"))
+				{
+					diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.PreOrPostLoopCanOnlyHaveContextArgs, postLoop.GetLocation(), ""));
+					continue;
+				}
+
 				postLoops.Add(new SystemMethod()
 				{
 					group = group,
 					name = postLoop.Identifier.Text,
-					type = "Unknown",
+					type = "PostLoop",
 					chunk = 0,
-					components = new List<MethodComponent>()
+					components = components
 				});
 			}
 
@@ -218,11 +236,10 @@ namespace EnCS.Generator
 			return groups.Count > 0;
 		}
 
-		static bool TryGetComponents(Compilation compilation, ClassDeclarationSyntax node, int group, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<MethodComponent> components)
+		static bool TryGetGroupComponents(Compilation compilation, ClassDeclarationSyntax node, int group, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<MethodComponent> components)
 		{
 			components = new List<MethodComponent>();
 
-			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
 			var systemUpdateMethods = node.Members.Where(x => x is MethodDeclarationSyntax m && IsMethodSystemUpdate(m) && TryGetMethodGroup(m, out int g) && g == group).Select(x => x as MethodDeclarationSyntax);
 
 			if (systemUpdateMethods.Count() == 0)
@@ -236,8 +253,19 @@ namespace EnCS.Generator
 				return false;
 			}
 
+			TryGetMethodComponents(compilation, firstMethod, resourceManagers, contexts, diagnostics, out components);
+
+			return components.Count > 0;
+		}
+
+		static bool TryGetMethodComponents(Compilation compilation, MethodDeclarationSyntax method, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<MethodComponent> components)
+		{
+			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
+
+			components = new List<MethodComponent>();
+
 			int idx = 1;
-			foreach (var parameter in firstMethod.ParameterList.Parameters)
+			foreach (var parameter in method.ParameterList.Parameters)
 			{
 				if (parameter.Type is QualifiedNameSyntax qualifiedType)
 				{
@@ -372,7 +400,7 @@ namespace EnCS.Generator
 				if (!TryGetMethodChunk(method, out int chunk))
 					continue;
 
-				if (!TryGetComponents(compilation, node, group, resourceManagers, contexts, diagnostics, out List<MethodComponent> components))
+				if (!TryGetGroupComponents(compilation, node, group, resourceManagers, contexts, diagnostics, out List<MethodComponent> components))
 					continue;
 
 				methods.Add(new SystemMethod()

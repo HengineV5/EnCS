@@ -7,14 +7,18 @@ namespace Project.Primitives
 {
 	public partial class ResourceSystem
 	{
-		public void Update<T0Arch, T1Arch>(ref ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array, Project.Primitives.MeshResourceManager.Mesh, Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array, Project.Primitives.TestResourceManager.Kaki, Project.Primitives.TestResourceManager.Kaki.Vectorized, Project.Primitives.TestResourceManager.Kaki.Array>.Enumerator<T0Arch> en0, ref ComponentEnumerableNew<Project.Primitives.Scale, Project.Primitives.Scale.Vectorized, Project.Primitives.Scale.Array>.Enumerator<T1Arch> en1, Project.Primitives.MeshResourceManager MeshResourceManager, Project.Primitives.TestResourceManager TestResourceManager)
+		public void Update<T0Arch, T1Arch>(
+			ref ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array, Project.Primitives.MeshResourceManager.Mesh, Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array, Project.Primitives.TestResourceManager.Kaki, Project.Primitives.TestResourceManager.Kaki.Vectorized, Project.Primitives.TestResourceManager.Kaki.Array>.Enumerator<T0Arch> en0, 
+			ref ComponentEnumerableNew<Project.Primitives.Scale, Project.Primitives.Scale.Vectorized, Project.Primitives.Scale.Array>.Enumerator<T1Arch> en1, 
+			Project.Primitives.MeshResourceManager MeshResourceManager, 
+			Project.Primitives.TestResourceManager TestResourceManager, 
+			ref TestContext contextTestContext, 
+			ref TestContext2 contextTestContext2)
 			where T0Arch : unmanaged, IArchType<T0Arch, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>, IArchType<T0Arch, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>, IArchType<T0Arch, Project.Primitives.MeshResourceManager.Mesh, Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array>, IArchType<T0Arch, Project.Primitives.TestResourceManager.Kaki, Project.Primitives.TestResourceManager.Kaki.Vectorized, Project.Primitives.TestResourceManager.Kaki.Array>
 			where T1Arch : unmanaged, IArchType<T1Arch, Project.Primitives.Scale, Project.Primitives.Scale.Vectorized, Project.Primitives.Scale.Array>
 		{
-			TestContext contextTestContext = new TestContext();
-
 			// Not the best, but my templating language does not handle recusion the best atm
-			PreLoop1();
+			PreLoop1(ref contextTestContext);
 			int chunkCounter0 = 0;
 			while (en0.MoveNext())
 			{
