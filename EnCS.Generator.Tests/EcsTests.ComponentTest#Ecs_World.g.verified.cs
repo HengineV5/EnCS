@@ -9,6 +9,21 @@ namespace Test
 	{
 		public ref struct Main
 		{
+			public struct Interface : IWorld<Ecs, PositionSystem  >, IWorld<Ecs, VelocitySystem  >, IWorld<Ecs, ResourceSystem , TestContext, TestContext2 >
+			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static void Loop(Ecs ecs, PositionSystem system)
+					=> ecs.GetMain().Loop(system);
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static void Loop(Ecs ecs, VelocitySystem system)
+					=> ecs.GetMain().Loop(system);
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static void Loop(Ecs ecs, ResourceSystem system, ref TestContext contextTestContext, ref TestContext2 contextTestContext2)
+					=> ecs.GetMain().Loop(system, contextTestContext, contextTestContext2);
+			}
+
 			ref ArchTypeContainer<Wall> containerWall;
 			ref ArchTypeContainer<Tile> containerTile;
 
@@ -88,6 +103,17 @@ namespace Test
 
 		public ref struct World2
 		{
+			public struct Interface : IWorld<Ecs, PositionSystem  >, IWorld<Ecs, VelocitySystem  >
+			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static void Loop(Ecs ecs, PositionSystem system)
+					=> ecs.GetWorld2().Loop(system);
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static void Loop(Ecs ecs, VelocitySystem system)
+					=> ecs.GetWorld2().Loop(system);
+			}
+
 			ref ArchTypeContainer<Wall> containerWall;
 
 			Project.Primitives.MeshResourceManager MeshResourceManager;

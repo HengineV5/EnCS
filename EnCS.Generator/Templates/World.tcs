@@ -8,6 +8,13 @@ namespace $namespace
 	{
 		$worlds~>public ref struct $worldName
 		{
+			public struct Interface : $worldSystems~>IWorld<$ecsName, $systemName $systemContextArguments~>, $contextType<~ ><~~>, <~
+			{
+				$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static void Loop($ecsName ecs, $systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
+					=> ecs.Get|$worldName|().Loop(system$systemContextArguments~>, context$contextType<~);<~~>\n\n				<~
+			}
+
 			$worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n			<~
 
 			$worldResourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName;<~~>\n			<~

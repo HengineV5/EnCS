@@ -242,7 +242,7 @@ namespace Runner
 			tile1Ref.Position.x = 20;
 			tile2Ref.Position.x = 12;
             Console.WriteLine("PrintSystem:");
-            mainWorld.Loop(new PrintSystem());
+			LoopGeneric<Ecs.MainWorld.Interface, PrintSystem>(ecs, new PrintSystem());
 			mainWorld.Loop(layerSystem);
 
 			//ArchTypeContainerNew<Ecs.Tile, Position, Position.Vectorized, Position.Array> testContainer = new();
@@ -274,6 +274,13 @@ namespace Runner
 				}
 			}
 			*/
+		}
+
+		static void LoopGeneric<T, TSystem0>(Ecs ecs, TSystem0 system)
+			where T : IWorld<Ecs, TSystem0>
+			where TSystem0 : class
+		{
+			T.Loop(ecs, system);
 		}
 	}
 
