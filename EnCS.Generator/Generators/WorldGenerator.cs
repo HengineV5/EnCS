@@ -15,15 +15,50 @@ namespace EnCS.Generator
 		public static readonly DiagnosticDescriptor TypeMustBeValidArchType = new("ECS006", "Type must be a valid arch type", "", "SystemGenerator", DiagnosticSeverity.Error, true);
 	}
 
-	class WorldGenerator : ITemplateSourceGenerator<IdentifierNameSyntax>
+	struct WorldGeneratorData : IEquatable<WorldGeneratorData>
 	{
-		public Guid Id { get; } = Guid.NewGuid();
+		public string ns;
+		public string ecsName;
+		public Location location;
 
+		public EquatableArray<World> worlds = EquatableArray<World>.Empty;
+
+		public WorldGeneratorData(string ns, string ecsName, Location location, EquatableArray<World> worlds)
+		{
+			this.ns = ns;
+			this.ecsName = ecsName;
+			this.location = location;
+			this.worlds = worlds;
+		}
+
+		public bool Equals(WorldGeneratorData other)
+		{
+			return worlds.Equals(other.worlds);
+		}
+	}
+
+	class WorldGenerator : ITemplateSourceGenerator<IdentifierNameSyntax, WorldGeneratorData>
+	{
 		public string Template => ResourceReader.GetResource("World.tcs");
 
-        public bool TryCreateModel(Compilation compilation, IdentifierNameSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
+        public bool TryCreateModel(WorldGeneratorData data, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
 			diagnostics = new List<Diagnostic>();
+
+			model = new Model<ReturnType>();
+			model.Set("namespace".AsSpan(), Parameter.Create(data.ns));
+			model.Set("ecsName".AsSpan(), new Parameter<string>(data.ecsName));
+
+			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.worlds.Select(x => x.GetModel())));
+
+			return true;
+		}
+
+		public WorldGeneratorData? Filter(IdentifierNameSyntax node, SemanticModel semanticModel)
+		{
+			if (node.Identifier.Text != "EcsBuilder")
+				return null;
+
 			var builderRoot = EcsGenerator.GetBuilderRoot(node);
 
 			var builderSteps = builderRoot.DescendantNodes()
@@ -35,33 +70,28 @@ namespace EnCS.Generator
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 			var resourceStep = builderSteps.First(x => x.Name.Identifier.Text == "Resource");
 
-			bool resourceManagerSuccess = ArchTypeGenerator.TryGetResourceManagers(compilation, resourceStep, diagnostics, out List<ResourceManager> resourceManagers);
+			if (!ArchTypeGenerator.TryGetResourceManagers(semanticModel, resourceStep, out List<ResourceManager> resourceManagers))
+				return null;
 
-			var systems = GetSystems(systemStep);
-			var discradDiagnostics = new List<Diagnostic>();
-			var archTypeSuccess = ArchTypeGenerator.TryGetArchTypes(compilation, archTypeStep, resourceManagers, discradDiagnostics, out List<ArchType> archTypes);
+			if (!TryGetSystems(semanticModel, systemStep, out List<System> systems))
+				return null;
 
-			model = new Model<ReturnType>();
-			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
-			model.Set("ecsName".AsSpan(), new Parameter<string>(EcsGenerator.GetEcsName(node)));
+			if (!ArchTypeGenerator.TryGetArchTypes(semanticModel, archTypeStep, resourceManagers, new(), out List<ArchType> archTypes))
+				return null;
 
-			var worldSuccess = TryGetWorlds(compilation, worldStep, systems, archTypes, diagnostics, out List<World> worlds);
-			model.Set("worlds".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(worlds.Select(x => x.GetModel())));
+			if (!TryGetWorlds(semanticModel, worldStep, systems, archTypes, new(), out List<World> worlds))
+				return null;
 
-			return worldSuccess;
+			return new WorldGeneratorData(builderRoot.GetNamespace(), EcsGenerator.GetEcsName(node), builderRoot.GetLocation(), new(worlds.ToArray()));
 		}
 
-		public bool Filter(IdentifierNameSyntax node)
-		{
-			return node.Identifier.Text == "EcsBuilder";
-		}
+		public string GetName(WorldGeneratorData data)
+			=> $"{data.ecsName}_World";
 
-		public string GetName(IdentifierNameSyntax node)
-		{
-			return $"{EcsGenerator.GetEcsName(node)}_World";
-		}
+		public Location GetLocation(WorldGeneratorData data)
+			=> data.location;
 
-		public static bool TryGetWorlds(Compilation compilation, MemberAccessExpressionSyntax step, List<SystemName> allSystems, List<ArchType> allArchTypes, List<Diagnostic> diagnostics, out List<World> worlds)
+		public static bool TryGetWorlds(SemanticModel semanticModel, MemberAccessExpressionSyntax step, List<System> allSystems, List<ArchType> allArchTypes, List<Diagnostic> diagnostics, out List<World> worlds)
 		{
 			worlds = new List<World>();
 
@@ -92,15 +122,15 @@ namespace EnCS.Generator
 				if (!TryGetWorldArchTypes(genericName, allArchTypes, diagnostics, out List<ArchType> worldArchTypes))
 					continue;
 
-				var worldSystems = GetWorldSystems(compilation, worldArchTypes, allSystems, diagnostics);
+				var worldSystems = GetWorldSystems(worldArchTypes, allSystems, diagnostics);
 				var worldResourceManagers = worldSystems.SelectMany(x => x.resourceManagers).Concat(worldArchTypes.SelectMany(x => x.resourceManagers)).GroupBy(x => x.name).Select(x => x.First()).ToList();
 
 				worlds.Add(new World()
 				{
 					name = nameToken,
-					archTypes = worldArchTypes,
-					systems = worldSystems,
-					resourceManagers = worldResourceManagers
+					archTypes = new(worldArchTypes.ToArray()),
+					systems = new(worldSystems.ToArray()),
+					resourceManagers = new(worldResourceManagers.ToArray())
 				});
 
 				i++;
@@ -147,9 +177,8 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		static List<WorldSystem> GetWorldSystems(Compilation compilation, List<ArchType> worldArchTypes, List<SystemName> allSystems, List<Diagnostic> diagnostics)
+		static List<WorldSystem> GetWorldSystems(List<ArchType> worldArchTypes, List<System> allSystems, List<Diagnostic> diagnostics)
 		{
-			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
 			var models = new List<WorldSystem>();
 
 			var worldComponentNames = worldArchTypes.SelectMany(x => x.components).Select(x => x.name);
@@ -157,22 +186,19 @@ namespace EnCS.Generator
 
 			var names = worldComponentNames.Concat(resourceComponentNames);
 
-			foreach (SystemName system in allSystems)
+			foreach (System system in allSystems)
 			{
-				var systemNode = nodes.FindNode<ClassDeclarationSyntax>(x => x.Identifier.Text == system.name);
-				SystemGenerator.TryGetSystem(compilation, systemNode, diagnostics, out System systemStruct);
-
 				// Filter out all systems wich this world cannot support
-				if (!systemStruct.groups.SelectMany(x => x.components.Where(x => x.type == "Component" || x.type == "Resource")).Select(x => x.name).All(names.Contains))
+				if (!system.groups.SelectMany(x => x.components.Where(x => x.type == "Component" || x.type == "Resource")).Select(x => x.name).All(names.Contains))
 					continue;
 
 				List<ContainerGroup> systemGroupCompatibleContainers = new List<ContainerGroup>();
-				foreach (var systemGroup in systemStruct.groups)
+				foreach (var systemGroup in system.groups)
 				{
 					systemGroupCompatibleContainers.Add(new ContainerGroup()
 					{
-						containers = GetComptaibleContainers(worldArchTypes, systemGroup.components),
-						contextArguments = systemStruct.contexts
+						containers = new(GetComptaibleContainers(worldArchTypes, systemGroup.components).ToArray()),
+						contextArguments = system.contexts
 					});
 				}
 
@@ -183,9 +209,9 @@ namespace EnCS.Generator
 				models.Add(new WorldSystem()
 				{
 					name = system.name,
-					groups = containerGroups,
-					containers = systemContainers.ToList(),
-					resourceManagers = systemResourceManagers
+					groups = new(containerGroups.ToArray()),
+					containers = new(systemContainers.ToArray()),
+					resourceManagers = new(systemResourceManagers.ToArray())
 				});
 			}
 
@@ -207,7 +233,7 @@ namespace EnCS.Generator
 
 					combinations.Add(new ContainerGroup()
 					{
-						containers = containers,
+						containers = new(containers.ToArray()),
 						contextArguments = groups[0].contextArguments
 					});
 				}
@@ -226,7 +252,7 @@ namespace EnCS.Generator
 
 						combinations.Add(new ContainerGroup()
 						{
-							containers = containers,
+							containers = new(containers.ToArray()),
 							contextArguments = groups[0].contextArguments
 						});
 					}
@@ -236,7 +262,7 @@ namespace EnCS.Generator
 			return combinations;
 		}
 
-		static List<Container> GetComptaibleContainers(List<ArchType> worldArchTypes, List<MethodComponent> systemComps)
+		static List<Container> GetComptaibleContainers(List<ArchType> worldArchTypes, EquatableArray<MethodComponent> systemComps)
 		{
 			List<MethodComponent> filteredComponents = systemComps.Where(x => x.type == "Component" || x.type == "Resource").ToList();
 
@@ -251,8 +277,8 @@ namespace EnCS.Generator
 				models.Add(new Container()
 				{
 					name = archType.name,
-					components = filteredComponents,
-					resourceManagers = resourceManagers
+					components = new(filteredComponents.ToArray()),
+					resourceManagers = new(resourceManagers.ToArray())
 				});
 			}
 
@@ -271,9 +297,9 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		public static List<SystemName> GetSystems(MemberAccessExpressionSyntax step)
+		public static bool TryGetSystems(SemanticModel semanticModel, MemberAccessExpressionSyntax step, out List<System> systems)
 		{
-			var systems = new List<SystemName>();
+			systems = new List<System>();
 
 			var parentExpression = step.Parent as InvocationExpressionSyntax;
 			var lambda = parentExpression.ArgumentList.Arguments.Single().Expression as SimpleLambdaExpressionSyntax;
@@ -294,25 +320,34 @@ namespace EnCS.Generator
 
 				foreach (IdentifierNameSyntax comp in genericName.TypeArgumentList.Arguments)
 				{
-					systems.Add(new SystemName()
-					{
-						name = comp.Identifier.Text
-					});
+					var foundSymbol = semanticModel.Compilation.GetSymbolsWithName(comp.ToFullString(), SymbolFilter.Type).Single();
+					if (foundSymbol is not INamedTypeSymbol typeSymbol)
+						throw new Exception();
+
+					SystemGenerator.TryGetSystem(typeSymbol, new(), out System system);
+					systems.Add(system);
 				}
 			}
 
-			return systems;
+			return systems.Count > 0;
 		}
 	}
 
-	struct World
+	struct World : IEquatable<World>
 	{
 		public string name;
-		public List<ArchType> archTypes;
-		public List<WorldSystem> systems;
-		public List<ResourceManager> resourceManagers;
+		public EquatableArray<ArchType> archTypes;
+		public EquatableArray<WorldSystem> systems;
+		public EquatableArray<ResourceManager> resourceManagers;
 
-		public Model<ReturnType> GetModel()
+        public World()
+        {
+			archTypes = EquatableArray<ArchType>.Empty;
+			systems = EquatableArray<WorldSystem>.Empty;
+			resourceManagers = EquatableArray<ResourceManager>.Empty;
+		}
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -323,16 +358,33 @@ namespace EnCS.Generator
 
 			return model;
 		}
+
+		public bool Equals(World other)
+		{
+			return name.Equals(other.name)
+				&& archTypes.Equals(other.archTypes)
+				&& systems.Equals(other.systems)
+				&& resourceManagers.Equals(other.resourceManagers);
+		}
 	}
 
-	struct WorldSystem
+	struct WorldSystem : IEquatable<WorldSystem>
 	{
 		public string name;
-		public List<Container> containers;
-		public List<ContainerGroup> groups;
-		public List<ResourceManager> resourceManagers;
+		public EquatableArray<Container> containers;
+		public EquatableArray<ContainerGroup> groups;
+		public EquatableArray<ResourceManager> resourceManagers;
 
-		public Model<ReturnType> GetModel()
+        public WorldSystem()
+        {
+			name = "";
+			containers = EquatableArray<Container>.Empty;
+			groups = EquatableArray<ContainerGroup>.Empty;
+			resourceManagers = EquatableArray<ResourceManager>.Empty;
+
+		}
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -344,28 +396,28 @@ namespace EnCS.Generator
 
 			return model;
 		}
-	}
 
-	struct SystemName
-	{
-		public string name;
-
-		public Model<ReturnType> GetModel()
+		public bool Equals(WorldSystem other)
 		{
-			var model = new Model<ReturnType>();
-
-			model.Set("systemName".AsSpan(), Parameter.Create(name));
-
-			return model;
+			return name.Equals(other.name)
+				&& containers.Equals(other.containers)
+				&& groups.Equals(other.groups)
+				&& resourceManagers.Equals(other.resourceManagers);
 		}
 	}
 
-	struct ContainerGroup
+	struct ContainerGroup : IEquatable<ContainerGroup>
 	{
-		public List<Container> containers;
-		public List<SystemContext> contextArguments;
+		public EquatableArray<Container> containers;
+		public EquatableArray<SystemContext> contextArguments;
 
-		public Model<ReturnType> GetModel()
+        public ContainerGroup()
+        {
+			containers = EquatableArray<Container>.Empty;
+			contextArguments = EquatableArray<SystemContext>.Empty;
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -375,15 +427,28 @@ namespace EnCS.Generator
 
 			return model;
 		}
+
+		public bool Equals(ContainerGroup other)
+		{
+			return containers.Equals(other.containers)
+				&& contextArguments.Equals(other.contextArguments);
+		}
 	}
 
-	struct Container
+	struct Container : IEquatable<Container>
 	{
 		public string name;
-		public List<MethodComponent> components;
-		public List<ResourceManager> resourceManagers;
+		public EquatableArray<MethodComponent> components;
+		public EquatableArray<ResourceManager> resourceManagers;
 
-		public Model<ReturnType> GetModel()
+        public Container()
+        {
+			name = "";
+            components = EquatableArray<MethodComponent>.Empty;
+			resourceManagers = EquatableArray<ResourceManager>.Empty;
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -392,6 +457,13 @@ namespace EnCS.Generator
 			model.Set("containerResourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceManagers.Select(x => x.GetModel())));
 
 			return model;
+		}
+
+		public bool Equals(Container other)
+		{
+			return name.Equals(other.name)
+				&& components.Equals(other.components)
+				&& resourceManagers.Equals(other.resourceManagers);
 		}
 	}
 }

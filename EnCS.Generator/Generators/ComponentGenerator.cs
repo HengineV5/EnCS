@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
 using TemplateGenerator;
@@ -14,11 +15,31 @@ namespace EnCS.Generator
 	static class ComponentGeneratorDiagnostics
 	{
 		public static readonly DiagnosticDescriptor InvalidComponentMemberType = new("ECS001", "Invalid component member type", "Component member of type '{0}' is not supported", "ComponentGenerator", DiagnosticSeverity.Error, true);
-		
+
 		public static readonly DiagnosticDescriptor ComponentMustBePartial = new("ECS002", "Component struct must be partial", "Component struct is not partial", "ComponentGenerator", DiagnosticSeverity.Error, true);
 	}
 
-	class ComponentGenerator : ITemplateSourceGenerator<StructDeclarationSyntax>
+	struct ComponentGeneratorData : IEquatable<ComponentGeneratorData>
+	{
+		public INamedTypeSymbol node;
+		public Location location;
+
+		public EquatableArray<ComponentMember> members = EquatableArray<ComponentMember>.Empty;
+
+		public ComponentGeneratorData(INamedTypeSymbol node, Location location, EquatableArray<ComponentMember> members)
+		{
+			this.node = node;
+			this.location = location;
+			this.members = members;
+		}
+
+		public bool Equals(ComponentGeneratorData other)
+		{
+			return members.Equals(other.members);
+		}
+	}
+
+	class ComponentGenerator : ITemplateSourceGenerator<StructDeclarationSyntax, ComponentGeneratorData>
 	{
 		const int MAX_SIMD_BUFFER_BITS = 512;
 		const int ARRAY_ELEMENTS = 8;
@@ -26,75 +47,55 @@ namespace EnCS.Generator
 
 		public string Template => ResourceReader.GetResource("Component.tcs");
 
-		public bool TryCreateModel(Compilation compilation, StructDeclarationSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
+		public bool TryCreateModel(ComponentGeneratorData data, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
 			diagnostics = new List<Diagnostic>();
 			model = new Model<ReturnType>();
 
-			if (!IsValidComponent(compilation, node, diagnostics))
-				return false;
-
-			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
-			model.Set("compName".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
+			model.Set("namespace".AsSpan(), new Parameter<string>(data.node.ContainingNamespace.ToString()));
+			model.Set("compName".AsSpan(), new Parameter<string>(data.node.Name));
 			model.Set("arraySize".AsSpan(), new Parameter<float>(ARRAY_ELEMENTS));
 
-			var membersResult = TryGetMembers(compilation, node, diagnostics, out var members);
-			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(members.Select(x => x.GetModel())));
+			//var membersResult = TryGetMembers(compilation, node, diagnostics, out var members);
+			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.members.Select(x => x.GetModel())));
 
-			return membersResult;
+			return true;
 		}
 
-		public bool Filter(StructDeclarationSyntax node)
+		public ComponentGeneratorData? Filter(StructDeclarationSyntax node, SemanticModel semanticModel)
 		{
-			foreach (AttributeListSyntax attributeListSyntax in node.AttributeLists)
-			{
-				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-				{
-					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "ComponentAttribute")
-						return true;
+			if (semanticModel.GetDeclaredSymbol(node) is not INamedTypeSymbol typeSymbol)
+				return null;
 
-					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "Component")
-						return true;
-				}
-			}
+			if (!TryGetMembers(typeSymbol, out var members))
+				return null;
 
-			return false;
+			return new ComponentGeneratorData(typeSymbol, node.GetLocation(), new(members.ToArray()));
 		}
 
-		public string GetName(StructDeclarationSyntax node)
-		{
-			return node.Identifier.ToString();
-		}
+		public string GetName(ComponentGeneratorData data)
+			=> data.node.Name;
 
-		public static bool IsValidComponent(Compilation compilation, StructDeclarationSyntax node, List<Diagnostic> diagnostics)
-		{
-			bool hasAttribute = node.AttributeLists.SelectMany(x => x.Attributes).Select(x => x.Name as SimpleNameSyntax).Any(x => x.Identifier.Text == "ComponentAttribute" || x.Identifier.Text == "Component");
-			bool hasProperties = node.Members.Any(x => x is PropertyDeclarationSyntax);
+		public Location GetLocation(ComponentGeneratorData data)
+			=> data.location;
 
-			bool fieldsValid = true;
-			foreach (var member in node.Members.Where(x => x is FieldDeclarationSyntax).Select(x => x as FieldDeclarationSyntax))
-			{
-				if (!TryGetTypeName(member.Declaration.Type, diagnostics, out string typeName))
-					fieldsValid = false;
-
-				if (!TryGetTypeSize(compilation, member.Declaration.Type, diagnostics, out int size))
-					fieldsValid = false;
-			}
-
-			return hasAttribute && !hasProperties && fieldsValid;
-			//return node.Modifiers.Any(x => x.Value == "partial");
-		}
-
-		static bool TryGetMembers(Compilation compilation, StructDeclarationSyntax node, List<Diagnostic> diagnostics, out List<ComponentMember> members)
+		static bool TryGetMembers(INamedTypeSymbol comp, out List<ComponentMember> members)
 		{
 			members = new List<ComponentMember>();
 
-			foreach (var member in node.Members.Where(x => x is FieldDeclarationSyntax).Select(x => x as FieldDeclarationSyntax))
+			bool hasProperties = false;
+			foreach (var member in comp.GetMembers())
 			{
-				if (!TryGetTypeName(member.Declaration.Type, diagnostics, out string typeName))
+				if (member is IPropertySymbol)
+					hasProperties = true;
+
+				if (member is not IFieldSymbol field)
 					continue;
 
-				if (!TryGetTypeSize(compilation, member.Declaration.Type, diagnostics, out int size))
+				if (!TryGetTypeName(field.Type, out string typeName))
+					continue;
+
+				if (!TryGetTypeSize(field.Type, out int size))
 					continue;
 
 				int bitsPerVector = Math.Min(size * BITS_PER_BYTE * ARRAY_ELEMENTS, MAX_SIMD_BUFFER_BITS);
@@ -102,121 +103,87 @@ namespace EnCS.Generator
 
 				members.Add(new ComponentMember()
 				{
-					name = member.Declaration.Variables[0].ToString(),
-					type = typeName,
+					name = member.Name,
+					type = ClassToNative(typeName),
 					bits = bitsPerVector,
 					arraySize = vectorArraySize
 				});
 			}
 
-			return members.Count > 0;
+			return !hasProperties && members.Count > 0;
 		}
 
-		static bool TryGetTypeName<T>(T type, List<Diagnostic> diagnostics, out string name) where T : TypeSyntax
+		static bool TryGetTypeName(ITypeSymbol type, out string name)
 		{
-			if (type is PredefinedTypeSyntax predefined)
-			{
-				name = predefined.Keyword.Text;
-				return true;
-			}
-			else if (type is IdentifierNameSyntax identifier)
-			{
-				name = identifier.Identifier.Text;
-				return true;
-			}
-			else if (type is GenericNameSyntax generic)
-			{
-				StringBuilder sb = new StringBuilder();
-				sb.Append(generic.Identifier.Text);
+			name = type.ToString();
+			return true;
+		}
 
-				if (generic.TypeArgumentList.Arguments.Count > 0)
-				{
-					sb.Append('<');
-					foreach (TypeSyntax arg in generic.TypeArgumentList.Arguments)
+		static bool TryGetTypeSize(ITypeSymbol type, out int size)
+		{
+			size = 0;
+			switch (type.TypeKind)
+			{
+				case TypeKind.Enum:
 					{
-						if (!TryGetTypeName(arg, diagnostics, out var nestedName))
-						{
-							name = "";
+						if (type is not INamedTypeSymbol namedType)
 							return false;
+
+						return TryGetTypeSize(namedType.EnumUnderlyingType, out size);
+					}
+				default:
+					{
+						if (TryGetSize(type.Name, out size))
+							return true;
+
+						var attributes = type.GetAttributes();
+						foreach (var attribute in attributes)
+						{
+							if (attribute.AttributeClass.Name != "InlineArrayAttribute")
+								continue;
+
+							if (type is not INamedTypeSymbol namedType)
+								return false;
+
+							if (namedType.TypeArguments.Length != 1)
+								return false;
+
+							if (!TryGetTypeSize(namedType.TypeArguments[0], out size))
+								return false;
+
+							size *= int.Parse(attribute.ConstructorArguments[0].Value.ToString());
+							return true;
 						}
 
-						sb.Append(nestedName);
+						return false;
 					}
-					sb.Append('>');
-				}
-
-				name = sb.ToString();
-				return true;
-			}
-			else
-			{
-				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
-				name = "";
-				return false;
 			}
 		}
 
-		static bool TryGetTypeSize<T>(Compilation compilation, T type, List<Diagnostic> diagnostics, out int size) where T : TypeSyntax
+		public static bool IsValidComponent(ITypeSymbol node)
 		{
-			if (type is PredefinedTypeSyntax predefined)
-			{
-				if (!TryGetSize(predefined.Keyword.Text, out size))
-				{
-					diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
-					return false;
-				}
-
+			if (node.Name == "Ref" || node.Name == "Vectorized") // TODO: Better component detection
 				return true;
-			}
-			else if (type is GenericNameSyntax generic)
-			{
-				int nameLength = generic.Identifier.Text.Length;
 
-				if ((nameLength == 11 || nameLength == 12) && generic.Identifier.Text.StartsWith("FixedArray"))
-				{
-					int arrayLength = int.Parse(generic.Identifier.Text.Substring(10));
-
-					if (!TryGetTypeName(generic.TypeArgumentList.Arguments[0], diagnostics, out string typeName))
-					{
-						size = 0;
-						return false;
-					}
-
-					if (!TryGetSize(typeName, out int typeSize))
-					{
-						size = 0;
-						return false;
-					}
-
-					size = arrayLength * typeSize;
-					return true;
-				}
-
-				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
-
-				size = 0;
+			if (!node.GetAttributes().Any(x => x.AttributeClass.Name == "ComponentAttribute" || x.AttributeClass.Name == "Component"))
 				return false;
-			}
-			else if (type is IdentifierNameSyntax identifier)
+
+			foreach (var member in node.GetMembers())
 			{
-				var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
-				if (nodes.TryFindNode<EnumDeclarationSyntax>(x => x.Identifier.Text == identifier.Identifier.Text, out var _)) // If subtype is enum it is implicit int
-				{
-					return TryGetSize("int", out size);
-				}
+				if (member is IPropertySymbol)
+					return false;
 
-				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
+				if (member is not IFieldSymbol field)
+					continue;
 
-				size = 0;
-				return false;
+				if (!TryGetTypeName(field.Type, out string typeName))
+					return false;
+
+				if (!TryGetTypeSize(field.Type, out int size))
+					return false;
 			}
-			else
-			{
-				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, type.GetLocation(), type.ToString()));
 
-				size = 0;
-				return false;
-			}
+			return true;
 		}
 
 		static bool TryGetSize(string numericTypeName, out int size)
@@ -224,29 +191,29 @@ namespace EnCS.Generator
 			switch (numericTypeName)
 			{
 				case "sbyte":
-				case "byte":
-				case "char":
+				case "Byte":
+				case "Char":
 					size = 1;
 					return true;
-				case "short":
-				case "ushort":
+				case "Int16":
+				case "Iint16":
 					size = 2;
 					return true;
-				case "int":
-				case "uint":
+				case "Int32":
+				case "Iint32":
 					size = 4;
 					return true;
-				case "long":
-				case "ulong":
+				case "Int64":
+				case "Iin64":
 					size = 8;
 					return true;
-				case "float":
+				case "Single":
 					size = 4;
 					return true;
-				case "double":
+				case "Double":
 					size = 8;
 					return true;
-				case "decimal":
+				case "Decimal":
 					size = 16;
 					return true;
 				default:
@@ -277,16 +244,55 @@ namespace EnCS.Generator
 
 			}
 		}
+
+		static string ClassToNative(string name)
+		{
+			switch (name)
+			{
+				case "Char":
+					return "char";
+				case "Byte":
+					return "byte";
+				case "Int16":
+					return "short";
+				case "UInt16":
+					return "ushort";
+				case "Int32":
+					return "int";
+				case "UInt32":
+					return "uint";
+				case "Int64":
+					return "long";
+				case "UInt64":
+					return "ulong";
+				case "Single":
+					return "float";
+				case "Double":
+					return "double";
+				case "Decimal":
+					return "decimal";
+				default:
+					return name;
+			}
+		}
 	}
 
-	struct ComponentMember
+	struct ComponentMember : IEquatable<ComponentMember>
 	{
 		public string name;
 		public string type;
 		public int bits;
 		public int arraySize;
 
-		public Model<ReturnType> GetModel()
+        public ComponentMember()
+        {
+			name = "";
+			type = "";
+			bits = 0;
+			arraySize = 0;
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -296,6 +302,14 @@ namespace EnCS.Generator
 			model.Set("arraySize".AsSpan(), Parameter.Create<float>(arraySize));
 
 			return model;
+		}
+
+		public bool Equals(ComponentMember other)
+		{
+			return name.Equals(other.name)
+				&& type.Equals(other.type)
+				&& bits.Equals(other.bits)
+				&& arraySize.Equals(other.arraySize);
 		}
 	}
 }

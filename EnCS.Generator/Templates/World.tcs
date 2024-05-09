@@ -12,7 +12,7 @@ namespace $namespace
 			{
 				$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static void Loop($ecsName ecs, $systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
-					=> ecs.Get|$worldName|().Loop(system$systemContextArguments~>, context$contextType<~);<~~>\n\n				<~
+					=> ecs.Get|$worldName|().Loop(system$systemContextArguments~>, ref context$contextType<~);<~~>\n\n				<~
 			}
 
 			$worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n			<~

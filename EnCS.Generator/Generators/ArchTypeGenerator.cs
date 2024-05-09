@@ -16,17 +16,53 @@ namespace EnCS.Generator
 		public static readonly DiagnosticDescriptor ArchTypeMustBeValidComponent = new("ECS003", "Archtype can only contain valid components", "Archtype member is not valid component", "ArchTypeGenerator", DiagnosticSeverity.Error, true);
 	}
 
-	class ArchTypeGenerator : ITemplateSourceGenerator<IdentifierNameSyntax>
+	struct ArchTypeGeneratorData : IEquatable<ArchTypeGeneratorData>
+	{
+		public string ns;
+		public string ecsName;
+		public Location location;
+
+		public EquatableArray<ArchType> archTypes = EquatableArray<ArchType>.Empty;
+
+        public ArchTypeGeneratorData(string ns, string ecsName, Location location, EquatableArray<ArchType> archTypes)
+		{
+			this.ns = ns;
+			this.ecsName = ecsName;
+			this.location = location;
+			this.archTypes = archTypes;
+		}
+
+		public bool Equals(ArchTypeGeneratorData other)
+		{
+			return archTypes.Equals(other.archTypes);
+		}
+	}
+
+	class ArchTypeGenerator : ITemplateSourceGenerator<IdentifierNameSyntax, ArchTypeGeneratorData>
 	{
 		public Guid Id { get; } = Guid.NewGuid();
 
 		public string Template => ResourceReader.GetResource("ArchType.tcs");
 
-        public bool TryCreateModel(Compilation compilation, IdentifierNameSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
+        public bool TryCreateModel(ArchTypeGeneratorData data, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
 			diagnostics = new List<Diagnostic>();
-			var builderRoot = EcsGenerator.GetBuilderRoot(node);
 
+			model = new Model<ReturnType>();
+			model.Set("namespace".AsSpan(), Parameter.Create(data.ns));
+			model.Set("ecsName".AsSpan(), new Parameter<string>(data.ecsName));
+
+			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.archTypes.Select(x => x.GetModel())));
+
+			return true;
+		}
+
+		public ArchTypeGeneratorData? Filter(IdentifierNameSyntax node, SemanticModel semanticModel)
+		{
+			if (node.Identifier.Text != "EcsBuilder")
+				return null;
+
+			var builderRoot = EcsGenerator.GetBuilderRoot(node);
 			var builderSteps = builderRoot.DescendantNodes()
 				.Where(x => x is MemberAccessExpressionSyntax)
 				.Cast<MemberAccessExpressionSyntax>();
@@ -34,31 +70,23 @@ namespace EnCS.Generator
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 			var resourceStep = builderSteps.First(x => x.Name.Identifier.Text == "Resource");
 
-			bool resourceManagerSuccess = TryGetResourceManagers(compilation, resourceStep, diagnostics, out List<ResourceManager> resourceManagers);
+			if (!TryGetResourceManagers(semanticModel, resourceStep, out List<ResourceManager> resourceManagers))
+				return null;
 
-			model = new Model<ReturnType>();
-			model.Set("namespace".AsSpan(), Parameter.Create(node.GetNamespace()));
-			model.Set("ecsName".AsSpan(), new Parameter<string>(EcsGenerator.GetEcsName(node)));
+			if (!TryGetArchTypes(semanticModel, archTypeStep, resourceManagers, new(), out List<ArchType> archTypes))
+				return null;
 
-			var archTypeSuccess = TryGetArchTypes(compilation, archTypeStep, resourceManagers, diagnostics, out List<ArchType> archTypes);
-			model.Set("archTypes".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(archTypes.Select(x => x.GetModel())));
-
-			return resourceManagerSuccess && archTypeSuccess;
+			return new ArchTypeGeneratorData(builderRoot.GetNamespace(), EcsGenerator.GetEcsName(node), builderRoot.GetLocation(), new(archTypes.ToArray()));
 		}
 
-		public bool Filter(IdentifierNameSyntax node)
-		{
-			return node.Identifier.Text == "EcsBuilder";
-		}
+		public string GetName(ArchTypeGeneratorData data)
+			=> $"{data.ecsName}_ArchType";
 
-		public string GetName(IdentifierNameSyntax node)
-		{
-			return $"{EcsGenerator.GetEcsName(node)}_ArchType";
-		}
+		public Location GetLocation(ArchTypeGeneratorData data)
+			=> data.location;
 
-		public static bool TryGetResourceManagers(Compilation compilation, MemberAccessExpressionSyntax step, List<Diagnostic> diagnostics, out List<ResourceManager> resourceManagers)
+		public static bool TryGetResourceManagers(SemanticModel semanticModel, MemberAccessExpressionSyntax step, out List<ResourceManager> resourceManagers)
 		{
-			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
 			resourceManagers = new List<ResourceManager>();
 
 			var parentExpression = step.Parent as InvocationExpressionSyntax;
@@ -79,16 +107,19 @@ namespace EnCS.Generator
 					continue;
 
 				var resourceManagerType = genericName.TypeArgumentList.Arguments[0] as IdentifierNameSyntax;
-				var resourceManager = nodes.FindNode<ClassDeclarationSyntax>(x => x.Identifier.Text == resourceManagerType.Identifier.Text);
 
-				ResourceManagerGenerator.TryGetResourceManagers(compilation, resourceManager, out List<ResourceManager> localResourceManagers);
+				var foundSymbol = semanticModel.Compilation.GetSymbolsWithName(resourceManagerType.ToFullString(), SymbolFilter.Type).Single();
+				if (foundSymbol is not INamedTypeSymbol typeSymbol)
+					throw new Exception();
+
+				ResourceManagerGenerator.TryGetResourceManagers(typeSymbol, out List<ResourceManager> localResourceManagers);
 				resourceManagers.AddRange(localResourceManagers);
 			}
 
 			return true;
 		}
 
-		public static bool TryGetArchTypes(Compilation compilation, MemberAccessExpressionSyntax step, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics, out List<ArchType> models)
+		public static bool TryGetArchTypes(SemanticModel semanticModel, MemberAccessExpressionSyntax step, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics, out List<ArchType> models)
 		{
 			models = new List<ArchType>();
 
@@ -112,8 +143,8 @@ namespace EnCS.Generator
 				var nameArg = invocation.ArgumentList.Arguments[0].Expression as LiteralExpressionSyntax;
 				var nameToken = nameArg.Token.ValueText;
 
-				bool compSuccess = TryGetComponents(compilation, genericName, resourceManagers, diagnostics, out List<Component> components);
-				bool resourceCompSuccess = TryGetResourceComponents(compilation, genericName, resourceManagers, out List<ResourceComponent> resourceComponents);
+				bool compSuccess = TryGetComponents(semanticModel, genericName, resourceManagers, diagnostics, out List<Component> components);
+				bool resourceCompSuccess = TryGetResourceComponents(semanticModel, genericName, resourceManagers, out List<ResourceComponent> resourceComponents);
 
 				if (!compSuccess && !resourceCompSuccess)
 					continue;
@@ -123,29 +154,29 @@ namespace EnCS.Generator
 				models.Add(new ArchType()
 				{
 					name = nameToken,
-					components = components,
-					resourceComponents = resourceComponents,
-					resourceManagers = uniqueResourcManagers
+					components = new(components.ToArray()),
+					resourceComponents = new(resourceComponents.ToArray()),
+					resourceManagers = new(uniqueResourcManagers.ToArray())
 				});
 			}
 
 			return models.Count > 0;
 		}
 
-		static bool TryGetComponents(Compilation compilation, GenericNameSyntax name, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics, out List<Component> models)
+		static bool TryGetComponents(SemanticModel semanticModel, GenericNameSyntax name, List<ResourceManager> resourceManagers, List<Diagnostic> diagnostics, out List<Component> models)
 		{
-			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
 			models = new List<Component>();
 
 			foreach (IdentifierNameSyntax comp in name.TypeArgumentList.Arguments)
 			{
-				var compNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == comp.Identifier.Text);
+				var foundSymbol = semanticModel.Compilation.GetSymbolsWithName(comp.ToFullString(), SymbolFilter.Type).Single();
+				if (foundSymbol is not INamedTypeSymbol typeSymbol)
+					throw new Exception();
 
-				var discardDiagnostics = new List<Diagnostic>();
-				if (!ComponentGenerator.IsValidComponent(compilation, compNode, discardDiagnostics))
+				if (!ComponentGenerator.IsValidComponent(typeSymbol))
 				{
 					// Only show error if struct is not valid component and not a registerd resource.
-					if (!IsResource(compNode, resourceManagers))
+					if (!IsResource(typeSymbol, resourceManagers))
 						diagnostics.Add(Diagnostic.Create(ArchTypeGeneratorDiagnostics.ArchTypeMustBeValidComponent, comp.GetLocation(), ""));
 
 					continue;
@@ -153,7 +184,7 @@ namespace EnCS.Generator
 
 				models.Add(new Component()
 				{
-					name = $"{compNode.GetNamespace()}.{comp.Identifier.Text}",
+					name = $"{typeSymbol.ContainingNamespace}.{comp.Identifier.Text}",
 					varName = comp.Identifier.Text
 				});
 			}
@@ -161,16 +192,17 @@ namespace EnCS.Generator
 			return models.Count > 0;
 		}
 
-		static bool TryGetResourceComponents(Compilation compilation, GenericNameSyntax name, List<ResourceManager> resourceManagers, out List<ResourceComponent> models)
+		static bool TryGetResourceComponents(SemanticModel semanticModel, GenericNameSyntax name, List<ResourceManager> resourceManagers, out List<ResourceComponent> models)
 		{
-			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
 			models = new List<ResourceComponent>();
 
 			foreach (IdentifierNameSyntax comp in name.TypeArgumentList.Arguments)
 			{
-				var compNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == comp.Identifier.Text);
+				var foundSymbol = semanticModel.Compilation.GetSymbolsWithName(comp.ToFullString(), SymbolFilter.Type).Single();
+				if (foundSymbol is not INamedTypeSymbol typeSymbol)
+					throw new Exception();
 
-				if (!TryGetResourceManager(compNode, resourceManagers, out ResourceManager resourceManager))
+				if (!TryGetResourceManager(typeSymbol, resourceManagers, out ResourceManager resourceManager))
 					continue;
 
 				models.Add(new ResourceComponent()
@@ -184,26 +216,34 @@ namespace EnCS.Generator
 			return models.Count > 0;
 		}
 
-		static bool IsResource(StructDeclarationSyntax comp, List<ResourceManager> resourceManagers)
+		static bool IsResource(INamedTypeSymbol comp, List<ResourceManager> resourceManagers)
 		{
-			return resourceManagers.Any(x => x.inType == comp.Identifier.Text);
+			return resourceManagers.Any(x => x.inType == comp.Name);
 		}
 
-		static bool TryGetResourceManager(StructDeclarationSyntax comp, List<ResourceManager> resourceManagers, out ResourceManager resourceManager)
+		static bool TryGetResourceManager(INamedTypeSymbol comp, List<ResourceManager> resourceManagers, out ResourceManager resourceManager)
 		{
-			resourceManager = resourceManagers.FirstOrDefault(x => x.inType == comp.Identifier.Text);
+			resourceManager = resourceManagers.FirstOrDefault(x => x.inType == comp.Name);
 			return IsResource(comp, resourceManagers);
 		}
 	}
 
-	struct ArchType
+	struct ArchType : IEquatable<ArchType>
 	{
 		public string name;
-		public List<Component> components;
-		public List<ResourceComponent> resourceComponents;
-		public List<ResourceManager> resourceManagers;
+		public EquatableArray<Component> components;
+		public EquatableArray<ResourceComponent> resourceComponents;
+		public EquatableArray<ResourceManager> resourceManagers;
 
-		public Model<ReturnType> GetModel()
+        public ArchType()
+        {
+			name = "";
+            components = EquatableArray<Component>.Empty;
+			resourceComponents = EquatableArray<ResourceComponent>.Empty;
+			resourceManagers = EquatableArray<ResourceManager>.Empty;
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -214,14 +254,28 @@ namespace EnCS.Generator
 
 			return model;
 		}
+
+		public bool Equals(ArchType other)
+		{
+			return name.Equals(other.name)
+				&& components.Equals(other.components)
+				&& resourceComponents.Equals(other.resourceComponents)
+				&& resourceManagers.Equals(other.resourceManagers);
+		}
 	}
 
-	struct Component
+	struct Component : IEquatable<Component>
 	{
 		public string name;
 		public string varName;
 
-		public Model<ReturnType> GetModel()
+        public Component()
+        {
+			name = "";
+			varName = "";
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -231,15 +285,28 @@ namespace EnCS.Generator
 				
 			return model;
 		}
+
+		public bool Equals(Component other)
+		{
+			return name.Equals(other.name)
+				&& varName.Equals(other.varName);
+		}
 	}
 
-	struct ResourceComponent
+	struct ResourceComponent : IEquatable<ResourceComponent>
 	{
 		public string name;
 		public string varName;
 		public ResourceManager resourceManager;
 
-		public Model<ReturnType> GetModel()
+        public ResourceComponent()
+        {
+			name = "";
+			varName = "";
+			resourceManager = new();
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -249,6 +316,13 @@ namespace EnCS.Generator
 			model.Set("compType".AsSpan(), Parameter.Create("Resource"));
 
 			return model;
+		}
+
+		public bool Equals(ResourceComponent other)
+		{
+			return name.Equals(other.name)
+				&& varName.Equals(other.varName)
+				&& resourceManager.Equals(other.resourceManager);
 		}
 	}
 }

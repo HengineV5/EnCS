@@ -68,7 +68,15 @@ namespace EnCS.Generator
 
 		public static T FindNode<T>(this IEnumerable<SyntaxNode> nodes, Func<T, bool> predicate) where T : SyntaxNode
 		{
-			return nodes.Where(x => x is T).Cast<T>().Single(predicate);
+			foreach (var node in nodes)
+			{
+				if (node is not T t || !predicate(t))
+					continue;
+
+				return t;
+			}
+
+			throw new Exception();
 		}
 
 		public static bool TryFindNode<T>(this IEnumerable<SyntaxNode> nodes, Func<T, bool> predicate, out T node) where T : SyntaxNode

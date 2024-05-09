@@ -15,12 +15,17 @@ namespace EnCS.Generator
 			var worldGenerator = new WorldGenerator();
 			var resourceManagerGenerator = new ResourceManagerGenerator();
 
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, compGenerator);
+			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.ComponentAttribute", context, compGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, systemGenerator);
+			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute", context, systemGenerator);
+			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<T1, T2>", context, systemGenerator);
+			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<T1,T2>", context, systemGenerator);
+			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<T,T>", context, systemGenerator);
+			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<,>", context, systemGenerator);
+			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<>", context, systemGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, worldGenerator);
 			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, resourceManagerGenerator);
+			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.ResourceManagerAttribute", context, resourceManagerGenerator);
 		}
 	}
 }

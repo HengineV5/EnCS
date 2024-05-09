@@ -6,12 +6,21 @@ namespace EnCS.Generator.Tests
 {
 	public static class TestHelper
 	{
-		public static Task Verify(string source)
+		public static Task Verify(params string[] source)
 		{
-			SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source);
-			CSharpCompilation compilation = CSharpCompilation.Create("Tests", new[] { syntaxTree });
+			List<SyntaxTree> trees = new List<SyntaxTree>();
+			foreach (var item in source)
+			{
+				trees.Add(CSharpSyntaxTree.ParseText(item));
+			}
 
-			GeneratorDriver driver = CSharpGeneratorDriver.Create(new TemplateGenerator());
+			var r = new MetadataReference[1];
+			r[0] = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+
+			CSharpCompilation compilation = CSharpCompilation.Create("Tests", trees, references: r);
+			var diag = compilation.GetDiagnostics();
+
+            GeneratorDriver driver = CSharpGeneratorDriver.Create(new TemplateGenerator());
 			driver = driver.RunGenerators(compilation);
 			
 			return Verifier.Verify(driver);
@@ -24,7 +33,189 @@ namespace EnCS.Generator.Tests
 		[Fact]
 		public Task ComponentTest()
 		{
+			string fixedArraySource = @"
+using System.Runtime.CompilerServices;
+
+namespace EnCS
+{
+	[InlineArray(2)]
+	public struct FixedArray2<T>
+	{
+		T _element0;
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public ref T GetPinnableReference()
+		{
+			return ref Unsafe.AsRef(ref _element0);
+		}
+	}
+
+	[InlineArray(4)]
+	public struct FixedArray4<T>
+	{
+		T _element0;
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public ref T GetPinnableReference()
+		{
+			return ref Unsafe.AsRef(ref _element0);
+		}
+	}
+
+	[InlineArray(8)]
+	public struct FixedArray8<T>
+	{
+		T _element0;
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public ref T GetPinnableReference()
+		{
+			return ref Unsafe.AsRef(ref _element0);
+		}
+	}
+
+	[InlineArray(16)]
+	public struct FixedArray16<T>
+	{
+		T _element0;
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public ref T GetPinnableReference()
+		{
+			return ref Unsafe.AsRef(ref _element0);
+		}
+	}
+
+	[InlineArray(32)]
+	public struct FixedArray32<T>
+	{
+		T _element0;
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public ref T GetPinnableReference()
+		{
+			return ref Unsafe.AsRef(ref _element0);
+		}
+	}
+
+	[InlineArray(64)]
+	public struct FixedArray64<T>
+	{
+		T _element0;
+
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public ref T GetPinnableReference()
+		{
+			return ref Unsafe.AsRef(ref _element0);
+		}
+	}
+}
+
+";
+
+			string interfaceSource = @"
+namespace EnCS
+{
+	public interface IResourceManager<TResource>
+	{
+		public uint Store(in TResource resource);
+
+		public ref TResource Get(uint id);
+	}
+
+	public interface IResourceManager<TIn, TOut>
+	{
+		public uint Store(in TIn resource);
+
+		public ref TOut Get(uint id);
+	}
+}
+";
+
+			string attribSource = @"
+using System;
+
+namespace EnCS.Attributes
+{
+	public class ComponentAttribute : System.Attribute
+	{
+
+	}
+
+	public class ArchTypeAttribute : System.Attribute
+	{
+
+	}
+
+	public class ResourceManagerAttribute : System.Attribute
+	{
+
+	}
+
+	public class SystemAttribute : System.Attribute
+	{
+
+	}
+
+	public class SystemContextAttribute<T1> : System.Attribute where T1 : unmanaged
+	{
+
+	}
+
+	public class SystemContextAttribute<T1, T2> : System.Attribute where T1 : unmanaged where T2 : unmanaged
+	{
+
+	}
+
+	public class SystemContextAttribute<T1, T2, T3> : System.Attribute where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged
+	{
+
+	}
+
+	public class SystemContextAttribute<T1, T2, T3, T4> : System.Attribute where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged
+	{
+
+	}
+
+	public class SystemLayerAttribute : System.Attribute
+	{
+		public SystemLayerAttribute(int layer)
+		{
+            
+		}
+
+		public SystemLayerAttribute(int layer, int chunk)
+		{
+
+		}
+	}
+
+	public class SystemUpdateAttribute : System.Attribute
+	{
+
+	}
+
+	public class SystemPreLoopAttribute : System.Attribute
+	{
+
+	}
+
+	public class SystemPostLoopAttribute : System.Attribute
+	{
+
+	}
+
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
+	public class UsingResourceAttribute<T> : System.Attribute
+	{
+
+	}
+}
+";
+
 			string source = @"
+using EnCS;
+using EnCS.Attributes;
 using namespace Project.Primitives;
 
 public enum CompEnum
@@ -75,6 +266,41 @@ public partial class MeshResourceManager : IResourceManager<Mesh, MeshId>
 
 }
 
+public struct TestResource
+{
+	public string name;
+}
+
+public struct TestResourceId
+{
+	public uint id;
+}
+
+[ResourceManager]
+public partial class MeshResourceManager2 : IResourceManager<TestResource, TestResourceId>
+{
+	Memory<Runner.TestResource> resource = new Runner.TestResource[8];
+	Memory<Runner.TestResourceId> resourceids = new Runner.TestResourceId[8];
+
+    public MeshResourceManager()
+    {
+		resource.Span[0] = new() { name = ""yay"" };
+		resourceids.Span[0] = new() { id = 0 };
+		resource.Span[1] = new() { name = ""nay"" };
+		resourceids.Span[1] = new() { id = 1 };
+    }
+
+    public ref Runner.TestResourceId Get(uint id)
+	{
+		return ref resourceids.Span[(int)id];
+	}
+
+	public uint Store(in Runner.TestResource resource)
+	{
+		return resource.name == ""yay"" ? 0u : 1u;
+	}
+}
+
 [Component]
 public partial struct InvalidComp
 {
@@ -109,7 +335,8 @@ public partial struct Scale
 	public static implicit operator Scale(Vector2 v) => new Scale(v.X, v.Y, 0);
 }
 
-[SystemAttribute<TestContext, TestContext2>]
+[SystemAttribute]
+[SystemContext<TestContext, TestContext2>]
 [UsingResource<TestResourceManager>]
 [UsingResource<MeshResourceManager>]
 public partial class ResourceSystem
@@ -206,13 +433,6 @@ public partial class VelocitySystem
 	}
 }
 
-[ComposedSystem<VelocitySystem>(layer = 0)]
-[ComposedSystem<ResourceSystem>(layer = 1, chunk = 8)]
-public partial class ComposedSystem
-{
-
-}
-
 public partial struct Ecs
 {
 
@@ -272,7 +492,7 @@ namespace Test
 
 			var source3 = File.ReadAllText("Files/TestFile.txt");
 
-			return TestHelper.Verify(source);
+			return TestHelper.Verify(source, attribSource, interfaceSource, fixedArraySource);
 		}
 	}
 }

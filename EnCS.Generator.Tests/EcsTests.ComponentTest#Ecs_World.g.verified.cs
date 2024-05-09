@@ -21,7 +21,7 @@ namespace Test
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static void Loop(Ecs ecs, ResourceSystem system, ref TestContext contextTestContext, ref TestContext2 contextTestContext2)
-					=> ecs.GetMain().Loop(system, contextTestContext, contextTestContext2);
+					=> ecs.GetMain().Loop(system, ref contextTestContext, ref contextTestContext2);
 			}
 
 			ref ArchTypeContainer<Wall> containerWall;

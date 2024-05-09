@@ -9,88 +9,86 @@ using TemplateGenerator;
 
 namespace EnCS.Generator
 {
-	class ResourceManagerGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax>
+	struct ResourceManagerGeneratorData : IEquatable<ResourceManagerGeneratorData>
+	{
+		public INamedTypeSymbol node;
+		public Location location;
+
+		public EquatableArray<ResourceManager> resourceManagers = EquatableArray<ResourceManager>.Empty;
+
+		public ResourceManagerGeneratorData(INamedTypeSymbol node, Location location, EquatableArray<ResourceManager> resourceManagers)
+		{
+			this.node = node;
+			this.resourceManagers = resourceManagers;
+		}
+
+		public bool Equals(ResourceManagerGeneratorData other)
+		{
+			return resourceManagers.Equals(other.resourceManagers);
+		}
+	}
+
+	class ResourceManagerGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax, ResourceManagerGeneratorData>
 	{
 		public string Template => ResourceReader.GetResource("ResourceManager.tcs");
 
-		public bool TryCreateModel(Compilation compilation, ClassDeclarationSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
+		public bool TryCreateModel(ResourceManagerGeneratorData data, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
 			diagnostics = new List<Diagnostic>();
 			model = new Model<ReturnType>();
-			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
-			model.Set("name".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
+			model.Set("namespace".AsSpan(), new Parameter<string>(data.node.ContainingNamespace.ToString()));
+			model.Set("name".AsSpan(), new Parameter<string>(data.node.Name));
 
-			bool resourceManagerSuccess = TryGetResourceManagers(compilation, node, out List<ResourceManager> resourceManagers);
-			model.Set("resourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceManagers.Select(x => x.GetModel())));
+			model.Set("resourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.resourceManagers.Select(x => x.GetModel())));
 
-			return resourceManagerSuccess;
+			return true;
 		}
 
-		public bool Filter(ClassDeclarationSyntax node)
+		public ResourceManagerGeneratorData? Filter(ClassDeclarationSyntax node, SemanticModel semanticModel)
 		{
-			foreach (AttributeListSyntax attributeListSyntax in node.AttributeLists)
-			{
-				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-				{
-					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "ResourceManagerAttribute")
-						return true;
+			if (semanticModel.GetDeclaredSymbol(node) is not INamedTypeSymbol typeSymbol)
+				return null;
 
-					if ((attributeSyntax.Name as SimpleNameSyntax).Identifier.Text == "ResourceManager")
-						return true;
-				}
-			}
+			if (!TryGetResourceManagers(typeSymbol, out var resourceManagers))
+				return null;
 
-			return false;
+			return new ResourceManagerGeneratorData(typeSymbol, node.GetLocation(), new(resourceManagers.ToArray()));
 		}
 
-		public string GetName(ClassDeclarationSyntax node)
-		{
-			return node.Identifier.ToString();
-		}
+		public string GetName(ResourceManagerGeneratorData data)
+			=> data.node.Name;
 
-		public static bool TryGetResourceManagers(Compilation compilation, ClassDeclarationSyntax resourceManager, out List<ResourceManager> resourceManagers)
+		public Location GetLocation(ResourceManagerGeneratorData data)
+			=> data.location;
+
+		public static bool TryGetResourceManagers(INamedTypeSymbol resourceManager, out List<ResourceManager> resourceManagers)
 		{
-			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
 			resourceManagers = new List<ResourceManager>();
 
-			var managerTypes = resourceManager.BaseList.Types.Where(x => x is SimpleBaseTypeSyntax s && s.Type is GenericNameSyntax g && g.Identifier.Text == "IResourceManager");
-			foreach (var manager in managerTypes)
+			foreach (var type in resourceManager.Interfaces)
 			{
-				if (manager is not SimpleBaseTypeSyntax s)
+				if (type.Name != "IResourceManager")
 					continue;
 
-				if (s.Type is not GenericNameSyntax g)
+				var typeArguments = type.TypeArguments;
+
+				// Dont throw if not filled in yet.
+				if (typeArguments.Length == 0)
 					continue;
 
-				string inType;
-				string outType;
-
-				if (g.TypeArgumentList.Arguments.Count == 1)
-				{
-					inType = g.TypeArgumentList.Arguments[0].ToString();
-					outType = inType;
-				}
-				else if (g.TypeArgumentList.Arguments.Count == 2)
-				{
-					inType = g.TypeArgumentList.Arguments[0].ToString();
-					outType = g.TypeArgumentList.Arguments[1].ToString();
-				}
-				else
-				{
+				if (typeArguments.Length > 2)
 					throw new Exception("Invalid number of type arguments for resource managers, must be 1 or 2");
-				}
 
-				var typeName = g.TypeArgumentList.Arguments[0].ToString();
-				var typeNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == typeName);
+				string inType = typeArguments[0].Name;
+				string outType = typeArguments.Length == 2 ? typeArguments[1].Name : inType;
 
 				resourceManagers.Add(new ResourceManager()
 				{
-					name = resourceManager.Identifier.Text,
-					ns = resourceManager.GetNamespace(),
-					//type = typeName,
+					name = resourceManager.Name,
+					ns = resourceManager.ContainingNamespace.ToString(),
 					inType = inType,
 					outType = outType,
-					typeNs = typeNode.GetNamespace()
+					typeNs = typeArguments[0].ContainingNamespace.ToString()
 				});
 			}
 
@@ -98,27 +96,43 @@ namespace EnCS.Generator
 		}
 	}
 
-	struct ResourceManager
+	struct ResourceManager : IEquatable<ResourceManager>
 	{
 		public string name;
 		public string ns;
-		//public string type;
 		public string inType;
 		public string outType;
 		public string typeNs;
 
-		public Model<ReturnType> GetModel()
+        public ResourceManager()
+        {
+			name = "";
+			ns = "";
+			inType = "";
+			outType = "";
+			typeNs = "";
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
 			model.Set("resourceManagerName".AsSpan(), Parameter.Create(name));
 			model.Set("resourceManagerNamespace".AsSpan(), Parameter.Create(ns));
-			//model.Set("resourceManagerType".AsSpan(), Parameter.Create(type));
 			model.Set("resourceManagerInType".AsSpan(), Parameter.Create(inType));
 			model.Set("resourceManagerOutType".AsSpan(), Parameter.Create(outType));
 			model.Set("resourceManagerTypeNamespace".AsSpan(), Parameter.Create(typeNs));
 
 			return model;
+		}
+
+		public bool Equals(ResourceManager other)
+		{
+			return name.Equals(other.name)
+				&& ns.Equals(other.ns)
+				&& inType.Equals(other.inType)
+				&& outType.Equals(other.outType)
+				&& typeNs.Equals(other.typeNs);
 		}
 	}
 }

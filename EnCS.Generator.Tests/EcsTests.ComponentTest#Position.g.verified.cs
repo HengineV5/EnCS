@@ -11,8 +11,8 @@ namespace Project.Primitives
 		{
 			public Vector256<int> x;
 			public Vector256<int> y;
-			public FixedArray2<Vector512<FixedArray4<int>>> z;
-			public Vector256<CompEnum> e;
+			public FixedArray2<Vector512<EnCS.FixedArray4<int>>> z;
+			public Vector256<Project.Primitives.CompEnum> e;
 		}
 
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
@@ -22,18 +22,18 @@ namespace Project.Primitives
 
 			public FixedArray8<int> x;
 			public FixedArray8<int> y;
-			public FixedArray8<FixedArray4<int>> z;
-			public FixedArray8<CompEnum> e;
+			public FixedArray8<EnCS.FixedArray4<int>> z;
+			public FixedArray8<Project.Primitives.CompEnum> e;
 		}
 
 		public ref struct Ref
 		{
 			public ref int x;
 			public ref int y;
-			public ref FixedArray4<int> z;
-			public ref CompEnum e;
+			public ref EnCS.FixedArray4<int> z;
+			public ref Project.Primitives.CompEnum e;
 			
-			public Ref(ref int x, ref int y, ref FixedArray4<int> z, ref CompEnum e)
+			public Ref(ref int x, ref int y, ref EnCS.FixedArray4<int> z, ref Project.Primitives.CompEnum e)
 			{
 				this.x = ref x;
 				this.y = ref y;

@@ -30,55 +30,70 @@ namespace EnCS.Generator
 		public static readonly DiagnosticDescriptor PreOrPostLoopCanOnlyHaveContextArgs = new("ECS011", "Pre and post loop methods can only have system contexts as arguments", "", "SystemGenerator", DiagnosticSeverity.Error, true);
 	}
 
-	class SystemGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax>
+	struct SystemGeneratorData : IEquatable<SystemGeneratorData>
+	{
+		public INamedTypeSymbol node;
+		public Location location;
+
+		public System system;
+
+		public SystemGeneratorData(INamedTypeSymbol node, Location location, System system)
+		{
+			this.node = node;
+			this.location = location;
+			this.system = system;
+		}
+
+		public bool Equals(SystemGeneratorData other)
+		{
+			return system.Equals(other.system);
+		}
+	}
+
+	class SystemGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax, SystemGeneratorData>
 	{
 		public string Template => ResourceReader.GetResource("System.tcs");
 
-		public bool TryCreateModel(Compilation compilation, ClassDeclarationSyntax node, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
+		public bool TryCreateModel(SystemGeneratorData data, out Model<ReturnType> model, out List<Diagnostic> diagnostics)
 		{
 			diagnostics = new List<Diagnostic>();
 			model = new Model<ReturnType>();
-			model.Set("namespace".AsSpan(), new Parameter<string>(node.GetNamespace()));
-			model.Set("name".AsSpan(), new Parameter<string>(node.Identifier.ToString()));
+			model.Set("namespace".AsSpan(), new Parameter<string>(data.node.ContainingNamespace.ToString()));
+			model.Set("name".AsSpan(), new Parameter<string>(data.node.Name));
 
-			bool systemSuccess = TryGetSystem(compilation, node, diagnostics, out System system);
-			model.Set("resourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(system.resourceManagers.Select(x => x.GetModel())));
-			model.Set("groups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(system.groups.Select(x => x.GetModel())));
-			model.Set("reversedGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(system.groups.AsEnumerable().Reverse().Select(x => x.GetModel())));
-			model.Set("contexts".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(system.contexts.Select(x => x.GetModel())));
+			model.Set("resourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.system.resourceManagers.Select(x => x.GetModel())));
+			model.Set("groups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.system.groups.Select(x => x.GetModel())));
+			model.Set("reversedGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.system.groups.AsEnumerable().Reverse().Select(x => x.GetModel())));
+			model.Set("contexts".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.system.contexts.Select(x => x.GetModel())));
 
-			return systemSuccess;
+			return true;
 		}
 
-		public bool Filter(ClassDeclarationSyntax node)
+		public SystemGeneratorData? Filter(ClassDeclarationSyntax node, SemanticModel semanticModel)
 		{
-			foreach (AttributeListSyntax attributeListSyntax in node.AttributeLists)
-			{
-				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-				{
-					string name = attributeSyntax.Name.GetName();
+			if (semanticModel.GetDeclaredSymbol(node) is not INamedTypeSymbol typeSymbol)
+				return null;
 
-					if (name == "SystemAttribute" || name == "System")
-						return true;
-				}
-			}
+			if (!TryGetSystem(typeSymbol, new(), out var system))
+				return null;
 
-			return false;
+			return new SystemGeneratorData(typeSymbol, node.GetLocation(), system);
 		}
 
-		public string GetName(ClassDeclarationSyntax node)
-		{
-			return node.Identifier.ToString();
-		}
+		public string GetName(SystemGeneratorData data)
+			=> data.node.Name;
 
-		public static bool TryGetSystem(Compilation compilation, ClassDeclarationSyntax node, List<Diagnostic> diagnostics, out System system)
+		public Location GetLocation(SystemGeneratorData data)
+			=> data.location;
+
+		public static bool TryGetSystem(INamedTypeSymbol node, List<Diagnostic> diagnostics, out System system)
 		{
-			TryGetResourceManagers(compilation, node, diagnostics, out List<ResourceManager> resourceManagers);
+			TryGetResourceManagers(node, diagnostics, out List<ResourceManager> resourceManagers);
 
 			TryGetSystemContexts(node, diagnostics, out List<SystemContext> contexts);
-			TryGetPrePostLoopMethods(compilation, node, resourceManagers, contexts, diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops);
+			TryGetPrePostLoopMethods(node, resourceManagers, contexts, diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops);
 
-			bool methodSuccess = TryGetMethods(compilation, node, resourceManagers, contexts, diagnostics, out List<SystemMethod> methods);
+			bool methodSuccess = TryGetMethods(node, resourceManagers, contexts, diagnostics, out List<SystemMethod> methods);
 			bool groupSuccess = TryGetGroups(methods, preLoops, postLoops, out List<SystemGroup> groups);
 
 			var correctOrderResourceManagers = methods.SelectMany(x => x.components).Where(x => x.type == "Resource").Select(x => x.resourceManager);
@@ -86,118 +101,106 @@ namespace EnCS.Generator
 
 			system = new System()
 			{
-				groups = groups,
-				resourceManagers = uniqueResourceManagers.ToList(),
-				contexts = contexts
+				name = node.Name,
+				groups = new(groups.ToArray()),
+				resourceManagers = new(uniqueResourceManagers.ToArray()),
+				contexts = new(contexts.ToArray())
 			};
 
 			return methodSuccess && groupSuccess;
 		}
 
-		static bool TryGetSystemContexts(ClassDeclarationSyntax node, List<Diagnostic> diagnostics, out List<SystemContext> contexts)
+		static bool TryGetSystemContexts(INamedTypeSymbol node, List<Diagnostic> diagnostics, out List<SystemContext> contexts)
 		{
-			var attribute = node.AttributeLists.SelectMany(x => x.Attributes).First(x => x.Name.GetName() == "System" || x.Name.GetName() == "SystemAttribute");
 			contexts = new List<SystemContext>();
 
-			if (attribute.Name is not GenericNameSyntax g)
-				return true;
-
-			foreach (TypeSyntax type in g.TypeArgumentList.Arguments)
+			foreach (var attribute in node.GetAttributes())
 			{
-				if (type is not IdentifierNameSyntax i)
+				var attribName = attribute.AttributeClass.Name;
+				if (attribName != "SystemContext" && attribName != "SystemContextAttribute") // TODO: Might not need reduncancy check for shorform
 					continue;
 
-				contexts.Add(new SystemContext()
+				if (attribute.AttributeClass is null)
+					continue;
+
+				if (attribute.AttributeClass.TypeArguments.Length == 0)
+					continue;
+
+				foreach (var type in attribute.AttributeClass.TypeArguments)
 				{
-					type = i.Identifier.Text
-				});
+					contexts.Add(new SystemContext()
+					{
+						type = type.Name
+					});
+				}
 			}
 
 			return true;
 		}
 
-		static bool TryGetPrePostLoopMethods(Compilation compilation, ClassDeclarationSyntax node, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops)
+		static bool TryGetPrePostLoopMethods(INamedTypeSymbol node, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<SystemMethod> preLoops, out List<SystemMethod> postLoops)
 		{
-			var systemPreLoops = node.Members.Where(x => x is MethodDeclarationSyntax m && IsMethodPreLoop(m)).Select(x => x as MethodDeclarationSyntax);
 			preLoops = new List<SystemMethod>();
-			foreach (var preLoop in systemPreLoops)
-			{
-				if (!TryGetMethodGroup(preLoop, out int group))
-				{
-					diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodCannotBeInMoreThanOneGroup, preLoop.GetLocation(), ""));
-					continue;
-				}
-
-				TryGetMethodComponents(compilation, preLoop, resourceManagers, contexts, diagnostics, out List<MethodComponent> components);
-				if (components.Any(x => x.type != "Context"))
-				{
-					diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.PreOrPostLoopCanOnlyHaveContextArgs, preLoop.GetLocation(), ""));
-					continue;
-				}
-
-				preLoops.Add(new SystemMethod()
-				{
-					group = group,
-					name = preLoop.Identifier.Text,
-					type = "PreLoop",
-					chunk = 0,
-					components = components
-				});
-			}
-
-			var systemPostLoops = node.Members.Where(x => x is MethodDeclarationSyntax m && IsMethodPostLoop(m)).Select(x => x as MethodDeclarationSyntax);
 			postLoops = new List<SystemMethod>();
-			foreach (var postLoop in systemPostLoops)
+
+			foreach (var member in node.GetMembers())
 			{
-				if (!TryGetMethodGroup(postLoop, out int group))
+				if (member is not IMethodSymbol method)
+					continue;
+
+				bool preLoop = IsMethodPreLoop(method);
+				bool postLoop = IsMethodPostLoop(method);
+
+				if (!preLoop && !postLoop)
+					continue;
+
+				if (!TryGetMethodGroup(method, out int group))
 				{
-					diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodCannotBeInMoreThanOneGroup, postLoop.GetLocation(), ""));
+					//diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodCannotBeInMoreThanOneGroup, preLoop.GetLocation(), ""));
 					continue;
 				}
 
-				TryGetMethodComponents(compilation, postLoop, resourceManagers, contexts, diagnostics, out List<MethodComponent> components);
-				if (components.Any(x => x.type != "Context"))
+				TryGetMethodComponents(method, resourceManagers, contexts, diagnostics, out List<MethodComponent> components);
+				if (components.Count != 0 && components.Any(x => x.type != "Context"))
 				{
-					diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.PreOrPostLoopCanOnlyHaveContextArgs, postLoop.GetLocation(), ""));
+					//diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.PreOrPostLoopCanOnlyHaveContextArgs, preLoop.GetLocation(), ""));
 					continue;
 				}
 
-				postLoops.Add(new SystemMethod()
+				var systemMethod = new SystemMethod()
 				{
 					group = group,
-					name = postLoop.Identifier.Text,
-					type = "PostLoop",
+					name = member.Name,
+					type = preLoop ? "PreLoop" : "PostLoop",
 					chunk = 0,
-					components = components
-				});
+					components = new(components.ToArray())
+				};
+
+				if (preLoop)
+					preLoops.Add(systemMethod);
+				else if (postLoop)
+					postLoops.Add(systemMethod);
 			}
 
 			return true;
 		}
 
-		public static bool TryGetResourceManagers(Compilation compilation, ClassDeclarationSyntax node, List<Diagnostic> diagnostics, out List<ResourceManager> resourceManagers)
+		public static bool TryGetResourceManagers(INamedTypeSymbol node, List<Diagnostic> diagnostics, out List<ResourceManager> resourceManagers)
 		{
 			resourceManagers = new List<ResourceManager>();
 
-			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
-
-			foreach (AttributeListSyntax attributeListSyntax in node.AttributeLists)
+			foreach (var attribute in node.GetAttributes())
 			{
-				foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-				{
-					if (attributeSyntax.Name is not GenericNameSyntax g)
-						continue;
+				var attribName = attribute.AttributeClass.Name;
+				if (attribName != "UsingResourceAttribute" && attribName != "UsingResource") // TODO: Might not need reduncancy check for shorform
+					continue;
 
-					if (g.Identifier.Text != "UsingResourceAttribute" && g.Identifier.Text != "UsingResource")
-						continue;
+				if (attribute.AttributeClass is null)
+					continue;
 
-					if (g.TypeArgumentList.Arguments.Count == 0)
-						continue;
-
-					var resourceManagerType = g.TypeArgumentList.Arguments[0] as IdentifierNameSyntax;
-					var resourceManagerNode = nodes.FindNode<ClassDeclarationSyntax>(x => x.Identifier.Text == resourceManagerType.Identifier.Text);
-
-					ResourceManagerGenerator.TryGetResourceManagers(compilation, resourceManagerNode, out List<ResourceManager> foundResourceManagers);
+                foreach (var resourceManager in attribute.AttributeClass.TypeArguments)
+                {
+					ResourceManagerGenerator.TryGetResourceManagers(resourceManager as INamedTypeSymbol, out List<ResourceManager> foundResourceManagers);
 					resourceManagers.AddRange(foundResourceManagers);
 				}
 			}
@@ -226,9 +229,9 @@ namespace EnCS.Generator
 					idx = group,
 					chunk = chunk,
 					components = methodGroup.First().components,
-					methods = methodGroup.ToList(),
-					preLoops = preLoops.Where(x => x.group == group).ToList(),
-					postLoops = postLoops.Where(x => x.group == group).ToList()
+					methods = new(methodGroup.ToArray()),
+					preLoops = new(preLoops.Where(x => x.group == group).ToArray()),
+					postLoops = new(postLoops.Where(x => x.group == group).ToArray())
 				});
 			}
 
@@ -236,49 +239,63 @@ namespace EnCS.Generator
 			return groups.Count > 0;
 		}
 
-		static bool TryGetGroupComponents(Compilation compilation, ClassDeclarationSyntax node, int group, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<MethodComponent> components)
+		static bool TryGetGroupComponents(INamedTypeSymbol node, int group, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<MethodComponent> components)
 		{
 			components = new List<MethodComponent>();
 
-			var systemUpdateMethods = node.Members.Where(x => x is MethodDeclarationSyntax m && IsMethodSystemUpdate(m) && TryGetMethodGroup(m, out int g) && g == group).Select(x => x as MethodDeclarationSyntax);
+			var systemUpdateMethods = new List<IMethodSymbol>();	
+			foreach (var member in node.GetMembers())
+			{
+				if (member is not IMethodSymbol method)
+					continue;
+
+				if (!IsMethodSystemUpdate(method))
+					continue;
+
+				if (!TryGetMethodGroup(method, out int g))
+					continue;
+
+				if (g != group)
+					continue;
+
+				systemUpdateMethods.Add(method);
+			}
 
 			if (systemUpdateMethods.Count() == 0)
 				return false;
 
-			var firstMethod = systemUpdateMethods.First();
+			var firstMethod = systemUpdateMethods[0];
 
 			if (!IsMethodArgumentsEqual(firstMethod, systemUpdateMethods))
 			{
-				diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.SystemUpdateMethodsMustBeEqual, node.GetLocation(), ""));
+				//diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.SystemUpdateMethodsMustBeEqual, node.GetLocation(), ""));
 				return false;
 			}
 
-			TryGetMethodComponents(compilation, firstMethod, resourceManagers, contexts, diagnostics, out components);
+			TryGetMethodComponents(firstMethod, resourceManagers, contexts, diagnostics, out components);
 
 			return components.Count > 0;
 		}
 
-		static bool TryGetMethodComponents(Compilation compilation, MethodDeclarationSyntax method, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<MethodComponent> components)
+		static bool TryGetMethodComponents(IMethodSymbol method, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<MethodComponent> components)
 		{
-			var nodes = compilation.SyntaxTrees.SelectMany(x => x.GetRoot().DescendantNodesAndSelf());
-
 			components = new List<MethodComponent>();
 
 			int idx = 1;
-			foreach (var parameter in method.ParameterList.Parameters)
+			foreach (var parameter in method.Parameters)
 			{
-				if (parameter.Type is QualifiedNameSyntax qualifiedType)
+				if (parameter.Type.Name == "Ref" || parameter.Type.Name == "Vectorized") // TODO: Improve generated componente detection.
 				{
-					if (!TryGetNormalComponent(compilation, qualifiedType, nodes, idx, diagnostics, out MethodComponent component))
+					if (!TryGetNormalComponent(parameter.Type, idx, out MethodComponent component))
 						continue;
 
 					components.Add(component);
 					idx++;
 				}
-				else if (parameter.Type is IdentifierNameSyntax identifierType) // Assume this is a resource or context parameter
+				else
 				{
-					bool resourceSuccess = TryGetResourceComponent(identifierType, resourceManagers, idx, diagnostics, out MethodComponent resourceComponent);
-					bool contextSuccess = TryGetContextComponent(identifierType, contexts, out MethodComponent contextComponent);
+					bool resourceSuccess = TryGetResourceComponent(parameter.Type, resourceManagers, idx, diagnostics, out MethodComponent resourceComponent);
+					bool contextSuccess = TryGetContextComponent(parameter.Type, contexts, out MethodComponent contextComponent);
 
 					if (resourceSuccess)
 					{
@@ -291,7 +308,7 @@ namespace EnCS.Generator
 					}
 					else
 					{
-						diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodArgumentMustBeComponentOrResourceOrContext, identifierType.GetLocation(), ""));
+						//diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodArgumentMustBeComponentOrResourceOrContext, identifierType.GetLocation(), ""));
 						continue;
 					}
 
@@ -303,12 +320,9 @@ namespace EnCS.Generator
 			return components.Count > 0;
 		}
 
-		static bool TryGetNormalComponent(Compilation compilation, QualifiedNameSyntax type, IEnumerable<SyntaxNode> nodes, int idx, List<Diagnostic> diagnostics, out MethodComponent component)
+		static bool TryGetNormalComponent(ITypeSymbol type, int idx, out MethodComponent component)
 		{
-			var paramName = (type.Left as IdentifierNameSyntax).Identifier.Text;
-			var componentNode = nodes.FindNode<StructDeclarationSyntax>(x => x.Identifier.Text == paramName);
-
-			if (!ComponentGenerator.IsValidComponent(compilation, componentNode, diagnostics))
+			if (!ComponentGenerator.IsValidComponent(type))
 			{
 				component = default;
 				return false;
@@ -316,7 +330,7 @@ namespace EnCS.Generator
 
 			component = new MethodComponent()
 			{
-				name = $"{componentNode.GetNamespace()}.{paramName}",
+				name = $"{type.ContainingNamespace.ToString()}.{type.ContainingType.Name}",
 				idx = idx,
 				type = "Component"
 			};
@@ -324,57 +338,61 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		static bool TryGetResourceComponent(IdentifierNameSyntax type, List<ResourceManager> resourceManagers, int idx, List<Diagnostic> diagnostics, out MethodComponent component)
+		static bool TryGetResourceComponent(ITypeSymbol type, List<ResourceManager> resourceManagers, int idx, List<Diagnostic> diagnostics, out MethodComponent component)
 		{
-			if (!resourceManagers.Any(x => x.outType == type.Identifier.Text))
+			foreach (var resourceManager in resourceManagers)
 			{
-				component = default;
-				return false;
-			}
+				if (resourceManager.outType != type.Name)
+					continue;
 
-			var resourceManager = resourceManagers.First(x => x.outType == type.Identifier.Text);
-
-			component = new MethodComponent()
-			{
-				name = $"{resourceManager.ns}.{resourceManager.name}.{resourceManager.inType}",
-				idx = idx,
-				type = "Resource",
-				resourceManager = resourceManager
-			};
-
-			return true;
-		}
-
-		static bool TryGetContextComponent(IdentifierNameSyntax type, List<SystemContext> contexts, out MethodComponent component)
-		{
-			if (!contexts.Any(x => x.type == type.Identifier.Text))
-			{
-				component = default;
-				return false;
-			}
-
-			var contextComponent = contexts.First(x => x.type == type.Identifier.Text);
-			component = new MethodComponent()
-			{
-				name = contextComponent.type,
-				idx = 0,
-				type = "Context"
-			};
-
-			return true;
-		}
-
-		static bool IsMethodArgumentsEqual(MethodDeclarationSyntax method, IEnumerable<MethodDeclarationSyntax> methods)
-		{
-			foreach (var item in methods)
-			{
-				for (int i = 0; i < method.ParameterList.Parameters.Count; i++)
+				component = new MethodComponent()
 				{
-					// Non qualidfied names are assumed to be resources, and they are not equal to vectorized versions.
-					if (method.ParameterList.Parameters[i].Type is not QualifiedNameSyntax)
-						continue;
+					name = $"{resourceManager.ns}.{resourceManager.name}.{resourceManager.inType}",
+					idx = idx,
+					type = "Resource",
+					resourceManager = resourceManager
+				};
 
-					if (method.ParameterList.Parameters[i].Identifier.Text != item.ParameterList.Parameters[i].Identifier.Text)
+				return true;
+			}
+
+			component = default;
+			return false;
+		}
+
+		static bool TryGetContextComponent(ITypeSymbol type, List<SystemContext> contexts, out MethodComponent component)
+		{
+			foreach (var contextComponent in contexts)
+			{
+				if (contextComponent.type != type.Name)
+					continue;
+
+				component = new MethodComponent()
+				{
+					name = contextComponent.type,
+					idx = 0,
+					type = "Context"
+				};
+
+				return true;
+			}
+
+			component = default;
+			return false;
+		}
+
+		static bool IsMethodArgumentsEqual(IMethodSymbol method, IEnumerable<IMethodSymbol> methods)
+		{
+			return true; // TODO: Fix
+
+            foreach (var item in methods)
+			{
+				if (method.Parameters.Length != item.Parameters.Length)
+					return false;
+
+				for (int i = 0; i < method.Parameters.Length; i++)
+				{
+					if (method.Parameters[i].Name != item.Parameters[i].Name)
 						return false;
 				}
 			}
@@ -382,59 +400,65 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		public static bool TryGetMethods(Compilation compilation, ClassDeclarationSyntax node, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<SystemMethod> methods)
+		public static bool TryGetMethods(INamedTypeSymbol node, List<ResourceManager> resourceManagers, List<SystemContext> contexts, List<Diagnostic> diagnostics, out List<SystemMethod> methods)
 		{
 			methods = new List<SystemMethod>();
 
-			foreach (var method in node.Members.Where(x => x is MethodDeclarationSyntax).Select(x => x as MethodDeclarationSyntax))
+			foreach (var member in node.GetMembers())
 			{
+				if (member is not IMethodSymbol method)
+					continue;
+
 				if (!IsMethodSystemUpdate(method, diagnostics))
 					continue;
 
 				if (!TryGetMethodGroup(method, out int group))
 				{
-					diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodCannotBeInMoreThanOneGroup, method.GetLocation(), ""));
+					//diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodCannotBeInMoreThanOneGroup, method.GetLocation(), ""));
 					continue;
 				}
 
 				if (!TryGetMethodChunk(method, out int chunk))
 					continue;
 
-				if (!TryGetGroupComponents(compilation, node, group, resourceManagers, contexts, diagnostics, out List<MethodComponent> components))
+				if (!TryGetGroupComponents(node, group, resourceManagers, contexts, diagnostics, out List<MethodComponent> components))
 					continue;
 
 				methods.Add(new SystemMethod()
 				{
-					name = method.Identifier.Text,
+					name = method.Name,
 					type = GetMethodType(method),
 					group = group,
 					chunk = chunk,
-					components = components
+					components = new(components.ToArray())
 				});
 			}
 
-			return methods.Count > 0;
+            return methods.Count > 0;
 		}
 
-		static bool TryGetMethodGroup(MethodDeclarationSyntax method, out int group)
+		static bool TryGetMethodGroup(IMethodSymbol method, out int group)
 		{
-			var attributes = method.AttributeLists.SelectMany(x => x.Attributes);
-			var groupAttribute = attributes.Where(x => x.Name is IdentifierNameSyntax g && (g.Identifier.Text == "SystemLayer" || g.Identifier.Text == "SystemLayerAttribute"));
-
+			var attribs = method.GetAttributes();
+			var groupAttribute = method.GetAttributes().Where(x => (x.AttributeClass.Name == "SystemLayer" || x.AttributeClass.Name == "SystemLayerAttribute"));
 			group = 0;
+
 			if (groupAttribute.Count() > 1)
 				return false;
 
+
 			if (groupAttribute.Count() == 1)
-				group = int.Parse(groupAttribute.Single().ArgumentList.Arguments[0].ToString());
+			{
+				var gr = groupAttribute.Single();
+				group = int.Parse(groupAttribute.Single().ConstructorArguments[0].Value?.ToString());
+			}
 
 			return true;
 		}
 
-		static bool TryGetMethodChunk(MethodDeclarationSyntax method, out int chunk)
+		static bool TryGetMethodChunk(IMethodSymbol method, out int chunk)
 		{
-			var attributes = method.AttributeLists.SelectMany(x => x.Attributes);
-			var groupAttribute = attributes.Where(x => x.Name is IdentifierNameSyntax g && (g.Identifier.Text == "SystemLayer" || g.Identifier.Text == "SystemLayerAttribute"));
+			var groupAttribute = method.GetAttributes().Where(x => x.AttributeClass.Name == "SystemLayer" || x.AttributeClass.Name == "SystemLayerAttribute");
 
 			chunk = 0;
 			if (groupAttribute.Count() > 1)
@@ -442,104 +466,110 @@ namespace EnCS.Generator
 
 			if (groupAttribute.Count() == 1)
 			{
-				var args = groupAttribute.Single().ArgumentList.Arguments;
+				var args = groupAttribute.Single().ConstructorArguments;
 
-				if (args.Count > 1)
-					chunk = int.Parse(args[1].ToString());
+				if (args.Length > 1)
+					chunk = int.Parse(args[1].Value.ToString());
 			}	
 
 			return true;
 		}
 
-		static bool IsMethodSystemUpdate(MethodDeclarationSyntax method, List<Diagnostic> diagnostics)
+		static bool IsMethodSystemUpdate(IMethodSymbol method, List<Diagnostic> diagnostics)
 		{
 			if (!IsMethodSystemUpdate(method))
 				return false;
 
-			if (method.ParameterList.Parameters.Count == 0)
+			if (method.Parameters.Length == 0)
 			{
-				diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodCannotBeEmpty, method.GetLocation(), ""));
+				//diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodCannotBeEmpty, method.GetLocation(), ""));
 				return false;
 			}
 
 			if (!IsMethodArgumentsConsistent(method))
 			{
-				diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodArgumentsMustBeConcistent, method.GetLocation(), ""));
+				//diagnostics.Add(Diagnostic.Create(SystemGeneratorDiagnostics.MethodArgumentsMustBeConcistent, method.GetLocation(), ""));
 				return false;
 			}
 
 			return true;
 		}
 
-		static bool IsMethodSystemUpdate(MethodDeclarationSyntax method)
+		static bool IsMethodSystemUpdate(IMethodSymbol method)
 		{
-			var attributes = method.AttributeLists.SelectMany(x => x.Attributes);
-			if (!attributes.Any(x => x.Name is IdentifierNameSyntax i && (i.Identifier.Text == "SystemUpdate" || i.Identifier.Text == "SystemUpdateAttribute")))
+			if (!method.GetAttributes().Any(x => x.AttributeClass.Name == "SystemUpdate" || x.AttributeClass.Name == "SystemUpdateAttribute"))
 				return false;
 
 			return true;
 		}
 
-		static bool IsMethodPreLoop(MethodDeclarationSyntax method)
+		static bool IsMethodPreLoop(IMethodSymbol method)
 		{
-			var attributes = method.AttributeLists.SelectMany(x => x.Attributes);
-			if (!attributes.Any(x => x.Name is IdentifierNameSyntax i && (i.Identifier.Text == "SystemPreLoop" || i.Identifier.Text == "SystemPreLoopAttribute")))
+			if (!method.GetAttributes().Any(x => x.AttributeClass.Name == "SystemPreLoop" || x.AttributeClass.Name == "SystemPreLoopAttribute"))
 				return false;
 
 			return true;
 		}
 
-		static bool IsMethodPostLoop(MethodDeclarationSyntax method)
+		static bool IsMethodPostLoop(IMethodSymbol method)
 		{
-			var attributes = method.AttributeLists.SelectMany(x => x.Attributes);
-			if (!attributes.Any(x => x.Name is IdentifierNameSyntax i && (i.Identifier.Text == "SystemPostLoop" || i.Identifier.Text == "SystemPostLoopAttribute")))
+			if (!method.GetAttributes().Any(x => x.AttributeClass.Name == "SystemPostLoop" || x.AttributeClass.Name == "SystemPostLoopAttribute"))
 				return false;
 
 			return true;
 		}
 
-		static bool IsMethodArgumentsConsistent(MethodDeclarationSyntax method)
+		// Check if method has only vectorized or only single components.
+		static bool IsMethodArgumentsConsistent(IMethodSymbol method)
 		{
-			var args = method.ParameterList.Parameters.Where(x => x.Type is QualifiedNameSyntax);
-
-			var firstParamType = args.First();
-			var firstName = (firstParamType.Type as QualifiedNameSyntax).Right as IdentifierNameSyntax;
-
-			foreach (var item in args)
+			string methodType = GetMethodType(method);
+			foreach (var parameter in method.Parameters)
 			{
-				if (item.Type is not QualifiedNameSyntax paramType)
+				if (parameter.Type.ContainingType is not INamedTypeSymbol) // TODO: Improve component detection
 					continue;
 
-				var name = paramType.Right as IdentifierNameSyntax;
-
-				if (name.Identifier.Text != firstName.Identifier.Text)
+				var parameterType = parameter.Type.Name == "Ref" ? "Single" : "Vector";
+				if (parameterType != methodType)
 					return false;
 			}
 
 			return true;
 		}
 
-		static string GetMethodType(MethodDeclarationSyntax method)
+		static string GetMethodType(IMethodSymbol method)
 		{
-			var args = method.ParameterList.Parameters.Where(x => x.Type is QualifiedNameSyntax);
+			foreach (var parameter in method.Parameters)
+			{
+				if (parameter.Type.ContainingType is not INamedTypeSymbol) // TODO: Improve component detection
+					continue;
 
-			var firstParamType = args.First();
-			var type = (firstParamType.Type as QualifiedNameSyntax).Right as IdentifierNameSyntax;
+				return parameter.Type.Name == "Ref" ? "Single" : "Vector";
+			}
 
-			return type.Identifier.Text == "Ref" ? "Single" : "Vector";
+			throw new Exception("Method neither vector or single");
 		}
 	}
 
-	struct System
+	struct System : IEquatable<System>
 	{
-		public List<ResourceManager> resourceManagers;
-		public List<SystemGroup> groups;
-		public List<SystemContext> contexts;
+		public string name;
+		public EquatableArray<ResourceManager> resourceManagers;
+		public EquatableArray<SystemGroup> groups;
+		public EquatableArray<SystemContext> contexts;
 
-		public Model<ReturnType> GetModel()
+        public System()
+        {
+			name = "";
+            resourceManagers = EquatableArray<ResourceManager>.Empty;
+			groups = EquatableArray<SystemGroup>.Empty;
+			contexts = EquatableArray<SystemContext>.Empty;
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
+			model.Set("systemName".AsSpan(), Parameter.Create(name));
 			model.Set("systemResourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceManagers.Select(x => x.GetModel())));
 			model.Set("systemGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(groups.Select(x => x.GetModel())));
 			model.Set("systemReversedGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(groups.AsEnumerable().Reverse().Select(x => x.GetModel())));
@@ -547,17 +577,34 @@ namespace EnCS.Generator
 
 			return model;
 		}
+
+		public bool Equals(System other)
+		{
+			return name.Equals(other.name)
+				&& resourceManagers.Equals(other.resourceManagers)
+				&& groups.Equals(other.groups)
+				&& contexts.Equals(other.contexts);
+		}
 	}
 
-	struct SystemMethod
+	struct SystemMethod : IEquatable<SystemMethod>
 	{
 		public string name;
 		public string type;
 		public int group;
 		public int chunk;
-		public List<MethodComponent> components;
+		public EquatableArray<MethodComponent> components;
 
-		public Model<ReturnType> GetModel()
+        public SystemMethod()
+        {
+			name = "";
+			type = "";
+			group = 0;
+			chunk = 0;
+            components = EquatableArray<MethodComponent>.Empty;
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -569,18 +616,37 @@ namespace EnCS.Generator
 
 			return model;
 		}
+
+		public bool Equals(SystemMethod other)
+		{
+			return name.Equals(other.name)
+				&& type.Equals(other.type)
+				&& group.Equals(other.group)
+				&& chunk.Equals(other.chunk)
+				&& components.Equals(other.components);
+		}
 	}
 
-	struct SystemGroup
+	struct SystemGroup : IEquatable<SystemGroup>
 	{
 		public int idx;
 		public int chunk;
-		public List<MethodComponent> components;
-		public List<SystemMethod> methods;
-		public List<SystemMethod> preLoops;
-		public List<SystemMethod> postLoops;
+		public EquatableArray<MethodComponent> components;
+		public EquatableArray<SystemMethod> methods;
+		public EquatableArray<SystemMethod> preLoops;
+		public EquatableArray<SystemMethod> postLoops;
 
-		public Model<ReturnType> GetModel()
+        public SystemGroup()
+        {
+			idx = 0;
+			chunk = 0;
+            components = EquatableArray<MethodComponent>.Empty;
+			methods = EquatableArray<SystemMethod>.Empty;
+			preLoops = EquatableArray<SystemMethod>.Empty;
+			postLoops = EquatableArray<SystemMethod>.Empty;
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -599,16 +665,34 @@ namespace EnCS.Generator
 
 			return model;
 		}
+
+		public bool Equals(SystemGroup other)
+		{
+			return idx.Equals(other.idx)
+				&& chunk.Equals(other.chunk)
+				&& components.Equals(other.components)
+				&& methods.Equals(other.methods)
+				&& preLoops.Equals(other.preLoops)
+				&& postLoops.Equals(other.postLoops);
+		}
 	}
 
-	struct MethodComponent
+	struct MethodComponent : IEquatable<MethodComponent>
 	{
 		public string name;
 		public int idx;
 		public string type;
 		public ResourceManager resourceManager;
 
-		public Model<ReturnType> GetModel()
+        public MethodComponent()
+        {
+			name = "";
+			idx = 0;
+			type = "";
+			resourceManager = new ResourceManager();
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
@@ -619,19 +703,37 @@ namespace EnCS.Generator
 
 			return model;
 		}
+
+		public bool Equals(MethodComponent other)
+		{
+			return name.Equals(other.name)
+				&& idx.Equals(other.idx)
+				&& type.Equals(other.type)
+				&& resourceManager.Equals(other.resourceManager);
+		}
 	}
 
-	struct SystemContext
+	struct SystemContext : IEquatable<SystemContext>
 	{
 		public string type;
 
-		public Model<ReturnType> GetModel()
+        public SystemContext()
+        {
+			type = "";
+        }
+
+        public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
 			model.Set("contextType".AsSpan(), Parameter.Create(type));
 
 			return model;
+		}
+
+		public bool Equals(SystemContext other)
+		{
+			return type.Equals(other.type);
 		}
 	}
 }
