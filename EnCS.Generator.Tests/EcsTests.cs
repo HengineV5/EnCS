@@ -310,6 +310,7 @@ public partial struct InvalidComp
 [ComponentAttribute]
 public partial struct Position
 {
+	public MeshId mesh;
 	public int x;
 	public int y;
 	public FixedArray4<int> z;

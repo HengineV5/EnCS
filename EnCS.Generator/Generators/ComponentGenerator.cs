@@ -131,33 +131,59 @@ namespace EnCS.Generator
 
 						return TryGetTypeSize(namedType.EnumUnderlyingType, out size);
 					}
-				default:
+				case TypeKind.Struct:
 					{
 						if (TryGetSize(type.Name, out size))
 							return true;
 
-						var attributes = type.GetAttributes();
-						foreach (var attribute in attributes)
+						if (TryHandleInlineArray(type, out size))
+							return true;
+
+						if (!type.IsUnmanagedType)
+							return false;
+
+						foreach (var member in type.GetMembers())
 						{
-							if (attribute.AttributeClass.Name != "InlineArrayAttribute")
+							if (member is not IFieldSymbol fieldSymbol)
 								continue;
 
-							if (type is not INamedTypeSymbol namedType)
+							if (!TryGetTypeSize(fieldSymbol.Type, out int typeSize))
 								return false;
 
-							if (namedType.TypeArguments.Length != 1)
-								return false;
-
-							if (!TryGetTypeSize(namedType.TypeArguments[0], out size))
-								return false;
-
-							size *= int.Parse(attribute.ConstructorArguments[0].Value.ToString());
-							return true;
+							size += typeSize;
 						}
 
-						return false;
+						return size != 0;
 					}
+				default:
+					return false;
 			}
+		}
+
+		static bool TryHandleInlineArray(ITypeSymbol type, out int size)
+		{
+			size = 0;
+
+			var attributes = type.GetAttributes();
+			foreach (var attribute in attributes)
+			{
+				if (attribute.AttributeClass.Name != "InlineArrayAttribute")
+					continue;
+
+				if (type is not INamedTypeSymbol namedType)
+					return false;
+
+				if (namedType.TypeArguments.Length != 1)
+					return false;
+
+				if (!TryGetTypeSize(namedType.TypeArguments[0], out size))
+					return false;
+
+				size *= int.Parse(attribute.ConstructorArguments[0].Value.ToString());
+				return true;
+			}
+
+			return false;
 		}
 
 		public static bool IsValidComponent(ITypeSymbol node)
@@ -196,15 +222,15 @@ namespace EnCS.Generator
 					size = 1;
 					return true;
 				case "Int16":
-				case "Iint16":
+				case "UInt16":
 					size = 2;
 					return true;
 				case "Int32":
-				case "Iint32":
+				case "UInt32":
 					size = 4;
 					return true;
 				case "Int64":
-				case "Iin64":
+				case "UIin64":
 					size = 8;
 					return true;
 				case "Single":
@@ -284,15 +310,15 @@ namespace EnCS.Generator
 		public int bits;
 		public int arraySize;
 
-        public ComponentMember()
-        {
+		public ComponentMember()
+		{
 			name = "";
 			type = "";
 			bits = 0;
 			arraySize = 0;
-        }
+		}
 
-        public Model<ReturnType> GetModel()
+		public Model<ReturnType> GetModel()
 		{
 			var model = new Model<ReturnType>();
 
