@@ -97,13 +97,13 @@ namespace Runner
 		public void Update(Position.Ref position)
 		{
 			position.x = Random.Shared.Next(0, 100);
-			//position.x = MathF.Sqrt(position.x);
+			position.x = MathF.Sqrt(position.x);
 		}
 
 		[SystemUpdate]
 		public void Update(ref Position.Vectorized position)
 		{
-			position.x = Vector256.Sqrt(position.x);
+			//position.x = Vector256.Sqrt(position.x);
 		}
 	}
 
@@ -284,7 +284,7 @@ namespace Runner
 		}
 	}
 
-	[SimpleJob(RuntimeMoniker.Net80)]
+	[SimpleJob(RuntimeMoniker.Net90)]
 	[MemoryDiagnoser]
 	public class PerfTests
 	{
