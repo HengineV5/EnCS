@@ -74,7 +74,8 @@ namespace EnCS.Generator
 			if (node.Identifier.Text != "EcsBuilder")
 				return null;
 
-			var builderRoot = GetBuilderRoot(node);
+			if (!TryGetBuilderRoot(node, out var builderRoot))
+				return null;
 
 			var builderSteps = builderRoot.DescendantNodes()
 				.Where(x => x is MemberAccessExpressionSyntax)
@@ -111,17 +112,27 @@ namespace EnCS.Generator
 		public Location GetLocation(EcsGeneratorData data)
 			=> data.location;
 
-		public static SyntaxNode GetBuilderRoot(SyntaxNode node)
+		public static bool TryGetBuilderRoot(SyntaxNode node, out SyntaxNode root)
 		{
 			if (node is StatementSyntax)
-				return node;
+			{
+				root = node;
+				return true;
+			}
 
-			return GetBuilderRoot(node.Parent);
+			if (node.Parent == null)
+			{
+				root = null;
+				return false;
+			}
+
+			return TryGetBuilderRoot(node.Parent, out root);
 		}
 
 		public static string GetEcsName(IdentifierNameSyntax node)
 		{
-			var builderRoot = GetBuilderRoot(node);
+			if (!TryGetBuilderRoot(node, out var builderRoot))
+				return null;
 
 			var builderSteps = builderRoot.DescendantNodes()
 				.Where(x => x is MemberAccessExpressionSyntax)

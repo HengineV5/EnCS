@@ -10,52 +10,52 @@
 
 		public ref struct EcsArchType
 		{
-			public EcsArchType ArchType<T1>(string name)
+			public EcsArchType ArchType<T1>(string name) where T1 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2>(string name)
+			public EcsArchType ArchType<T1, T2>(string name) where T1 : allows ref struct where T2 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3>(string name)
+			public EcsArchType ArchType<T1, T2, T3>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4>(string name)
+			public EcsArchType ArchType<T1, T2, T3, T4>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct where T4 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5>(string name)
+			public EcsArchType ArchType<T1, T2, T3, T4, T5>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct where T4 : allows ref struct where T5 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6>(string name)
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct where T4 : allows ref struct where T5 : allows ref struct where T6 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7>(string name)
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct where T4 : allows ref struct where T5 : allows ref struct where T6 : allows ref struct where T7 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8>(string name)
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct where T4 : allows ref struct where T5 : allows ref struct where T6 : allows ref struct where T7 : allows ref struct where T8 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string name)
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct where T4 : allows ref struct where T5 : allows ref struct where T6 : allows ref struct where T7 : allows ref struct where T8 : allows ref struct where T9 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string name)
+			public EcsArchType ArchType<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct where T4 : allows ref struct where T5 : allows ref struct where T6 : allows ref struct where T7 : allows ref struct where T8 : allows ref struct where T9 : allows ref struct where T10 : allows ref struct
 			{
 				return this;
 			}
@@ -71,27 +71,27 @@
 
 		public ref struct EcsWorld
 		{
-			public EcsWorld World<T1>(string name) where T1 : unmanaged
+			public EcsWorld World<T1>(string name) where T1 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsWorld World<T1, T2>(string name) where T1 : unmanaged where T2 : unmanaged
+			public EcsWorld World<T1, T2>(string name) where T1 : allows ref struct where T2 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsWorld World<T1, T2, T3>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged
+			public EcsWorld World<T1, T2, T3>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsWorld World<T1, T2, T3, T4>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged
+			public EcsWorld World<T1, T2, T3, T4>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct where T4 : allows ref struct
 			{
 				return this;
 			}
 
-			public EcsWorld World<T1, T2, T3, T4, T5>(string name) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged where T5 : unmanaged
+			public EcsWorld World<T1, T2, T3, T4, T5>(string name) where T1 : allows ref struct where T2 : allows ref struct where T3 : allows ref struct where T4 : allows ref struct where T5 : allows ref struct
 			{
 				return this;
 			}

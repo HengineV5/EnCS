@@ -284,19 +284,11 @@ namespace EnCS.Generator
 			int idx = 1;
 			foreach (var parameter in method.Parameters)
 			{
-				if (parameter.Type.Name == "Ref" || parameter.Type.Name == "Vectorized") // TODO: Improve generated componente detection.
-				{
-					if (!TryGetNormalComponent(parameter.Type, idx, out MethodComponent component))
-						continue;
+				bool resourceSuccess = TryGetResourceComponent(parameter.Type, resourceManagers, idx, diagnostics, out MethodComponent resourceComponent);
+				bool contextSuccess = TryGetContextComponent(parameter.Type, contexts, out MethodComponent contextComponent);
 
-					components.Add(component);
-					idx++;
-				}
-				else
+				if (resourceSuccess || contextSuccess) // TODO: Improve generated componente detection.
 				{
-					bool resourceSuccess = TryGetResourceComponent(parameter.Type, resourceManagers, idx, diagnostics, out MethodComponent resourceComponent);
-					bool contextSuccess = TryGetContextComponent(parameter.Type, contexts, out MethodComponent contextComponent);
-
 					if (resourceSuccess)
 					{
 						components.Add(resourceComponent);
@@ -312,6 +304,14 @@ namespace EnCS.Generator
 						continue;
 					}
 
+					idx++;
+				}
+				else
+				{
+					if (!TryGetNormalComponent(parameter.Type, idx, out MethodComponent component))
+						continue;
+
+					components.Add(component);
 					idx++;
 				}
 
@@ -330,7 +330,7 @@ namespace EnCS.Generator
 
 			component = new MethodComponent()
 			{
-				name = $"{type.ContainingNamespace.ToString()}.{type.ContainingType.Name}",
+				name = $"{type.ContainingNamespace.ToString()}.{type.OriginalDefinition.Name}",
 				idx = idx,
 				type = "Component"
 			};
@@ -525,10 +525,10 @@ namespace EnCS.Generator
 			string methodType = GetMethodType(method);
 			foreach (var parameter in method.Parameters)
 			{
-				if (parameter.Type.ContainingType is not INamedTypeSymbol) // TODO: Improve component detection
+				if (parameter.Type.OriginalDefinition is not INamedTypeSymbol) // TODO: Improve component detection
 					continue;
 
-				var parameterType = parameter.Type.Name == "Ref" ? "Single" : "Vector";
+				var parameterType = parameter.Type.Name == "Vectorized" ? "Vector" : "Single";
 				if (parameterType != methodType)
 					return false;
 			}
@@ -540,10 +540,10 @@ namespace EnCS.Generator
 		{
 			foreach (var parameter in method.Parameters)
 			{
-				if (parameter.Type.ContainingType is not INamedTypeSymbol) // TODO: Improve component detection
+				if (parameter.Type.OriginalDefinition is not INamedTypeSymbol) // TODO: Improve component detection
 					continue;
 
-				return parameter.Type.Name == "Ref" ? "Single" : "Vector";
+				return parameter.Type.Name == "Vectorized" ? "Vector" : "Single";
 			}
 
 			throw new Exception("Method neither vector or single");

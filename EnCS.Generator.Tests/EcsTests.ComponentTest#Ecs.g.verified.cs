@@ -2,42 +2,36 @@
 using System.Runtime.CompilerServices;
 using EnCS;
 
-namespace Test
+namespace Runner
 {
 	public partial class Ecs
 	{
-		ArchTypeContainer<Wall> containerWall;
-		ArchTypeContainer<Tile> containerTile;
+		ArchTypeContainer<Wall.Vectorized, Wall> containerWall;
+		ArchTypeContainer<Tile.Vectorized, Tile> containerTile;
+		ArchTypeContainer<Cam.Vectorized, Cam> containerCam;
 		
-		Project.Primitives.MeshResourceManager MeshResourceManager;
-		Project.Primitives.TestResourceManager TestResourceManager;
+		Runner.MeshResourceManager MeshResourceManager;
 
-		public Ecs(Project.Primitives.MeshResourceManager MeshResourceManager, Project.Primitives.TestResourceManager TestResourceManager)
+		public Ecs(Runner.MeshResourceManager MeshResourceManager)
 		{
-			containerWall = new ArchTypeContainer<Wall>();
-			containerTile = new ArchTypeContainer<Tile>();
+			containerWall = new ArchTypeContainer<Wall.Vectorized, Wall>();
+			containerTile = new ArchTypeContainer<Tile.Vectorized, Tile>();
+			containerCam = new ArchTypeContainer<Cam.Vectorized, Cam>();
 
 			this.MeshResourceManager = MeshResourceManager;
-			this.TestResourceManager = TestResourceManager;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Main GetMain()
+		public MainWorld GetMainWorld()
 		{
-			return new Main(ref containerWall, ref containerTile, MeshResourceManager, TestResourceManager);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public World2 GetWorld2()
-		{
-			return new World2(ref containerWall, MeshResourceManager, TestResourceManager);
+			return new MainWorld(ref containerWall, ref containerTile, ref containerCam, MeshResourceManager);
 		}
 	}
 
 	/*
 	static class Ecs_Intercept
 	{
-		[InterceptsLocation(@"", 255, 4)]
+		[InterceptsLocation(@"", 197, 5)]
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public static Ecs InterceptBuild(this EcsBuilder builder)

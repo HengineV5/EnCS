@@ -9,9 +9,18 @@ namespace $namespace
 	public partial class $name
 	{
 		$resourceManagers~>[Component]
-		public struct $resourceManagerInType : IComponent<$resourceManagerInType, |$resourceManagerInType|.Vectorized, |$resourceManagerInType|.Array>
+		public ref struct $resourceManagerInType : IComponent<$resourceManagerInType, |$resourceManagerInType|.Vectorized, |$resourceManagerInType|.Array>
 		{
-			public uint id;
+			public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| |$resourceManagerInType|Prop => ref resourceManager.Get(id);
+
+			ref uint id;
+			$resourceManagerName resourceManager;
+
+			public |$resourceManagerInType|(ref uint id, $resourceManagerName resourceManager)
+			{
+				this.id = ref id;
+				this.resourceManager = resourceManager;
+			}
 
 			public struct Vectorized
 			{
@@ -26,6 +35,7 @@ namespace $namespace
 				public FixedArray8<uint> id;
 			}
 
+			/*
 			public ref struct Ref
 			{
 				public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| |$resourceManagerInType| => ref resourceManager.Get(id);
@@ -51,6 +61,7 @@ namespace $namespace
 					return new Ref(ref array.id[idx], resourceManager);
 				}
 			}
+			*/
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerInType|, Vectorized, Array>
@@ -62,6 +73,18 @@ namespace $namespace
 			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerInType|, Vectorized, Array>
 			{
 				return ref TArch.GetSingle(ref arch);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public void Set(in |$resourceManagerTypeNamespace|.|$resourceManagerInType| data)
+			{
+				this.id = resourceManager.Store(data);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static $resourceManagerInType FromArray(ref Array array, int idx, $resourceManagerName resourceManager)
+			{
+				return new |$resourceManagerInType|(ref array.id[idx], resourceManager);
 			}
 		}<~~>\n		<~
 	}

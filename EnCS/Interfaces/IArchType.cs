@@ -4,7 +4,7 @@ namespace EnCS
 {
 	public interface IArchType<TArch, TType, TTypeVec, TTypeSingle>
 		where TArch : unmanaged, IArchType<TArch, TType, TTypeVec, TTypeSingle>
-		where TType : unmanaged, IComponent<TType, TTypeVec, TTypeSingle>
+		where TType : IComponent<TType, TTypeVec, TTypeSingle>, allows ref struct
 		where TTypeVec : unmanaged
 		where TTypeSingle : unmanaged
 	{

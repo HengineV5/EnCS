@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 namespace EnCS
 {
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
 	{
@@ -73,10 +73,10 @@ namespace EnCS
 	}
 
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
 	{
@@ -144,13 +144,13 @@ namespace EnCS
 	}
 
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
-		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Comp : IComponent<T3Comp, T3Vec, T3Single>, allows ref struct
 		where T3Vec : unmanaged
 		where T3Single : unmanaged
 	{
@@ -218,16 +218,16 @@ namespace EnCS
 	}
 
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
-		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Comp : IComponent<T3Comp, T3Vec, T3Single>, allows ref struct
 		where T3Vec : unmanaged
 		where T3Single : unmanaged
-		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Comp : IComponent<T4Comp, T4Vec, T4Single>, allows ref struct
 		where T4Vec : unmanaged
 		where T4Single : unmanaged
 	{
@@ -295,19 +295,19 @@ namespace EnCS
 	}
 
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
-		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Comp : IComponent<T3Comp, T3Vec, T3Single>, allows ref struct
 		where T3Vec : unmanaged
 		where T3Single : unmanaged
-		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Comp : IComponent<T4Comp, T4Vec, T4Single>, allows ref struct
 		where T4Vec : unmanaged
 		where T4Single : unmanaged
-		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Comp : IComponent<T5Comp, T5Vec, T5Single>, allows ref struct
 		where T5Vec : unmanaged
 		where T5Single : unmanaged
 	{
@@ -375,22 +375,22 @@ namespace EnCS
 	}
 
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
-		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Comp : IComponent<T3Comp, T3Vec, T3Single>, allows ref struct
 		where T3Vec : unmanaged
 		where T3Single : unmanaged
-		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Comp : IComponent<T4Comp, T4Vec, T4Single>, allows ref struct
 		where T4Vec : unmanaged
 		where T4Single : unmanaged
-		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Comp : IComponent<T5Comp, T5Vec, T5Single>, allows ref struct
 		where T5Vec : unmanaged
 		where T5Single : unmanaged
-		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Comp : IComponent<T6Comp, T6Vec, T6Single>, allows ref struct
 		where T6Vec : unmanaged
 		where T6Single : unmanaged
 	{
@@ -458,25 +458,25 @@ namespace EnCS
 	}
 
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
-		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Comp : IComponent<T3Comp, T3Vec, T3Single>, allows ref struct
 		where T3Vec : unmanaged
 		where T3Single : unmanaged
-		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Comp : IComponent<T4Comp, T4Vec, T4Single>, allows ref struct
 		where T4Vec : unmanaged
 		where T4Single : unmanaged
-		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Comp : IComponent<T5Comp, T5Vec, T5Single>, allows ref struct
 		where T5Vec : unmanaged
 		where T5Single : unmanaged
-		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Comp : IComponent<T6Comp, T6Vec, T6Single>, allows ref struct
 		where T6Vec : unmanaged
 		where T6Single : unmanaged
-		where T7Comp : unmanaged, IComponent<T7Comp, T7Vec, T7Single>
+		where T7Comp : IComponent<T7Comp, T7Vec, T7Single>, allows ref struct
 		where T7Vec : unmanaged
 		where T7Single : unmanaged
 	{
@@ -544,28 +544,28 @@ namespace EnCS
 	}
 
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
-		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Comp : IComponent<T3Comp, T3Vec, T3Single>, allows ref struct
 		where T3Vec : unmanaged
 		where T3Single : unmanaged
-		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Comp : IComponent<T4Comp, T4Vec, T4Single>, allows ref struct
 		where T4Vec : unmanaged
 		where T4Single : unmanaged
-		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Comp : IComponent<T5Comp, T5Vec, T5Single>, allows ref struct
 		where T5Vec : unmanaged
 		where T5Single : unmanaged
-		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Comp : IComponent<T6Comp, T6Vec, T6Single>, allows ref struct
 		where T6Vec : unmanaged
 		where T6Single : unmanaged
-		where T7Comp : unmanaged, IComponent<T7Comp, T7Vec, T7Single>
+		where T7Comp : IComponent<T7Comp, T7Vec, T7Single>, allows ref struct
 		where T7Vec : unmanaged
 		where T7Single : unmanaged
-		where T8Comp : unmanaged, IComponent<T8Comp, T8Vec, T8Single>
+		where T8Comp : IComponent<T8Comp, T8Vec, T8Single>, allows ref struct
 		where T8Vec : unmanaged
 		where T8Single : unmanaged
 	{
@@ -633,31 +633,31 @@ namespace EnCS
 	}
 
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single, T9Comp, T9Vec, T9Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
-		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Comp : IComponent<T3Comp, T3Vec, T3Single>, allows ref struct
 		where T3Vec : unmanaged
 		where T3Single : unmanaged
-		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Comp : IComponent<T4Comp, T4Vec, T4Single>, allows ref struct
 		where T4Vec : unmanaged
 		where T4Single : unmanaged
-		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Comp : IComponent<T5Comp, T5Vec, T5Single>, allows ref struct
 		where T5Vec : unmanaged
 		where T5Single : unmanaged
-		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Comp : IComponent<T6Comp, T6Vec, T6Single>, allows ref struct
 		where T6Vec : unmanaged
 		where T6Single : unmanaged
-		where T7Comp : unmanaged, IComponent<T7Comp, T7Vec, T7Single>
+		where T7Comp : IComponent<T7Comp, T7Vec, T7Single>, allows ref struct
 		where T7Vec : unmanaged
 		where T7Single : unmanaged
-		where T8Comp : unmanaged, IComponent<T8Comp, T8Vec, T8Single>
+		where T8Comp : IComponent<T8Comp, T8Vec, T8Single>, allows ref struct
 		where T8Vec : unmanaged
 		where T8Single : unmanaged
-		where T9Comp : unmanaged, IComponent<T9Comp, T9Vec, T9Single>
+		where T9Comp : IComponent<T9Comp, T9Vec, T9Single>, allows ref struct
 		where T9Vec : unmanaged
 		where T9Single : unmanaged
 	{
@@ -725,34 +725,34 @@ namespace EnCS
 	}
 
 	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single, T9Comp, T9Vec, T9Single, T10Comp, T10Vec, T10Single>
-		where T1Comp : unmanaged, IComponent<T1Comp, T1Vec, T1Single>
+		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
-		where T2Comp : unmanaged, IComponent<T2Comp, T2Vec, T2Single>
+		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
 		where T2Vec : unmanaged
 		where T2Single : unmanaged
-		where T3Comp : unmanaged, IComponent<T3Comp, T3Vec, T3Single>
+		where T3Comp : IComponent<T3Comp, T3Vec, T3Single>, allows ref struct
 		where T3Vec : unmanaged
 		where T3Single : unmanaged
-		where T4Comp : unmanaged, IComponent<T4Comp, T4Vec, T4Single>
+		where T4Comp : IComponent<T4Comp, T4Vec, T4Single>, allows ref struct
 		where T4Vec : unmanaged
 		where T4Single : unmanaged
-		where T5Comp : unmanaged, IComponent<T5Comp, T5Vec, T5Single>
+		where T5Comp : IComponent<T5Comp, T5Vec, T5Single>, allows ref struct
 		where T5Vec : unmanaged
 		where T5Single : unmanaged
-		where T6Comp : unmanaged, IComponent<T6Comp, T6Vec, T6Single>
+		where T6Comp : IComponent<T6Comp, T6Vec, T6Single>, allows ref struct
 		where T6Vec : unmanaged
 		where T6Single : unmanaged
-		where T7Comp : unmanaged, IComponent<T7Comp, T7Vec, T7Single>
+		where T7Comp : IComponent<T7Comp, T7Vec, T7Single>, allows ref struct
 		where T7Vec : unmanaged
 		where T7Single : unmanaged
-		where T8Comp : unmanaged, IComponent<T8Comp, T8Vec, T8Single>
+		where T8Comp : IComponent<T8Comp, T8Vec, T8Single>, allows ref struct
 		where T8Vec : unmanaged
 		where T8Single : unmanaged
-		where T9Comp : unmanaged, IComponent<T9Comp, T9Vec, T9Single>
+		where T9Comp : IComponent<T9Comp, T9Vec, T9Single>, allows ref struct
 		where T9Vec : unmanaged
 		where T9Single : unmanaged
-		where T10Comp : unmanaged, IComponent<T10Comp, T10Vec, T10Single>
+		where T10Comp : IComponent<T10Comp, T10Vec, T10Single>, allows ref struct
 		where T10Vec : unmanaged
 		where T10Single : unmanaged
 	{

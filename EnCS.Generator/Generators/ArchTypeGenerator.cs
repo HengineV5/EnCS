@@ -62,7 +62,9 @@ namespace EnCS.Generator
 			if (node.Identifier.Text != "EcsBuilder")
 				return null;
 
-			var builderRoot = EcsGenerator.GetBuilderRoot(node);
+			if (!EcsGenerator.TryGetBuilderRoot(node, out var builderRoot))
+				return null;
+
 			var builderSteps = builderRoot.DescendantNodes()
 				.Where(x => x is MemberAccessExpressionSyntax)
 				.Cast<MemberAccessExpressionSyntax>();

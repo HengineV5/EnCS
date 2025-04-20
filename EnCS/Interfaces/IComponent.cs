@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace EnCS
 {
 	public interface IComponent<TComp, TVec, TSingle>
-		where TComp : unmanaged, IComponent<TComp, TVec, TSingle>
+		where TComp : IComponent<TComp, TVec, TSingle>, allows ref struct
 		where TVec : unmanaged
 		where TSingle : unmanaged
 	{

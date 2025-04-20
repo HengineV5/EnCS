@@ -3,13 +3,14 @@ using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
 
-namespace Project.Primitives
+namespace Runner
 {
 	public partial class PositionSystem
 	{
 		public void Update<T0Arch>(
-			ref ComponentEnumerableNew<Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.Enumerator<T0Arch> en0)
-			where T0Arch : unmanaged, IArchType<T0Arch, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>
+			ref ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.Enumerator<T0Arch> en0, 
+			Runner.MeshResourceManager MeshResourceManager)
+			where T0Arch : unmanaged, IArchType<T0Arch, Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>, IArchType<T0Arch, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>
 		{
 			// Not the best, but my templating language does not handle recusion the best atm
 			
@@ -22,13 +23,13 @@ namespace Project.Primitives
 				
 				for (int i = 0; i < remaining0; i++)
 				{
-					Update(Project.Primitives.Position.Ref.FromArray(ref item0.item1Single, i));
+					var arg0_1 = Runner.Position.FromArray(ref item0.item1Single, i);
+					ref var arg0_2 = ref Runner.MeshResourceManager.TestResource.FromArray(ref item0.item2Single, i, MeshResourceManager).TestResourceProp;
+
+					Update(ref arg0_1, ref arg0_2);
+					//Update(Runner.Position.FromArray(ref item0.item1Single, i), ref Runner.MeshResourceManager.TestResource.FromArray(ref item0.item2Single, i, MeshResourceManager).TestResource);
 				}
 				Update(ref item0.item1Vec);
-				for (int i = 0; i < remaining0; i++)
-				{
-					UpdateAfter(Project.Primitives.Position.Ref.FromArray(ref item0.item1Single, i));
-				}
 				
 			}
 			

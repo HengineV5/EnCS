@@ -493,7 +493,7 @@ namespace Test
 
 			var source3 = File.ReadAllText("Files/TestFile.txt");
 
-			return TestHelper.Verify(source, attribSource, interfaceSource, fixedArraySource);
+			return TestHelper.Verify(source3, attribSource, interfaceSource, fixedArraySource);
 		}
 	}
 }

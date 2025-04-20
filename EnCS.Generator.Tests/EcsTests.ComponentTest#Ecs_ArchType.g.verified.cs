@@ -3,138 +3,218 @@ using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
 
-namespace Test
+namespace Runner
 {
 	public partial class Ecs
 	{
-		public struct Wall : IArchType<Wall, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>, IArchType<Wall, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>, IArchType<Wall, Project.Primitives.MeshResourceManager.Mesh, Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array>, IArchType<Wall, Project.Primitives.TestResourceManager.Kaki, Project.Primitives.TestResourceManager.Kaki.Vectorized, Project.Primitives.TestResourceManager.Kaki.Array>
+		public ref struct Wall
 		{
-			public Project.Primitives.Position.Vectorized _Position;
-			public Project.Primitives.Velocity.Vectorized _Velocity;
-			public Project.Primitives.MeshResourceManager.Mesh.Vectorized _Mesh;
-			public Project.Primitives.TestResourceManager.Kaki.Vectorized _Kaki;
+			public Runner.Position Position;
+			public Runner.Velocity Velocity;
+			public Runner.MeshResourceManager.TestResource TestResource;
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.Position.Array IArchType<Wall, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetSingle(ref Wall arch)
+			public Wall(Runner.Position Position, Runner.Velocity Velocity, Runner.MeshResourceManager.TestResource TestResource)
 			{
-				return ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref arch._Position);
+				this.Position = Position;
+				this.Velocity = Velocity;
+				this.TestResource = TestResource;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.Position.Vectorized IArchType<Wall, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetVec(ref Wall arch)
+			public static Wall FromArchType(ref Wall.Vectorized archType, int idx, Runner.MeshResourceManager MeshResourceManager)
 			{
-				return ref arch._Position;
+				return new Wall(Runner.Position.FromArray(ref Unsafe.As<Runner.Position.Vectorized, Runner.Position.Array>(ref archType._Position), idx), 
+					Runner.Velocity.FromArray(ref Unsafe.As<Runner.Velocity.Vectorized, Runner.Velocity.Array>(ref archType._Velocity), idx), 
+					Runner.MeshResourceManager.TestResource.FromArray(ref Unsafe.As<Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>(ref archType._TestResource), idx, MeshResourceManager));
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.Velocity.Array IArchType<Wall, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.GetSingle(ref Wall arch)
+			public struct Vectorized : IArchType<Wall.Vectorized, Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>, IArchType<Wall.Vectorized, Runner.Velocity, Runner.Velocity.Vectorized, Runner.Velocity.Array>, IArchType<Wall.Vectorized, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>
 			{
-				return ref Unsafe.As<Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>(ref arch._Velocity);
+				public Runner.Position.Vectorized _Position;
+				public Runner.Velocity.Vectorized _Velocity;
+				public Runner.MeshResourceManager.TestResource.Vectorized _TestResource;
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.Position.Array IArchType<Wall.Vectorized, Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.GetSingle(ref Wall.Vectorized arch)
+				{
+					return ref Unsafe.As<Runner.Position.Vectorized, Runner.Position.Array>(ref arch._Position);
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.Position.Vectorized IArchType<Wall.Vectorized, Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.GetVec(ref Wall.Vectorized arch)
+				{
+					return ref arch._Position;
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.Velocity.Array IArchType<Wall.Vectorized, Runner.Velocity, Runner.Velocity.Vectorized, Runner.Velocity.Array>.GetSingle(ref Wall.Vectorized arch)
+				{
+					return ref Unsafe.As<Runner.Velocity.Vectorized, Runner.Velocity.Array>(ref arch._Velocity);
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.Velocity.Vectorized IArchType<Wall.Vectorized, Runner.Velocity, Runner.Velocity.Vectorized, Runner.Velocity.Array>.GetVec(ref Wall.Vectorized arch)
+				{
+					return ref arch._Velocity;
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.MeshResourceManager.TestResource.Array IArchType<Wall.Vectorized, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.GetSingle(ref Wall.Vectorized arch)
+				{
+					return ref Unsafe.As<Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>(ref arch._TestResource);
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.MeshResourceManager.TestResource.Vectorized IArchType<Wall.Vectorized, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.GetVec(ref Wall.Vectorized arch)
+				{
+					return ref arch._TestResource;
+				}
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.Velocity.Vectorized IArchType<Wall, Project.Primitives.Velocity, Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>.GetVec(ref Wall arch)
-			{
-				return ref arch._Velocity;
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.MeshResourceManager.Mesh.Array IArchType<Wall, Project.Primitives.MeshResourceManager.Mesh, Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array>.GetSingle(ref Wall arch)
-			{
-				return ref Unsafe.As<Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array>(ref arch._Mesh);
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.MeshResourceManager.Mesh.Vectorized IArchType<Wall, Project.Primitives.MeshResourceManager.Mesh, Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array>.GetVec(ref Wall arch)
-			{
-				return ref arch._Mesh;
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.TestResourceManager.Kaki.Array IArchType<Wall, Project.Primitives.TestResourceManager.Kaki, Project.Primitives.TestResourceManager.Kaki.Vectorized, Project.Primitives.TestResourceManager.Kaki.Array>.GetSingle(ref Wall arch)
-			{
-				return ref Unsafe.As<Project.Primitives.TestResourceManager.Kaki.Vectorized, Project.Primitives.TestResourceManager.Kaki.Array>(ref arch._Kaki);
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.TestResourceManager.Kaki.Vectorized IArchType<Wall, Project.Primitives.TestResourceManager.Kaki, Project.Primitives.TestResourceManager.Kaki.Vectorized, Project.Primitives.TestResourceManager.Kaki.Array>.GetVec(ref Wall arch)
-			{
-				return ref arch._Kaki;
-			}
-
+			/*
 			public ref struct Ref
 			{
-				public Project.Primitives.Position.Ref Position;
-				public Project.Primitives.Velocity.Ref Velocity;
-				public Project.Primitives.MeshResourceManager.Mesh.Ref Mesh;
-				public Project.Primitives.TestResourceManager.Kaki.Ref Kaki;
+				public Runner.Position Position;
+				public Runner.Velocity Velocity;
+				public Runner.MeshResourceManager.TestResource TestResource;
 
-				public Ref(Project.Primitives.Position.Ref Position, Project.Primitives.Velocity.Ref Velocity, Project.Primitives.MeshResourceManager.Mesh.Ref Mesh, Project.Primitives.TestResourceManager.Kaki.Ref Kaki)
+				public Ref(Runner.Position Position, Runner.Velocity Velocity, Runner.MeshResourceManager.TestResource TestResource)
 				{
 					this.Position = Position;
 					this.Velocity = Velocity;
-					this.Mesh = Mesh;
-					this.Kaki = Kaki;
+					this.TestResource = TestResource;
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public static Ref FromArchType(ref Wall archType, int idx, Project.Primitives.MeshResourceManager MeshResourceManager, Project.Primitives.TestResourceManager TestResourceManager)
+				public static Ref FromArchType(ref Wall archType, int idx, Runner.MeshResourceManager MeshResourceManager)
 				{
-					return new Ref(Project.Primitives.Position.Ref.FromArray(ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref archType._Position), idx), 
-						Project.Primitives.Velocity.Ref.FromArray(ref Unsafe.As<Project.Primitives.Velocity.Vectorized, Project.Primitives.Velocity.Array>(ref archType._Velocity), idx), 
-						Project.Primitives.MeshResourceManager.Mesh.Ref.FromArray(ref Unsafe.As<Project.Primitives.MeshResourceManager.Mesh.Vectorized, Project.Primitives.MeshResourceManager.Mesh.Array>(ref archType._Mesh), idx, MeshResourceManager), 
-						Project.Primitives.TestResourceManager.Kaki.Ref.FromArray(ref Unsafe.As<Project.Primitives.TestResourceManager.Kaki.Vectorized, Project.Primitives.TestResourceManager.Kaki.Array>(ref archType._Kaki), idx, TestResourceManager));
+					return new Ref(Runner.Position.FromArray(ref Unsafe.As<Runner.Position.Vectorized, Runner.Position.Array>(ref archType._Position), idx), 
+						Runner.Velocity.FromArray(ref Unsafe.As<Runner.Velocity.Vectorized, Runner.Velocity.Array>(ref archType._Velocity), idx), 
+						Runner.MeshResourceManager.TestResource.FromArray(ref Unsafe.As<Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>(ref archType._TestResource), idx, MeshResourceManager));
 				}
 			}
+			*/
 		}
 
-		public struct Tile : IArchType<Tile, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>, IArchType<Tile, Project.Primitives.Scale, Project.Primitives.Scale.Vectorized, Project.Primitives.Scale.Array>
+		public ref struct Tile
 		{
-			public Project.Primitives.Position.Vectorized _Position;
-			public Project.Primitives.Scale.Vectorized _Scale;
+			public Runner.Position Position;
+			public Runner.MeshResourceManager.TestResource TestResource;
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.Position.Array IArchType<Tile, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetSingle(ref Tile arch)
+			public Tile(Runner.Position Position, Runner.MeshResourceManager.TestResource TestResource)
 			{
-				return ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref arch._Position);
+				this.Position = Position;
+				this.TestResource = TestResource;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.Position.Vectorized IArchType<Tile, Project.Primitives.Position, Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>.GetVec(ref Tile arch)
+			public static Tile FromArchType(ref Tile.Vectorized archType, int idx, Runner.MeshResourceManager MeshResourceManager)
 			{
-				return ref arch._Position;
+				return new Tile(Runner.Position.FromArray(ref Unsafe.As<Runner.Position.Vectorized, Runner.Position.Array>(ref archType._Position), idx), 
+					Runner.MeshResourceManager.TestResource.FromArray(ref Unsafe.As<Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>(ref archType._TestResource), idx, MeshResourceManager));
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.Scale.Array IArchType<Tile, Project.Primitives.Scale, Project.Primitives.Scale.Vectorized, Project.Primitives.Scale.Array>.GetSingle(ref Tile arch)
+			public struct Vectorized : IArchType<Tile.Vectorized, Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>, IArchType<Tile.Vectorized, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>
 			{
-				return ref Unsafe.As<Project.Primitives.Scale.Vectorized, Project.Primitives.Scale.Array>(ref arch._Scale);
-			}
+				public Runner.Position.Vectorized _Position;
+				public Runner.MeshResourceManager.TestResource.Vectorized _TestResource;
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			static ref Project.Primitives.Scale.Vectorized IArchType<Tile, Project.Primitives.Scale, Project.Primitives.Scale.Vectorized, Project.Primitives.Scale.Array>.GetVec(ref Tile arch)
-			{
-				return ref arch._Scale;
-			}
-
-			public ref struct Ref
-			{
-				public Project.Primitives.Position.Ref Position;
-				public Project.Primitives.Scale.Ref Scale;
-
-				public Ref(Project.Primitives.Position.Ref Position, Project.Primitives.Scale.Ref Scale)
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.Position.Array IArchType<Tile.Vectorized, Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.GetSingle(ref Tile.Vectorized arch)
 				{
-					this.Position = Position;
-					this.Scale = Scale;
+					return ref Unsafe.As<Runner.Position.Vectorized, Runner.Position.Array>(ref arch._Position);
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public static Ref FromArchType(ref Tile archType, int idx)
+				static ref Runner.Position.Vectorized IArchType<Tile.Vectorized, Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.GetVec(ref Tile.Vectorized arch)
 				{
-					return new Ref(Project.Primitives.Position.Ref.FromArray(ref Unsafe.As<Project.Primitives.Position.Vectorized, Project.Primitives.Position.Array>(ref archType._Position), idx), 
-						Project.Primitives.Scale.Ref.FromArray(ref Unsafe.As<Project.Primitives.Scale.Vectorized, Project.Primitives.Scale.Array>(ref archType._Scale), idx));
+					return ref arch._Position;
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.MeshResourceManager.TestResource.Array IArchType<Tile.Vectorized, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.GetSingle(ref Tile.Vectorized arch)
+				{
+					return ref Unsafe.As<Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>(ref arch._TestResource);
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.MeshResourceManager.TestResource.Vectorized IArchType<Tile.Vectorized, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.GetVec(ref Tile.Vectorized arch)
+				{
+					return ref arch._TestResource;
 				}
 			}
+
+			/*
+			public ref struct Ref
+			{
+				public Runner.Position Position;
+				public Runner.MeshResourceManager.TestResource TestResource;
+
+				public Ref(Runner.Position Position, Runner.MeshResourceManager.TestResource TestResource)
+				{
+					this.Position = Position;
+					this.TestResource = TestResource;
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static Ref FromArchType(ref Tile archType, int idx, Runner.MeshResourceManager MeshResourceManager)
+				{
+					return new Ref(Runner.Position.FromArray(ref Unsafe.As<Runner.Position.Vectorized, Runner.Position.Array>(ref archType._Position), idx), 
+						Runner.MeshResourceManager.TestResource.FromArray(ref Unsafe.As<Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>(ref archType._TestResource), idx, MeshResourceManager));
+				}
+			}
+			*/
+		}
+
+		public ref struct Cam
+		{
+			public Runner.TestComp123 TestComp123;
+
+			public Cam(Runner.TestComp123 TestComp123)
+			{
+				this.TestComp123 = TestComp123;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static Cam FromArchType(ref Cam.Vectorized archType, int idx)
+			{
+				return new Cam(Runner.TestComp123.FromArray(ref Unsafe.As<Runner.TestComp123.Vectorized, Runner.TestComp123.Array>(ref archType._TestComp123), idx));
+			}
+
+			public struct Vectorized : IArchType<Cam.Vectorized, Runner.TestComp123, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>
+			{
+				public Runner.TestComp123.Vectorized _TestComp123;
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.TestComp123.Array IArchType<Cam.Vectorized, Runner.TestComp123, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>.GetSingle(ref Cam.Vectorized arch)
+				{
+					return ref Unsafe.As<Runner.TestComp123.Vectorized, Runner.TestComp123.Array>(ref arch._TestComp123);
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				static ref Runner.TestComp123.Vectorized IArchType<Cam.Vectorized, Runner.TestComp123, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>.GetVec(ref Cam.Vectorized arch)
+				{
+					return ref arch._TestComp123;
+				}
+			}
+
+			/*
+			public ref struct Ref
+			{
+				public Runner.TestComp123 TestComp123;
+
+				public Ref(Runner.TestComp123 TestComp123)
+				{
+					this.TestComp123 = TestComp123;
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static Ref FromArchType(ref Cam archType, int idx)
+				{
+					return new Ref(Runner.TestComp123.FromArray(ref Unsafe.As<Runner.TestComp123.Vectorized, Runner.TestComp123.Array>(ref archType._TestComp123), idx));
+				}
+			}
+			*/
 		}
 	}
 
@@ -143,15 +223,21 @@ namespace Test
 		// TODO: Generate create method
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Ecs.Wall.Ref Get(this ref ArchTypeContainer<Ecs.Wall> container, ArchRef<Ecs.Wall> ptr, Project.Primitives.MeshResourceManager MeshResourceManager, Project.Primitives.TestResourceManager TestResourceManager)
+		public static Ecs.Wall Get(this ref ArchTypeContainer<Ecs.Wall.Vectorized, Ecs.Wall> container, ArchRef<Ecs.Wall> ptr, Runner.MeshResourceManager MeshResourceManager)
 		{
-			return Ecs.Wall.Ref.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7, MeshResourceManager, TestResourceManager);
+			return Ecs.Wall.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7, MeshResourceManager);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Ecs.Tile.Ref Get(this ref ArchTypeContainer<Ecs.Tile> container, ArchRef<Ecs.Tile> ptr)
+		public static Ecs.Tile Get(this ref ArchTypeContainer<Ecs.Tile.Vectorized, Ecs.Tile> container, ArchRef<Ecs.Tile> ptr, Runner.MeshResourceManager MeshResourceManager)
 		{
-			return Ecs.Tile.Ref.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7);
+			return Ecs.Tile.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7, MeshResourceManager);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Ecs.Cam Get(this ref ArchTypeContainer<Ecs.Cam.Vectorized, Ecs.Cam> container, ArchRef<Ecs.Cam> ptr)
+		{
+			return Ecs.Cam.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7);
 		}
 	}
 }

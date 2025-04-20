@@ -6,20 +6,13 @@ namespace $namespace
 {
 	public partial class $ecsName
 	{
-		$worlds~>public ref struct $worldName
+		$worlds~>public ref struct $worldName : $worldSystems~>IWorld<$ecsName, $systemName $systemContextArguments~>, $contextType<~ ><~~>, <~
 		{
-			public struct Interface : $worldSystems~>IWorld<$ecsName, $systemName $systemContextArguments~>, $contextType<~ ><~~>, <~
-			{
-				$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public static void Loop($ecsName ecs, $systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
-					=> ecs.Get|$worldName|().Loop(system$systemContextArguments~>, ref context$contextType<~);<~~>\n\n				<~
-			}
-
-			$worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|;<~~>\n			<~
+			$worldArchTypes~>ref ArchTypeContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|;<~~>\n			<~
 
 			$worldResourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName;<~~>\n			<~
 
-			public $worldName($worldArchTypes~>ref ArchTypeContainer<$archTypeName> container|$archTypeName|<~~>, <~$worldResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
+			public $worldName($worldArchTypes~>ref ArchTypeContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|<~~>, <~$worldResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
 			{
 				$worldArchTypes~>this.container|$archTypeName| = ref container|$archTypeName|;<~~>\n				<~
 
@@ -27,18 +20,18 @@ namespace $namespace
 			}
 
 			$worldArchTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public ArchRef<$archTypeName> Create(in |$archTypeName| data)
+			public ArchRef<$archTypeName> Create(ref readonly |$archTypeName|.Vectorized data)
 			{
 				return container|$archTypeName|.Create(data);
 			}
 
-			public void Delete(in ArchRef<$archTypeName> ptr)
+			public void Delete(ref readonly ArchRef<$archTypeName> ptr)
 			{
 				container|$archTypeName|.Delete(ptr);
 			}
 			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public |$archTypeName|.Ref Get(in ArchRef<$archTypeName> ptr)
+			public |$archTypeName| Get(ref readonly ArchRef<$archTypeName> ptr)
 			{
 				return container|$archTypeName|.Get(ptr$archTypeResourceManagers~>, $resourceManagerName<~);
 			}<~~>\n\n			<~
@@ -46,10 +39,14 @@ namespace $namespace
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop($systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
 			{
-				$systemContainers~>var enum|$containerName| = new ComponentEnumerableNew<$containerComponents~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<$containerName>(container|$containerName|.AsSpan(), (int)container|$containerName|.Entities);
+				$systemContainers~>var enum|$containerName| = new ComponentEnumerableNew<$containerComponents~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<|$containerName|.Vectorized>(container|$containerName|.AsSpan(), (int)container|$containerName|.Entities);
 				<~
 				$systemGroups~>system.Update($groupContainers~>ref enum|$containerName|<~~>, <~$groupResourceManagers~>, $resourceManagerName<~$groupContextArguments~>, ref context$contextType<~);<~~>\n				<~
 			}<~~>\n\n			<~
+
+			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static void Loop($ecsName ecs, $systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
+					=> ecs.Get|$worldName|().Loop(system$systemContextArguments~>, ref context$contextType<~);<~~>\n\n			<~
 		}<~~>\n\n		<~
 	}
 }

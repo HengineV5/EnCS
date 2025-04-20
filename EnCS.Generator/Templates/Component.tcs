@@ -4,8 +4,19 @@ using EnCS;
 
 namespace $namespace
 {
-	public partial struct $compName : IComponent<$compName, |$compName|.Vectorized, |$compName|.Array>
+	public ref partial struct $compName : IComponent<$compName, |$compName|.Vectorized, |$compName|.Array>
 	{
+		public $compName($members~>ref $type $name<~~>, <~)
+		{
+			$members~>this.$name = ref $name;<~~>\n			<~
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static $compName FromArray(ref Array array, int idx)
+		{
+			return new |$compName|($members~>ref array.$name[idx]<~~>, <~);
+		}
+
 		public struct Vectorized
 		{
 			$members|$arraySize < 2|~>public Vector|$bits|<$type> $name;<~|$arraySize > 1|~>public FixedArray|$arraySize|<Vector|$bits|<$type>> $name;<~~>\n			<~\n
@@ -19,6 +30,7 @@ namespace $namespace
 			$members~>public FixedArray8<$type> $name;<~~>\n			<~
 		}
 
+		/*
 		public ref struct Ref
 		{
 			$members~>public ref $type $name;<~~>\n			<~
@@ -40,6 +52,7 @@ namespace $namespace
 				return new Ref($members~>ref array.$name[idx]<~~>, <~);
 			}
 		}
+		*/
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, $compName, Vectorized, Array>

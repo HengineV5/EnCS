@@ -5,14 +5,23 @@ using EnCS;
 using EnCS.Attributes;
 
 // TODO: Refactor when template import is supported in language
-namespace Project.Primitives
+namespace Runner
 {
 	public partial class MeshResourceManager
 	{
 		[Component]
-		public struct Mesh : IComponent<Mesh, Mesh.Vectorized, Mesh.Array>
+		public ref struct TestResource : IComponent<TestResource, TestResource.Vectorized, TestResource.Array>
 		{
-			public uint id;
+			public ref Runner.TestResourceId TestResourceProp => ref resourceManager.Get(id);
+
+			ref uint id;
+			MeshResourceManager resourceManager;
+
+			public TestResource(ref uint id, MeshResourceManager resourceManager)
+			{
+				this.id = ref id;
+				this.resourceManager = resourceManager;
+			}
 
 			public struct Vectorized
 			{
@@ -27,9 +36,10 @@ namespace Project.Primitives
 				public FixedArray8<uint> id;
 			}
 
+			/*
 			public ref struct Ref
 			{
-				public ref Project.Primitives.MeshId Mesh => ref resourceManager.Get(id);
+				public ref Runner.TestResourceId TestResource => ref resourceManager.Get(id);
 
 				ref uint id;
 				MeshResourceManager resourceManager;
@@ -41,7 +51,7 @@ namespace Project.Primitives
 				}
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public void Set(in Project.Primitives.Mesh data)
+				public void Set(in Runner.TestResource data)
 				{
 					this.id = resourceManager.Store(data);
 				}
@@ -52,17 +62,30 @@ namespace Project.Primitives
 					return new Ref(ref array.id[idx], resourceManager);
 				}
 			}
+			*/
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Mesh, Vectorized, Array>
+			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, TestResource, Vectorized, Array>
 			{
 				return ref TArch.GetVec(ref arch);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Mesh, Vectorized, Array>
+			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, TestResource, Vectorized, Array>
 			{
 				return ref TArch.GetSingle(ref arch);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public void Set(in Runner.TestResource data)
+			{
+				this.id = resourceManager.Store(data);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static TestResource FromArray(ref Array array, int idx, MeshResourceManager resourceManager)
+			{
+				return new TestResource(ref array.id[idx], resourceManager);
 			}
 		}
 	}

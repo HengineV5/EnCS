@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace EnCS
 {
-	public struct ArchRef<TArch> where TArch : unmanaged
+	public struct ArchRef<TArch> where TArch : allows ref struct
 	{
 		public readonly nuint idx;
 
@@ -15,7 +15,7 @@ namespace EnCS
 		}
 	}
 
-	public unsafe struct ArchTypeContainer<TArch> : IContainer<TArch> where TArch : unmanaged
+	public unsafe struct ArchTypeContainer<TArch, TPtr> : IContainer<TArch> where TArch : unmanaged where TPtr : allows ref struct
 	{
 		const int INITIAL_CONTAINER_SIZE = 1_000_000;
 
@@ -42,7 +42,7 @@ namespace EnCS
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ArchRef<TArch> Create(in TArch data)
+		public ArchRef<TPtr> Create(in TArch data)
 		{
 			nuint idx = entityCount;
 
@@ -53,11 +53,11 @@ namespace EnCS
 
 			entityCount++;
 
-			return new ArchRef<TArch>(idx);
+			return new ArchRef<TPtr>(idx);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Delete(in ArchRef<TArch> ptr)
+		public void Delete(in ArchRef<TPtr> ptr)
 		{
 			entityCount--;
 
@@ -69,7 +69,7 @@ namespace EnCS
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ref TArch GetVec(ArchRef<TArch> ptr)
+		public ref TArch GetVec(ArchRef<TPtr> ptr)
 		{
 			return ref buff[map[ptr.idx]];
 		}

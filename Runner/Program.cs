@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Runner
 {
@@ -50,42 +51,36 @@ namespace Runner
 	}
 
 	[Component]
-	partial struct TestComp123
+	ref partial struct TestComp123
 	{
 		//public string wow;
-		public int tag;
+		public ref int tag;
 	}
 
 	[Component]
-	partial struct Position
+	ref partial struct Position
 	{
-		public float x;
-		public float y;
-		public float z;
+		public ref float x;
+		public ref float y;
+		public ref float z;
+	}
 
-		public Position(float x, float y, float z)
+	static class Comp_Extensions
+	{
+		public static void Set(this ref Position position, Vector3 value)
 		{
-			this.x = x;
-			this.y = y;
-			this.z = z;
+			position.x = value.X;
+			position.y = value.Y;
+			position.z = value.Z;
 		}
-
-		public static implicit operator Position(Vector3 v) => new Position(v.X, v.Y, v.Z);
 	}
 
 	[Component]
-	partial struct Velocity
+	ref partial struct Velocity
 	{
-		public int x;
-		public int y;
-		public int z;
-
-		public Velocity(int x, int y, int z)
-		{
-			this.x = x;
-			this.y = y;
-			this.z = z;
-		}
+		public ref int x;
+		public ref int y;
+		public ref int z;
 	}
 
 	[System]
@@ -94,7 +89,7 @@ namespace Runner
 		static Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
 		[SystemUpdate]
-		public void Update(Position.Ref position)
+		public void Update(ref Position position)
 		{
 			position.x = Random.Shared.Next(0, 100);
 			position.x = MathF.Sqrt(position.x);
@@ -114,7 +109,7 @@ namespace Runner
 		static Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
 		[SystemUpdate]
-		public void Update(Position.Ref position, ref TestResourceId resource)
+		public void Update(ref Position position, ref TestResourceId resource)
 		{
             position.x = Random.Shared.Next(0, 100);
             Console.WriteLine(resource.id);
@@ -132,7 +127,7 @@ namespace Runner
 	partial class PrintSystem
 	{
 		[SystemUpdate]
-		public void Update(Position.Ref position)
+		public void Update(ref Position position)
 		{
             Console.WriteLine(position.x);
         }
@@ -147,13 +142,13 @@ namespace Runner
 	partial class LayerSystem
 	{
 		[SystemUpdate, SystemLayer(0)]
-		public void Update1(TestComp123.Ref position)
+		public void Update1(ref TestComp123 position)
 		{
 			Console.WriteLine($"Tag: {position.tag}");
 		}
 
 		[SystemUpdate, SystemLayer(1)]
-		public void Update2(Position.Ref position)
+		public void Update2(ref Position position)
 		{
 			Console.WriteLine($"\t{position.x}");
 		}
@@ -203,22 +198,22 @@ namespace Runner
 			Ecs ecs = new(meshResourceManager);
 
 			Ecs.MainWorld mainWorld = ecs.GetMainWorld();
-			ArchRef<Ecs.Tile> tile1 = mainWorld.Create(new Ecs.Tile());
-			ArchRef<Ecs.Tile> tile2 = mainWorld.Create(new Ecs.Tile());
+			ArchRef<Ecs.Tile> tile1 = mainWorld.Create(new Ecs.Tile.Vectorized());
+			ArchRef<Ecs.Tile> tile2 = mainWorld.Create(new Ecs.Tile.Vectorized());
 
-			ArchRef<Ecs.Wall> wall1 = mainWorld.Create(new Ecs.Wall());
-			ArchRef<Ecs.Wall> wall2 = mainWorld.Create(new Ecs.Wall());
+			ArchRef<Ecs.Wall> wall1 = mainWorld.Create(new Ecs.Wall.Vectorized());
+			ArchRef<Ecs.Wall> wall2 = mainWorld.Create(new Ecs.Wall.Vectorized());
 
-			var camRef1 = mainWorld.Get(mainWorld.Create(new Ecs.Cam()));
-			var camRef2 = mainWorld.Get(mainWorld.Create(new Ecs.Cam()));
+			var camRef1 = mainWorld.Get(mainWorld.Create(new Ecs.Cam.Vectorized()));
+			var camRef2 = mainWorld.Get(mainWorld.Create(new Ecs.Cam.Vectorized()));
 
 			camRef1.TestComp123.tag = 1;
 			camRef1.TestComp123.tag = 2;
 
-			Ecs.Tile.Ref tile1Ref = mainWorld.Get(tile1);
-			Ecs.Tile.Ref tile2Ref = mainWorld.Get(tile2);
-			Ecs.Wall.Ref wall1Ref = mainWorld.Get(wall1);
-			Ecs.Wall.Ref wall2Ref = mainWorld.Get(wall2);
+			Ecs.Tile tile1Ref = mainWorld.Get(in tile1);
+			Ecs.Tile tile2Ref = mainWorld.Get(in tile2);
+			Ecs.Wall wall1Ref = mainWorld.Get(in wall1);
+			Ecs.Wall wall2Ref = mainWorld.Get(in wall2);
 
 			var r = new TestResource()
 			{
@@ -232,9 +227,9 @@ namespace Runner
             Console.WriteLine(tile1Ref.Position.x);
 			wall1Ref.Position.x = 1;
 			wall2Ref.Position.x = 3;
-			wall1Ref.Position.Set(new Position(2, 0, 0));
-			tile1Ref.Position.Set(new Position(2, 0, 0));
-            Console.WriteLine(tile1Ref.Position.x);
+			wall1Ref.Position.Set(new Vector3(2, 0, 0));
+			tile1Ref.Position.Set(new Vector3(2, 0, 0));
+			Console.WriteLine(tile1Ref.Position.x);
 
             Console.WriteLine("Systems:");
 
@@ -242,7 +237,7 @@ namespace Runner
 			tile1Ref.Position.x = 20;
 			tile2Ref.Position.x = 12;
             Console.WriteLine("PrintSystem:");
-			LoopGeneric<Ecs.MainWorld.Interface, PrintSystem>(ecs, new PrintSystem());
+			LoopGeneric<Ecs.MainWorld, PrintSystem>(ecs, new PrintSystem());
 			mainWorld.Loop(layerSystem);
 
 			//ArchTypeContainerNew<Ecs.Tile, Position, Position.Vectorized, Position.Array> testContainer = new();
@@ -277,7 +272,7 @@ namespace Runner
 		}
 
 		static void LoopGeneric<T, TSystem0>(Ecs ecs, TSystem0 system)
-			where T : IWorld<Ecs, TSystem0>
+			where T : IWorld<Ecs, TSystem0>, allows ref struct
 			where TSystem0 : class
 		{
 			T.Loop(ecs, system);
@@ -301,7 +296,7 @@ namespace Runner
 			Ecs.MainWorld mainWorld = ecs.GetMainWorld();
 			for (int i = 0; i < 1_000_000; i++)
 			{
-				mainWorld.Create(new Ecs.Wall());
+				mainWorld.Create(new Ecs.Wall.Vectorized());
 			}
 		}
 
