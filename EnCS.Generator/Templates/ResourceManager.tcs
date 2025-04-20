@@ -35,34 +35,6 @@ namespace $namespace
 				public FixedArray8<uint> id;
 			}
 
-			/*
-			public ref struct Ref
-			{
-				public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| |$resourceManagerInType| => ref resourceManager.Get(id);
-
-				ref uint id;
-				$resourceManagerName resourceManager;
-
-				public Ref(ref uint id, $resourceManagerName resourceManager)
-				{
-					this.id = ref id;
-					this.resourceManager = resourceManager;
-				}
-
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public void Set(in |$resourceManagerTypeNamespace|.|$resourceManagerInType| data)
-				{
-					this.id = resourceManager.Store(data);
-				}
-
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public static Ref FromArray(ref Array array, int idx, $resourceManagerName resourceManager)
-				{
-					return new Ref(ref array.id[idx], resourceManager);
-				}
-			}
-			*/
-
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerInType|, Vectorized, Array>
 			{

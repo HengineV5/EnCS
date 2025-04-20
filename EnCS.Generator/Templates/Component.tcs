@@ -30,30 +30,6 @@ namespace $namespace
 			$members~>public FixedArray8<$type> $name;<~~>\n			<~
 		}
 
-		/*
-		public ref struct Ref
-		{
-			$members~>public ref $type $name;<~~>\n			<~
-			
-			public Ref($members~>ref $type $name<~~>, <~)
-			{
-				$members~>this.$name = ref $name;<~~>\n				<~
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public void Set(in $compName data)
-			{
-				$members~>this.$name = data.$name;<~~>\n				<~
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static Ref FromArray(ref Array array, int idx)
-			{
-				return new Ref($members~>ref array.$name[idx]<~~>, <~);
-			}
-		}
-		*/
-
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, $compName, Vectorized, Array>
 		{
