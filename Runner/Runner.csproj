@@ -13,10 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
-    <PackageReference Include="EnCS.Generator" Version="0.0.92" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\EnCS\EnCS.csproj" />
+    <PackageReference Include="EnCS" Version="0.0.63" />
   </ItemGroup>
 </Project>

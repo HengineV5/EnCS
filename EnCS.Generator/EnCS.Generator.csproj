@@ -8,7 +8,7 @@
 		<!-- Nuget -->
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageId>EnCS.Generator</PackageId>
-		<Version>0.0.92</Version>
+		<Version>0.0.122</Version>
 		
 		<!-- We don't want to reference the source generator dll directly in consuming projects -->
 		<IncludeBuildOutput>false</IncludeBuildOutput>
@@ -22,15 +22,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Templates\ResourceManager.tcs" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" Pack="true" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" Pack="true" PrivateAssets="all" />
+		<PackageReference Include="TemplateGen" Version="1.0.78" Pack="true" GeneratePathProperty="true" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" Pack="true" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" Pack="true" PrivateAssets="all" />
-		<PackageReference Include="TemplateGen" Version="1.0.65" Pack="true" GeneratePathProperty="true" />
+	  <None Remove="Templates\ResourceManager.tcs" />
+	  <None Remove="Templates\World.tcs" />
+	  <None Remove="Templates\ArchType.tcs" />
+	  <None Remove="Templates\Component.tcs" />
+	  <None Remove="Templates\Ecs.tcs" />
+	  <None Remove="Templates\System.tcs" />
 	</ItemGroup>
-
+		
 	<ItemGroup>
 		<EmbeddedResource Include="Templates\ResourceManager.tcs" />
 		<EmbeddedResource Include="Templates\World.tcs" />

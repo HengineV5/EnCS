@@ -15,17 +15,20 @@ namespace EnCS.Generator
 			var worldGenerator = new WorldGenerator();
 			var resourceManagerGenerator = new ResourceManagerGenerator();
 
-			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.ComponentAttribute", context, compGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, archTypeGenerator);
-			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute", context, systemGenerator);
-			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<T1, T2>", context, systemGenerator);
-			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<T1,T2>", context, systemGenerator);
-			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<T,T>", context, systemGenerator);
-			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<,>", context, systemGenerator);
-			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.SystemAttribute<>", context, systemGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, worldGenerator);
-			TemplateGeneratorHelpers.RegisterTemplateGenerator(context, ecsGenerator);
-			TemplateGeneratorHelpers.RegisterAttributeTemplateGenerator("EnCS.Attributes.ResourceManagerAttribute", context, resourceManagerGenerator);
+			new TemplateGeneratorBuilder()
+				.WithLogging(context)
+				.WithAttributeGenerator("EnCS.Attributes.ComponentAttribute", context, compGenerator)
+				.WithGenerator(context, archTypeGenerator)
+				.WithAttributeGenerator("EnCS.Attributes.SystemAttribute", context, systemGenerator)
+				.WithAttributeGenerator("EnCS.Attributes.SystemAttribute<T1, T2>", context, systemGenerator)
+				.WithAttributeGenerator("EnCS.Attributes.SystemAttribute<T1,T2>", context, systemGenerator)
+				.WithAttributeGenerator("EnCS.Attributes.SystemAttribute<T,T>", context, systemGenerator)
+				.WithAttributeGenerator("EnCS.Attributes.SystemAttribute<,>", context, systemGenerator)
+				.WithAttributeGenerator("EnCS.Attributes.SystemAttribute<>", context, systemGenerator)
+				.WithGenerator(context, worldGenerator)
+				.WithGenerator(context, ecsGenerator)
+				.WithAttributeGenerator("EnCS.Attributes.ResourceManagerAttribute", context, resourceManagerGenerator)
+				.WithInfoFile(context);
 		}
 	}
 }

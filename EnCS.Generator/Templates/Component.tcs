@@ -6,9 +6,19 @@ namespace $namespace
 {
 	public ref partial struct $compName : IComponent<$compName, |$compName|.Vectorized, |$compName|.Array>
 	{
+		public $compName()
+		{
+			throw new NotImplementedException("|$compName| should be created with Comp struct, not directly.");
+		}
+
 		public $compName($members~>ref $type $name<~~>, <~)
 		{
 			$members~>this.$name = ref $name;<~~>\n			<~
+		}
+
+		public void Set(Comp c)
+		{
+			$members~>this.$name = c.|$name|;<~~>\n			<~
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -20,6 +30,16 @@ namespace $namespace
 		public struct Vectorized
 		{
 			$members|$arraySize < 2|~>public Vector|$bits|<$type> $name;<~|$arraySize > 1|~>public FixedArray|$arraySize|<Vector|$bits|<$type>> $name;<~~>\n			<~\n
+		}
+
+		public struct Comp
+		{
+			$members~>public $type $name;<~~>\n			<~
+
+			public Comp($members~>$type $name<~~>, <~)
+			{
+				$members~>this.$name = $name;<~~>\n				<~
+			}
 		}
 
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]

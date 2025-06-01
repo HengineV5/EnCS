@@ -7,11 +7,23 @@ namespace Runner
 {
 	public ref partial struct Position : IComponent<Position, Position.Vectorized, Position.Array>
 	{
+		public Position()
+		{
+			throw new NotImplementedException("Position should be created with Comp struct, not directly.");
+		}
+
 		public Position(ref float x, ref float y, ref float z)
 		{
 			this.x = ref x;
 			this.y = ref y;
 			this.z = ref z;
+		}
+
+		public void Set(Comp c)
+		{
+			this.x = c.x;
+			this.y = c.y;
+			this.z = c.z;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -25,6 +37,20 @@ namespace Runner
 			public Vector256<float> x;
 			public Vector256<float> y;
 			public Vector256<float> z;
+		}
+
+		public struct Comp
+		{
+			public float x;
+			public float y;
+			public float z;
+
+			public Comp(float x, float y, float z)
+			{
+				this.x = x;
+				this.y = y;
+				this.z = z;
+			}
 		}
 
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]

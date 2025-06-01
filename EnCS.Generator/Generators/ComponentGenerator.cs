@@ -1,10 +1,12 @@
 ﻿using LightParser;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
@@ -12,14 +14,7 @@ using TemplateGenerator;
 
 namespace EnCS.Generator
 {
-	static class ComponentGeneratorDiagnostics
-	{
-		public static readonly DiagnosticDescriptor InvalidComponentMemberType = new("ECS001", "Invalid component member type", "Component member of type '{0}' is not supported", "ComponentGenerator", DiagnosticSeverity.Error, true);
-
-		public static readonly DiagnosticDescriptor ComponentMustBePartial = new("ECS002", "Component struct must be partial", "Component struct is not partial", "ComponentGenerator", DiagnosticSeverity.Error, true);
-	}
-
-	struct ComponentGeneratorData : IEquatable<ComponentGeneratorData>
+	struct ComponentGeneratorData : IEquatable<ComponentGeneratorData>, ITemplateData
 	{
 		public INamedTypeSymbol node;
 		public Location location;
@@ -37,6 +32,9 @@ namespace EnCS.Generator
 		{
 			return members.Equals(other.members);
 		}
+
+		public string GetIdentifier()
+			=> $"Component Generator ({node.Name}) ({location})";
 	}
 
 	class ComponentGenerator : ITemplateSourceGenerator<StructDeclarationSyntax, ComponentGeneratorData>
@@ -56,21 +54,31 @@ namespace EnCS.Generator
 			model.Set("compName".AsSpan(), new Parameter<string>(data.node.Name));
 			model.Set("arraySize".AsSpan(), new Parameter<float>(ARRAY_ELEMENTS));
 
-			//var membersResult = TryGetMembers(compilation, node, diagnostics, out var members);
 			model.Set("members".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(data.members.Select(x => x.GetModel())));
 
 			return true;
 		}
 
-		public ComponentGeneratorData? Filter(StructDeclarationSyntax node, SemanticModel semanticModel)
+		public bool TryGetData(StructDeclarationSyntax node, SemanticModel semanticModel, out ComponentGeneratorData data, out List<Diagnostic> diagnostics)
 		{
+			diagnostics = new List<Diagnostic>();
+			Unsafe.SkipInit(out data);
+
 			if (semanticModel.GetDeclaredSymbol(node) is not INamedTypeSymbol typeSymbol)
-				return null;
+				return false;
 
-			if (!TryGetMembers(typeSymbol, out var members))
-				return null;
+			var isPartial = node.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+			if (!isPartial)
+			{
+				diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.ComponentMustBePartial, node.GetLocation(), node.ToFullString()));
+				return false;
+			}
 
-			return new ComponentGeneratorData(typeSymbol, node.GetLocation(), new(members.ToArray()));
+			if (!TryGetMembers(typeSymbol, diagnostics, out var members))
+				return false;
+
+			data = new ComponentGeneratorData(typeSymbol, node.GetLocation(), new(members.ToArray()));
+			return true;
 		}
 
 		public string GetName(ComponentGeneratorData data)
@@ -79,7 +87,7 @@ namespace EnCS.Generator
 		public Location GetLocation(ComponentGeneratorData data)
 			=> data.location;
 
-		static bool TryGetMembers(INamedTypeSymbol comp, out List<ComponentMember> members)
+		static bool TryGetMembers(INamedTypeSymbol comp, List<Diagnostic> diagnostics, out List<ComponentMember> members)
 		{
 			members = new List<ComponentMember>();
 
@@ -96,7 +104,10 @@ namespace EnCS.Generator
 					continue;
 
 				if (!TryGetTypeSize(field.Type, out int size))
-					continue;
+				{
+					diagnostics.Add(Diagnostic.Create(ComponentGeneratorDiagnostics.InvalidComponentMemberType, comp.Locations.FirstOrDefault(), typeName));
+					return false;
+				}
 
 				int bitsPerVector = Math.Min(size * BITS_PER_BYTE * ARRAY_ELEMENTS, MAX_SIMD_BUFFER_BITS);
 				int vectorArraySize = (size * BITS_PER_BYTE * ARRAY_ELEMENTS) / MAX_SIMD_BUFFER_BITS;

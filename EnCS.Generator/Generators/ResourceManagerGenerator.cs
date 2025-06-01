@@ -4,12 +4,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using TemplateGenerator;
 
 namespace EnCS.Generator
 {
-	struct ResourceManagerGeneratorData : IEquatable<ResourceManagerGeneratorData>
+	struct ResourceManagerGeneratorData : IEquatable<ResourceManagerGeneratorData>, ITemplateData
 	{
 		public INamedTypeSymbol node;
 		public Location location;
@@ -26,6 +27,9 @@ namespace EnCS.Generator
 		{
 			return resourceManagers.Equals(other.resourceManagers);
 		}
+
+		public string GetIdentifier()
+			=> $"Component Generator ({node.Name}) ({location})";
 	}
 
 	class ResourceManagerGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax, ResourceManagerGeneratorData>
@@ -44,15 +48,19 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		public ResourceManagerGeneratorData? Filter(ClassDeclarationSyntax node, SemanticModel semanticModel)
+		public bool TryGetData(ClassDeclarationSyntax node, SemanticModel semanticModel, out ResourceManagerGeneratorData data, out List<Diagnostic> diagnostics)
 		{
+			diagnostics = new();
+			Unsafe.SkipInit(out data);
+
 			if (semanticModel.GetDeclaredSymbol(node) is not INamedTypeSymbol typeSymbol)
-				return null;
+				return false;
 
-			if (!TryGetResourceManagers(typeSymbol, out var resourceManagers))
-				return null;
+			if (!TryGetResourceManagers(typeSymbol, diagnostics, out var resourceManagers))
+				return false;
 
-			return new ResourceManagerGeneratorData(typeSymbol, node.GetLocation(), new(resourceManagers.ToArray()));
+			data = new ResourceManagerGeneratorData(typeSymbol, node.GetLocation(), new(resourceManagers.ToArray()));
+			return true;
 		}
 
 		public string GetName(ResourceManagerGeneratorData data)
@@ -61,7 +69,7 @@ namespace EnCS.Generator
 		public Location GetLocation(ResourceManagerGeneratorData data)
 			=> data.location;
 
-		public static bool TryGetResourceManagers(INamedTypeSymbol resourceManager, out List<ResourceManager> resourceManagers)
+		public static bool TryGetResourceManagers(INamedTypeSymbol resourceManager, List<Diagnostic> diagnostics, out List<ResourceManager> resourceManagers)
 		{
 			resourceManagers = new List<ResourceManager>();
 
@@ -77,7 +85,10 @@ namespace EnCS.Generator
 					continue;
 
 				if (typeArguments.Length > 2)
-					throw new Exception("Invalid number of type arguments for resource managers, must be 1 or 2");
+				{
+					diagnostics.Add(Diagnostic.Create(ResourceManagerGeneratorDiagnostics.InvalidResourceManagerTypeArgs, resourceManager.Locations.FirstOrDefault(), ""));
+					return false;
+				}
 
 				string inType = typeArguments[0].Name;
 				string outType = typeArguments.Length == 2 ? typeArguments[1].Name : inType;

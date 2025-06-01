@@ -4,12 +4,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using TemplateGenerator;
 
 namespace EnCS.Generator
 {
-	struct EcsGeneratorData : IEquatable<EcsGeneratorData>
+	struct EcsGeneratorData : IEquatable<EcsGeneratorData>, ITemplateData
 	{
 		public string ns;
 		public string ecsName;
@@ -42,6 +43,9 @@ namespace EnCS.Generator
 				&& archTypes.Equals(other.archTypes)
 				&& worlds.Equals(other.worlds);
 		}
+
+		public string GetIdentifier()
+			=> $"Component Generator ({ns}.{ecsName}) ({location})";
 	}
 
 	class EcsGenerator : ITemplateSourceGenerator<IdentifierNameSyntax, EcsGeneratorData>
@@ -69,13 +73,16 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		public EcsGeneratorData? Filter(IdentifierNameSyntax node, SemanticModel semanticModel)
+		public bool TryGetData(IdentifierNameSyntax node, SemanticModel semanticModel, out EcsGeneratorData data, out List<Diagnostic> diagnostics)
 		{
+			diagnostics = new();
+			Unsafe.SkipInit(out data);
+
 			if (node.Identifier.Text != "EcsBuilder")
-				return null;
+				return false;
 
 			if (!TryGetBuilderRoot(node, out var builderRoot))
-				return null;
+				return false;
 
 			var builderSteps = builderRoot.DescendantNodes()
 				.Where(x => x is MemberAccessExpressionSyntax)
@@ -87,23 +94,24 @@ namespace EnCS.Generator
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 			var resourceStep = builderSteps.First(x => x.Name.Identifier.Text == "Resource");
 
-			if (!ArchTypeGenerator.TryGetResourceManagers(semanticModel, resourceStep, out List<ResourceManager> resourceManagers))
-				return null;
+			if (!ArchTypeGenerator.TryGetResourceManagers(semanticModel, resourceStep, diagnostics, out List<ResourceManager> resourceManagers))
+				return false;
 
-			if (!ArchTypeGenerator.TryGetArchTypes(semanticModel, archTypeStep, resourceManagers, new(), out List<ArchType> archTypes))
-				return null;
+			if (!ArchTypeGenerator.TryGetArchTypes(semanticModel, archTypeStep, resourceManagers, diagnostics, out List<ArchType> archTypes))
+				return false;
 
-			if (!WorldGenerator.TryGetSystems(semanticModel, systemStep, out List<System> systems))
-				return null;
+			if (!WorldGenerator.TryGetSystems(semanticModel, systemStep, diagnostics, out List<System> systems))
+				return false;
 
-			if (!WorldGenerator.TryGetWorlds(semanticModel, worldStep, systems, archTypes, new(), out List<World> worlds))
-				return null;
+			if (!WorldGenerator.TryGetWorlds(semanticModel, worldStep, systems, archTypes, diagnostics, out List<World> worlds))
+				return false;
 
 			// Intercept info
 			var builderLocation = buildStep.Name.GetLocation();
 			var loc = builderLocation.GetMappedLineSpan();
 
-			return new EcsGeneratorData(builderRoot.GetNamespace(), GetEcsName(node), builderRoot.GetLocation(), new(resourceManagers.ToArray()), new(archTypes.ToArray()), new(worlds.ToArray()), loc.Path, loc.StartLinePosition.Line + 1, loc.StartLinePosition.Character);
+			data = new EcsGeneratorData(builderRoot.GetNamespace(), GetEcsName(node), builderRoot.GetLocation(), new(resourceManagers.ToArray()), new(archTypes.ToArray()), new(worlds.ToArray()), loc.Path, loc.StartLinePosition.Line + 1, loc.StartLinePosition.Character);
+			return true;
 		}
 
 		public string GetName(EcsGeneratorData data)

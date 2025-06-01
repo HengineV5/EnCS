@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Xml;
 using System.Xml.Linq;
@@ -13,24 +14,7 @@ using TemplateGenerator;
 
 namespace EnCS.Generator
 {
-	static class SystemGeneratorDiagnostics
-	{
-		public static readonly DiagnosticDescriptor SystemUpdateMethodsMustBeEqual = new("ECS004", "All system update methods within the group must be equal", "", "SystemGenerator", DiagnosticSeverity.Error, true);
-
-		public static readonly DiagnosticDescriptor MethodArgumentsMustBeConcistent = new("ECS005", "All system update methods must only use Vector or Single types", "", "SystemGenerator", DiagnosticSeverity.Error, true);
-
-		public static readonly DiagnosticDescriptor MethodArgumentMustBeComponentOrResourceOrContext = new("ECS007", "All system method arguments must be a valid component, resource or context parameter", "", "SystemGenerator", DiagnosticSeverity.Error, true);
-		
-		public static readonly DiagnosticDescriptor MethodCannotBeEmpty = new("ECS008", "System update method cannot be empty", "", "SystemGenerator", DiagnosticSeverity.Warning, true);
-
-		public static readonly DiagnosticDescriptor MethodCannotBeInMoreThanOneGroup = new("ECS009", "System update method cannot be in more than one group", "", "SystemGenerator", DiagnosticSeverity.Error, true);
-		
-		public static readonly DiagnosticDescriptor MethodsWithinGroupMustHaveIdenticalChunk = new("ECS010", "Methods within a group must have identical chunk sizes", "", "SystemGenerator", DiagnosticSeverity.Error, true);
-
-		public static readonly DiagnosticDescriptor PreOrPostLoopCanOnlyHaveContextArgs = new("ECS011", "Pre and post loop methods can only have system contexts as arguments", "", "SystemGenerator", DiagnosticSeverity.Error, true);
-	}
-
-	struct SystemGeneratorData : IEquatable<SystemGeneratorData>
+	struct SystemGeneratorData : IEquatable<SystemGeneratorData>, ITemplateData
 	{
 		public INamedTypeSymbol node;
 		public Location location;
@@ -48,6 +32,9 @@ namespace EnCS.Generator
 		{
 			return system.Equals(other.system);
 		}
+
+		public string GetIdentifier()
+			=> $"Component Generator ({node.Name}) ({location})";
 	}
 
 	class SystemGenerator : ITemplateSourceGenerator<ClassDeclarationSyntax, SystemGeneratorData>
@@ -69,15 +56,19 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		public SystemGeneratorData? Filter(ClassDeclarationSyntax node, SemanticModel semanticModel)
+		public bool TryGetData(ClassDeclarationSyntax node, SemanticModel semanticModel, out SystemGeneratorData data, out List<Diagnostic> diagnostics)
 		{
+			diagnostics = new();
+			Unsafe.SkipInit(out data);
+
 			if (semanticModel.GetDeclaredSymbol(node) is not INamedTypeSymbol typeSymbol)
-				return null;
+				return false;
 
-			if (!TryGetSystem(typeSymbol, new(), out var system))
-				return null;
+			if (!TryGetSystem(typeSymbol, diagnostics, out var system))
+				return false;
 
-			return new SystemGeneratorData(typeSymbol, node.GetLocation(), system);
+			data = new SystemGeneratorData(typeSymbol, node.GetLocation(), system);
+			return true;
 		}
 
 		public string GetName(SystemGeneratorData data)
@@ -200,7 +191,9 @@ namespace EnCS.Generator
 
                 foreach (var resourceManager in attribute.AttributeClass.TypeArguments)
                 {
-					ResourceManagerGenerator.TryGetResourceManagers(resourceManager as INamedTypeSymbol, out List<ResourceManager> foundResourceManagers);
+					if (!ResourceManagerGenerator.TryGetResourceManagers(resourceManager as INamedTypeSymbol, diagnostics, out List<ResourceManager> foundResourceManagers))
+						return false;
+
 					resourceManagers.AddRange(foundResourceManagers);
 				}
 			}

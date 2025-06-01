@@ -7,6 +7,11 @@ namespace Runner
 {
 	public ref partial struct TestComp123 : IComponent<TestComp123, TestComp123.Vectorized, TestComp123.Array>
 	{
+		public TestComp123()
+		{
+			throw new NotImplementedException("TestComp123 should be created with Comp struct, not directly.");
+		}
+
 		public TestComp123(ref int tag)
 		{
 			this.tag = ref tag;
@@ -21,6 +26,16 @@ namespace Runner
 		public struct Vectorized
 		{
 			public Vector256<int> tag;
+		}
+
+		public struct Comp
+		{
+			public int tag;
+
+			public Comp(int tag)
+			{
+				this.tag = tag;
+			}
 		}
 
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
@@ -42,5 +57,7 @@ namespace Runner
 		{
 			return ref TArch.GetSingle(ref arch);
 		}
+
+		public static implicit operator TestComp123(Comp c) => new(ref Unsafe.AsRef(c.tag));
 	}
 }

@@ -4,18 +4,14 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using TemplateGenerator;
 
 namespace EnCS.Generator
 {
-	static class WorldGeneratorDiagnostics
-	{
-		public static readonly DiagnosticDescriptor TypeMustBeValidArchType = new("ECS006", "Type must be a valid arch type", "", "SystemGenerator", DiagnosticSeverity.Error, true);
-	}
-
-	struct WorldGeneratorData : IEquatable<WorldGeneratorData>
+	struct WorldGeneratorData : IEquatable<WorldGeneratorData>, ITemplateData
 	{
 		public string ns;
 		public string ecsName;
@@ -35,6 +31,9 @@ namespace EnCS.Generator
 		{
 			return worlds.Equals(other.worlds);
 		}
+
+		public string GetIdentifier()
+			=> $"Component Generator ({ns}.{ecsName}) ({location})";
 	}
 
 	class WorldGenerator : ITemplateSourceGenerator<IdentifierNameSyntax, WorldGeneratorData>
@@ -54,13 +53,16 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		public WorldGeneratorData? Filter(IdentifierNameSyntax node, SemanticModel semanticModel)
+		public bool TryGetData(IdentifierNameSyntax node, SemanticModel semanticModel, out WorldGeneratorData data, out List<Diagnostic> diagnostics)
 		{
+			diagnostics = new();
+			Unsafe.SkipInit(out data);
+
 			if (node.Identifier.Text != "EcsBuilder")
-				return null;
+				return false;
 
 			if (!EcsGenerator.TryGetBuilderRoot(node, out var builderRoot))
-				return null;
+				return false;
 
 			var builderSteps = builderRoot.DescendantNodes()
 				.Where(x => x is MemberAccessExpressionSyntax)
@@ -71,19 +73,20 @@ namespace EnCS.Generator
 			var archTypeStep = builderSteps.First(x => x.Name.Identifier.Text == "ArchType");
 			var resourceStep = builderSteps.First(x => x.Name.Identifier.Text == "Resource");
 
-			if (!ArchTypeGenerator.TryGetResourceManagers(semanticModel, resourceStep, out List<ResourceManager> resourceManagers))
-				return null;
+			if (!ArchTypeGenerator.TryGetResourceManagers(semanticModel, resourceStep, diagnostics, out List<ResourceManager> resourceManagers))
+				return false;
 
-			if (!TryGetSystems(semanticModel, systemStep, out List<System> systems))
-				return null;
+			if (!TryGetSystems(semanticModel, systemStep, diagnostics, out List<System> systems))
+				return false;
 
-			if (!ArchTypeGenerator.TryGetArchTypes(semanticModel, archTypeStep, resourceManagers, new(), out List<ArchType> archTypes))
-				return null;
+			if (!ArchTypeGenerator.TryGetArchTypes(semanticModel, archTypeStep, resourceManagers, diagnostics, out List<ArchType> archTypes))
+				return false;
 
-			if (!TryGetWorlds(semanticModel, worldStep, systems, archTypes, new(), out List<World> worlds))
-				return null;
+			if (!TryGetWorlds(semanticModel, worldStep, systems, archTypes, diagnostics, out List<World> worlds))
+				return false;
 
-			return new WorldGeneratorData(builderRoot.GetNamespace(), EcsGenerator.GetEcsName(node), builderRoot.GetLocation(), new(worlds.ToArray()));
+			data = new WorldGeneratorData(builderRoot.GetNamespace(), EcsGenerator.GetEcsName(node), builderRoot.GetLocation(), new(worlds.ToArray()));
+			return true;
 		}
 
 		public string GetName(WorldGeneratorData data)
@@ -298,7 +301,7 @@ namespace EnCS.Generator
 			return true;
 		}
 
-		public static bool TryGetSystems(SemanticModel semanticModel, MemberAccessExpressionSyntax step, out List<System> systems)
+		public static bool TryGetSystems(SemanticModel semanticModel, MemberAccessExpressionSyntax step, List<Diagnostic> diagnostics, out List<System> systems)
 		{
 			systems = new List<System>();
 
@@ -321,11 +324,16 @@ namespace EnCS.Generator
 
 				foreach (IdentifierNameSyntax comp in genericName.TypeArgumentList.Arguments)
 				{
-					var foundSymbol = semanticModel.Compilation.GetSymbolsWithName(comp.ToFullString(), SymbolFilter.Type).Single();
+					var foundSymbol = semanticModel.Compilation.GetSymbolsWithName(comp.ToFullString(), SymbolFilter.Type).FirstOrDefault();
 					if (foundSymbol is not INamedTypeSymbol typeSymbol)
-						throw new Exception();
+					{
+						diagnostics.Add(Diagnostic.Create(WorldGeneratorDiagnostics.UnableToFindType, comp.GetLocation(), ""));
+						return false;
+					}
 
-					SystemGenerator.TryGetSystem(typeSymbol, new(), out System system);
+					if (!SystemGenerator.TryGetSystem(typeSymbol, diagnostics, out System system))
+						return false;
+
 					systems.Add(system);
 				}
 			}
