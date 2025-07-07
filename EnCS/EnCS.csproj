@@ -12,12 +12,6 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
-	<!--
-	<ItemGroup>
-		<PackageReference Include="EnCS.Generator" Version="0.0.106" PrivateAssets="all" GeneratePathProperty="true" />
-	</ItemGroup>
-	-->
-
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>$(DefineConstants);ERROR_CHECK</DefineConstants>
 	</PropertyGroup>
@@ -29,18 +23,5 @@
 		</PackageReference>
 		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
-	
-	<!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
-	<!--
-	<PropertyGroup>
-		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-	</PropertyGroup>
-
-	<Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
-		<ItemGroup>
-			<None Include="$(PkgEnCS_Generator)\analyzers\dotnet\cs\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-		</ItemGroup>
-	</Target>
-	-->
 
 </Project>

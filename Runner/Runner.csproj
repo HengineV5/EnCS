@@ -13,8 +13,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
 		<ProjectReference Include="..\EnCS\EnCS.csproj" />
+		<PackageReference Include="Henke.EnCS.Generator" Version="0.0.*" />
+		<PackageReference Include="Henke.TemplateGenerator" Version="1.0.79" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
 	</ItemGroup>
 
 </Project>

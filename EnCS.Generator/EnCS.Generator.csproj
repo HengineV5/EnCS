@@ -16,14 +16,13 @@
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 	</PropertyGroup>
 
-	<PropertyGroup>
-		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-	</PropertyGroup>
-
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" Pack="true" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" Pack="true" PrivateAssets="all" />
-		<PackageReference Include="Henke.TemplateGenerator" Version="1.0.79" Pack="true" GeneratePathProperty="true" />
+		<PackageReference Include="Henke.TemplateGenerator" Version="1.0.79" Pack="true"
+			GeneratePathProperty="true" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" Pack="true"
+			PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" Pack="true"
+			PrivateAssets="all" />
 		<PackageReference Include="MinVer" Version="6.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -49,12 +48,15 @@
 		<EmbeddedResource Include="Templates\System.tcs" />
 	</ItemGroup>
 
-	<Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
-		<ItemGroup>
-			<!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
-			<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-			<None Include="$(PkgTemplateGen)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-		</ItemGroup>
-	</Target>
-
+	<ItemGroup>
+		<!-- This ensures the library will be packaged as a source generator when we use `dotnet
+		pack` -->
+		<None Include="$(TargetPath)"
+			Pack="true"
+			PackagePath="analyzers/dotnet/cs" />
+		<None Include="$(PkgHenke_TemplateGenerator)\lib\netstandard2.0\TemplateGenerator.dll"
+			Pack="true"
+			PackagePath="analyzers/dotnet/cs"
+			Visible="false" />
+	</ItemGroup>
 </Project>
