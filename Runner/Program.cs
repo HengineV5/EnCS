@@ -98,7 +98,7 @@ namespace Runner
 		[SystemUpdate]
 		public void Update(ref Position.Vectorized position)
 		{
-			//position.x = Vector256.Sqrt(position.x);
+			position.x = Vector256.Sqrt(position.x);
 		}
 	}
 

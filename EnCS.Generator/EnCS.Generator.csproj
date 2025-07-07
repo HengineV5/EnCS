@@ -6,10 +6,9 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
 		<!-- Nuget -->
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageId>EnCS.Generator</PackageId>
-		<Version>0.0.122</Version>
-		
+		<PackageId>Henke.EnCS.Generator</PackageId>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+
 		<!-- We don't want to reference the source generator dll directly in consuming projects -->
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 
@@ -24,18 +23,23 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" Pack="true" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" Pack="true" PrivateAssets="all" />
-		<PackageReference Include="TemplateGen" Version="1.0.78" Pack="true" GeneratePathProperty="true" />
+		<PackageReference Include="Henke.TemplateGenerator" Version="1.0.79" Pack="true" GeneratePathProperty="true" />
+		<PackageReference Include="MinVer" Version="6.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Templates\ResourceManager.tcs" />
-	  <None Remove="Templates\World.tcs" />
-	  <None Remove="Templates\ArchType.tcs" />
-	  <None Remove="Templates\Component.tcs" />
-	  <None Remove="Templates\Ecs.tcs" />
-	  <None Remove="Templates\System.tcs" />
+		<None Remove="Templates\ResourceManager.tcs" />
+		<None Remove="Templates\World.tcs" />
+		<None Remove="Templates\ArchType.tcs" />
+		<None Remove="Templates\Component.tcs" />
+		<None Remove="Templates\Ecs.tcs" />
+		<None Remove="Templates\System.tcs" />
 	</ItemGroup>
-		
+
 	<ItemGroup>
 		<EmbeddedResource Include="Templates\ResourceManager.tcs" />
 		<EmbeddedResource Include="Templates\World.tcs" />
