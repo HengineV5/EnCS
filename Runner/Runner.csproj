@@ -14,9 +14,25 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\EnCS\EnCS.csproj" />
-		<PackageReference Include="Henke.EnCS.Generator" Version="0.0.*" />
-		<PackageReference Include="Henke.TemplateGenerator" Version="1.0.79" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="Henke.TemplateGenerator" Version="1.0.79" PrivateAssets="all"
+			GeneratePathProperty="true" />
 		<PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!--
+			Roslyn does not fully support ProjectReference declare analyzer dependencies: 
+			https://github.com/dotnet/roslyn/issues/18093
+			
+			Specifically, transitive dependencies does not work (which in our case is TemplateGenerator.dll).
+			So we:
+			 - use ProjectReference to ensure .dll's are built
+		 	 - use Analyzer Include to ensure the generators are included in the build
+		-->
+		<ProjectReference Include="..\EnCS.Generator\EnCS.Generator.csproj" />
+		<Analyzer Include="..\EnCS.Generator\bin\$(Configuration)\netstandard2.0\EnCS.Generator.dll" />
+		<Analyzer
+			Include="..\EnCS.Generator\bin\$(Configuration)\netstandard2.0\TemplateGenerator.dll" />
 	</ItemGroup>
 
 </Project>

@@ -14,6 +14,8 @@
 
 		<!-- Ensure we don't use any API that might be problematic -->
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+		<!-- Copy NuGet package DLLs to build output, so we can access TemplateGenerator.dll in Runner -->
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 
 	<ItemGroup>

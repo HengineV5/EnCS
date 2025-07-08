@@ -1,5 +1,7 @@
 <Project>
 	<PropertyGroup>
+  		<PackageOutputPath>../artifacts</PackageOutputPath>
+		
 		<!-- MinVer settings -->
 		<MinVerTagPrefix>v</MinVerTagPrefix>
 		
@@ -10,5 +12,6 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<RepositoryType>git</RepositoryType>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		
 	</PropertyGroup>
 </Project>
