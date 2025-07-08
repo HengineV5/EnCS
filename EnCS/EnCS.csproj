@@ -6,31 +6,22 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>0.0.64</Version>
-	</PropertyGroup>
 
-	<!--
-	<ItemGroup>
-		<PackageReference Include="EnCS.Generator" Version="0.0.106" PrivateAssets="all" GeneratePathProperty="true" />
-	</ItemGroup>
-	-->
+		<!-- Nuget -->
+		<PackageId>Henke.EnCS</PackageId>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>$(DefineConstants);ERROR_CHECK</DefineConstants>
 	</PropertyGroup>
 
-			<!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
-	<!--
-	<PropertyGroup>
-		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="MinVer" Version="6.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
-	<Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
-		<ItemGroup>
-			<None Include="$(PkgEnCS_Generator)\analyzers\dotnet\cs\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-		</ItemGroup>
-	</Target>
-	-->
-	
 </Project>
