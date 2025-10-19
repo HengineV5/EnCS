@@ -2,8 +2,38 @@
 
 namespace EnCS
 {
-	public ref struct ArchTypeSlice<T1Vec, T1Single>
-		where T1Vec : unmanaged
+	public interface IArchTypeSlice<TSelf, TVec, TSingle>
+		where TSelf : IArchTypeSlice<TSelf, TVec, TSingle>, allows ref struct
+        where TVec : unmanaged
+		where TSingle : unmanaged
+	{
+		ref TVec GetVec();
+
+		ref TSingle GetSingle();
+
+        static abstract TSelf Create(ref TVec item1Vec, ref TSingle item1Single);
+    }
+
+	public static class SliceGetter<TSlice, TVec, TSingle>
+        where TSlice : IArchTypeSlice<TSlice, TVec, TSingle>, allows ref struct
+        where TVec : unmanaged
+        where TSingle : unmanaged
+    {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ref TVec GetVec(ref TSlice slice)
+		{
+			return ref slice.GetVec();
+		}
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref TSingle GetSingle(ref TSlice slice)
+        {
+            return ref slice.GetSingle();
+        }
+    }
+
+    public ref struct ArchTypeSlice<T1Vec, T1Single>
+        where T1Vec : unmanaged
 		where T1Single : unmanaged
 	{
 		public ref T1Vec item1Vec;

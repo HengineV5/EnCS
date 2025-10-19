@@ -1,79 +1,80 @@
 ﻿using System;
+using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace EnCS
 {
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single>
-		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
-		where T1Vec : unmanaged
-		where T1Single : unmanaged
-	{
-		public ref struct Enumerator<T1Arch>
-			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
-		{
-			public ArchTypeSlice<T1Vec, T1Single> Current
-			{
-				get
-				{
-					return slice;
-				}
-			}
+    public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single>
+        where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
+        where T1Vec : unmanaged
+        where T1Single : unmanaged
+    {
+        public ref struct Enumerator<T1Arch>
+            where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
+        {
+            public ArchTypeSlice<T1Vec, T1Single> Current
+            {
+                get
+                {
+                    return slice;
+                }
+            }
 
-			public int Remaining
-			{
-				get
-				{
-					return Math.Min(8, remaining);
-				}
-			}
+            public int Remaining
+            {
+                get
+                {
+                    return Math.Min(8, remaining);
+                }
+            }
 
-			ArchTypeSlice<T1Vec, T1Single> slice;
+            ArchTypeSlice<T1Vec, T1Single> slice;
 
-			Span<T1Arch>.Enumerator e1;
-			Span<T1Arch> span1;
-			int count;
-			int remaining;
+            Span<T1Arch>.Enumerator e1;
+            Span<T1Arch> span1;
+            int count;
+            int remaining;
 
-			public Enumerator(Span<T1Arch> span1, int count)
-			{
-				this.span1 = span1;
-				this.count = count;
+            public Enumerator(Span<T1Arch> span1, int count)
+            {
+                this.span1 = span1;
+                this.count = count;
 
-				Reset();
-			}
+                Reset();
+            }
 
-			public bool MoveNext()
-			{
-				if (e1.MoveNext())
-				{
-					slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current));
-					remaining -= 8;
-				}
-				else
-				{
-					return false;
-				}
+            public bool MoveNext()
+            {
+                if (e1.MoveNext())
+                {
+                    slice = new(ref T1Comp.GetVec(ref e1.Current), ref T1Comp.GetSingle(ref e1.Current));
+                    remaining -= 8;
+                }
+                else
+                {
+                    return false;
+                }
 
-				return true;
-			}
+                return true;
+            }
 
-			public void Reset()
-			{
-				e1 = span1.GetEnumerator();
-				remaining = count + 8;
-			}
-		}
+            public void Reset()
+            {
+                e1 = span1.GetEnumerator();
+                remaining = count + 8;
+            }
+        }
 
-		public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
-			where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
-		{
-			return new (span1, count);
-		}
-	}
+        public Enumerator<T1Arch> GetEnumerator<T1Arch>(Span<T1Arch> span1, int count)
+            where T1Arch : unmanaged, IArchType<T1Arch, T1Comp, T1Vec, T1Single>
+        {
+            return new(span1, count);
+        }
+    }
 
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single>
-		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
+    public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single>
+        where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
 		where T2Comp : IComponent<T2Comp, T2Vec, T2Single>, allows ref struct
@@ -143,7 +144,7 @@ namespace EnCS
 		}
 	}
 
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single>
+	public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single>
 		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
@@ -217,7 +218,7 @@ namespace EnCS
 		}
 	}
 
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single>
+	public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single>
 		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
@@ -294,7 +295,7 @@ namespace EnCS
 		}
 	}
 
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single>
+	public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single>
 		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
@@ -374,7 +375,7 @@ namespace EnCS
 		}
 	}
 
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single>
+	public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single>
 		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
@@ -457,7 +458,7 @@ namespace EnCS
 		}
 	}
 
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single>
+	public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single>
 		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
@@ -543,7 +544,7 @@ namespace EnCS
 		}
 	}
 
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single>
+	public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single>
 		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
@@ -632,7 +633,7 @@ namespace EnCS
 		}
 	}
 
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single, T9Comp, T9Vec, T9Single>
+	public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single, T9Comp, T9Vec, T9Single>
 		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged
@@ -724,7 +725,7 @@ namespace EnCS
 		}
 	}
 
-	public ref struct ComponentEnumerableNew<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single, T9Comp, T9Vec, T9Single, T10Comp, T10Vec, T10Single>
+	public ref struct ComponentEnumerable<T1Comp, T1Vec, T1Single, T2Comp, T2Vec, T2Single, T3Comp, T3Vec, T3Single, T4Comp, T4Vec, T4Single, T5Comp, T5Vec, T5Single, T6Comp, T6Vec, T6Single, T7Comp, T7Vec, T7Single, T8Comp, T8Vec, T8Single, T9Comp, T9Vec, T9Single, T10Comp, T10Vec, T10Single>
 		where T1Comp : IComponent<T1Comp, T1Vec, T1Single>, allows ref struct
 		where T1Vec : unmanaged
 		where T1Single : unmanaged

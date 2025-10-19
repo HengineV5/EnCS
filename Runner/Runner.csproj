@@ -14,9 +14,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\EnCS\EnCS.csproj" />
-		<PackageReference Include="Henke.TemplateGenerator" Version="1.0.79" PrivateAssets="all"
-			GeneratePathProperty="true" />
-		<PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
+		<PackageReference Include="Henke.TemplateGenerator" Version="1.0.79" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="BenchmarkDotNet" Version="0.15.4" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -31,8 +30,7 @@
 		-->
 		<ProjectReference Include="..\EnCS.Generator\EnCS.Generator.csproj" />
 		<Analyzer Include="..\EnCS.Generator\bin\$(Configuration)\netstandard2.0\EnCS.Generator.dll" />
-		<Analyzer
-			Include="..\EnCS.Generator\bin\$(Configuration)\netstandard2.0\TemplateGenerator.dll" />
+		<Analyzer Include="..\EnCS.Generator\bin\$(Configuration)\netstandard2.0\TemplateGenerator.dll" />
 	</ItemGroup>
 
 </Project>

@@ -7,34 +7,36 @@ namespace EnCS
 {
 	public struct ArchRef<TArch> where TArch : allows ref struct
 	{
-		public readonly nuint idx;
+		public readonly nint idx;
 
-		internal ArchRef(nuint idx)
+		internal ArchRef(nint idx)
 		{
 			this.idx = idx;
 		}
 	}
 
-	public unsafe struct ArchTypeContainer<TArch, TPtr> : IContainer<TArch> where TArch : unmanaged where TPtr : allows ref struct
+	public unsafe struct ArchTypeContainer<TArch, TPtr> : IIndexedContainer<ArchTypeContainer<TArch, TPtr>, TArch>
+		where TArch : unmanaged
+		where TPtr : allows ref struct
 	{
 		const int INITIAL_CONTAINER_SIZE = 1_000_000;
 
 		static nuint DataSize = (nuint)sizeof(TArch);
 
-		public readonly nuint Entities => entityCount;
+		public readonly nint Entities => entityCount;
 
 		TArch* buff;
 		nuint length;
 
-		nuint entityCount;
+		nint entityCount;
 
-		nuint[] map;
-		Stack<nuint> deleted;
+		nint[] map;
+		Stack<nint> deleted;
 
 		public ArchTypeContainer()
 		{
 			buff = (TArch*)NativeMemory.AllocZeroed(INITIAL_CONTAINER_SIZE * DataSize);
-			map = new nuint[INITIAL_CONTAINER_SIZE];
+			map = new nint[INITIAL_CONTAINER_SIZE];
 			length = INITIAL_CONTAINER_SIZE;
 			entityCount = 0;
 
@@ -44,7 +46,7 @@ namespace EnCS
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public ArchRef<TPtr> Create(in TArch data)
 		{
-			nuint idx = entityCount;
+			nint idx = entityCount;
 
 			if (deleted.Count > 0)
 				idx = deleted.Pop();
@@ -74,7 +76,13 @@ namespace EnCS
 			return ref buff[map[ptr.idx]];
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ref TArch Get(nint idx)
+        {
+            return ref buff[idx];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Span<TArch> AsSpan()
 		{
             return new Span<TArch>(buff, ((int)entityCount >> 3) + 1);

@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using static Runner.Ecs;
 
 namespace Runner
 {
@@ -25,7 +25,7 @@ namespace Runner
 		public uint id;
 	}
 
-	[ResourceManager]
+	//[ResourceManager]
 	public partial class MeshResourceManager : IResourceManager<TestResource, TestResourceId>
 	{
 		Memory<Runner.TestResource> resource = new Runner.TestResource[8];
@@ -55,15 +55,92 @@ namespace Runner
 	{
 		//public string wow;
 		public ref int tag;
-	}
+
+        public ref struct Slice : IArchTypeSlice<Slice, Vectorized, Array>
+        {
+            public ref Vectorized item1Vec;
+            public ref Array item1Single;
+
+            public Slice(ref Vectorized item1Vec, ref Array item1Single)
+            {
+                this.item1Vec = ref item1Vec;
+                this.item1Single = ref item1Single;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Slice Create(ref Vectorized item1Vec, ref Array item1Single)
+            {
+                return new(ref item1Vec, ref item1Single);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ref Array GetSingle()
+			{
+				return ref item1Single;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ref Vectorized GetVec()
+			{
+				return ref item1Vec;
+            }
+		}
+    }
 
 	[Component]
-	ref partial struct Position
-	{
+	ref partial struct Position : IUnslicer<Position.Slice, Position.Vectorized, Position.Array>
+    {
 		public ref float x;
 		public ref float y;
 		public ref float z;
-	}
+
+		public static ref Array GetSingle(ref Slice slice)
+		{
+			return ref slice.item1Single;
+        }
+
+		public static ref Vectorized GetVec(ref Slice slice)
+		{
+			return ref slice.item1Vec;
+        }
+
+		public ref struct Slice : IArchTypeSlice<Slice, Vectorized, Array>
+        {
+            public ref Vectorized item1Vec;
+            public ref Array item1Single;
+
+            public Slice(ref Vectorized item1Vec, ref Array item1Single)
+            {
+                this.item1Vec = ref item1Vec;
+                this.item1Single = ref item1Single;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ref Array GetSingle()
+            {
+                return ref item1Single;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ref Vectorized GetVec()
+            {
+                return ref item1Vec;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Slice Create(ref Vectorized item1Vec, ref Array item1Single)
+            {
+                return new(ref item1Vec, ref item1Single);
+            }
+        }
+
+        public class Slicer<TArch> : IArchSlicer<Slice, TArch>
+			where TArch : unmanaged, IArchType<TArch, Position, Vectorized, Array>
+        {
+            public static Slice Slice(ref TArch arch)
+				=> Slicer<Slice, TArch, Position, Vectorized, Array>.Slice(ref arch);
+        }
+    }
 
 	static class Comp_Extensions
 	{
@@ -81,7 +158,44 @@ namespace Runner
 		public ref int x;
 		public ref int y;
 		public ref int z;
-	}
+
+        public ref struct Slice : IArchTypeSlice<Slice, Vectorized, Array>
+        {
+            public ref Vectorized item1Vec;
+            public ref Array item1Single;
+
+            public Slice(ref Vectorized item1Vec, ref Array item1Single)
+            {
+                this.item1Vec = ref item1Vec;
+                this.item1Single = ref item1Single;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Slice Create(ref Vectorized item1Vec, ref Array item1Single)
+            {
+                return new(ref item1Vec, ref item1Single);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ref Array GetSingle()
+            {
+                return ref item1Single;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ref Vectorized GetVec()
+            {
+                return ref item1Vec;
+            }
+        }
+
+        public class Slicer<TArch> : IArchSlicer<Slice, TArch>
+            where TArch : unmanaged, IArchType<TArch, Velocity, Vectorized, Array>
+        {
+            public static Slice Slice(ref TArch arch)
+                => Slicer<Slice, TArch, Velocity, Vectorized, Array>.Slice(ref arch);
+        }
+    }
 
 	[System]
 	partial class PerfSystem
@@ -102,8 +216,8 @@ namespace Runner
 		}
 	}
 
-	[System]
-	[UsingResource<MeshResourceManager>]
+	//[System]
+	//[UsingResource<MeshResourceManager>]
 	partial class PositionSystem
 	{
 		static Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
@@ -129,22 +243,90 @@ namespace Runner
 		[SystemUpdate]
 		public void Update(ref Position position)
 		{
-            Console.WriteLine(position.x);
+            Console.WriteLine($"Print System: {position.x}");
         }
 
 		[SystemUpdate]
 		public void Update(ref Position.Vectorized position)
 		{
-		}
-	}
+            Console.WriteLine($"Vec Print System: {position.x}");
+        }
+
+        public ref struct SystemUpdater_0<TSlice> : ISystemUpdater<SystemUpdater_0<TSlice>, TSlice>
+            where TSlice : IArchTypeSlice<TSlice, Position.Vectorized, Position.Array>, allows ref struct
+        {
+            PrintSystem system;
+
+            public SystemUpdater_0(PrintSystem system)
+            {
+                this.system = system;
+            }
+
+            public void Invoke(nint remaining, TSlice slice)
+            {
+				ref Position.Vectorized vec = ref slice.GetVec();
+				ref Position.Array single = ref slice.GetSingle();
+
+                for (int i = 0; i < remaining; i++)
+                {
+                    Position comp = Position.FromArray(ref single, i);
+                    system.Update(ref comp);
+                }
+                system.Update(ref vec);
+            }
+        }
+    }
+
+	[System]
+	partial class PrintSystem_2
+	{
+		[SystemUpdate]
+		public void Update(ref Position position, ref Velocity velocity)
+		{
+            Console.WriteLine($"Print System: {position.x}");
+        }
+
+		[SystemUpdate]
+		public void Update(ref Position.Vectorized position, ref Velocity.Vectorized velocity)
+		{
+            Console.WriteLine($"Vec Print System: {position.x}");
+        }
+
+        public ref struct SystemUpdater_0<TSlice> : ISystemUpdater<SystemUpdater_0<TSlice>, TSlice>
+            where TSlice : IArchTypeSlice<TSlice, Position.Vectorized, Position.Array>, IArchTypeSlice<TSlice, Velocity.Vectorized, Velocity.Array>, allows ref struct
+        {
+            PrintSystem_2 system;
+
+            public SystemUpdater_0(PrintSystem_2 system)
+            {
+                this.system = system;
+            }
+
+            public void Invoke(nint remaining, TSlice slice)
+            {
+                ref Position.Vectorized vec1 = ref SliceGetter<TSlice, Position.Vectorized, Position.Array>.GetVec(ref slice);
+                ref Position.Array single1 = ref SliceGetter<TSlice, Position.Vectorized, Position.Array>.GetSingle(ref slice);
+                ref Velocity.Vectorized vec2 = ref SliceGetter<TSlice, Velocity.Vectorized, Velocity.Array>.GetVec(ref slice);
+                ref Velocity.Array single2 = ref SliceGetter<TSlice, Velocity.Vectorized, Velocity.Array>.GetSingle(ref slice);
+
+                for (int i = 0; i < remaining; i++)
+                {
+                    var comp = Position.FromArray(ref single1, i);
+                    var comp2 = Velocity.FromArray(ref single2, i);
+                    system.Update(ref comp, ref comp2);
+                }
+                system.Update(ref vec1, ref vec2);
+            }
+        }
+    }
 
 	[System]
 	partial class LayerSystem
-	{
+    {
 		[SystemUpdate, SystemLayer(0)]
-		public void Update1(ref TestComp123 position)
+		public void Update1(ref Velocity velocity)
 		{
-			Console.WriteLine($"Tag: {position.tag}");
+			Console.WriteLine($"Tag: {velocity.x}");
 		}
 
 		[SystemUpdate, SystemLayer(1)]
@@ -152,7 +334,53 @@ namespace Runner
 		{
 			Console.WriteLine($"\t{position.x}");
 		}
-	}
+
+        public ref struct SystemUpdater_0<TSlice> : ISystemUpdater<SystemUpdater_0<TSlice>, TSlice>
+            where TSlice : IArchTypeSlice<TSlice, Velocity.Vectorized, Velocity.Array>, allows ref struct
+        {
+            LayerSystem system;
+
+            public SystemUpdater_0(LayerSystem system)
+            {
+                this.system = system;
+            }
+
+            public void Invoke(nint remaining, TSlice slice)
+            {
+                ref Velocity.Vectorized vec = ref slice.GetVec();
+                ref Velocity.Array single = ref slice.GetSingle();
+
+                for (int i = 0; i < remaining; i++)
+                {
+                    Velocity comp = Velocity.FromArray(ref single, i);
+                    system.Update1(ref comp);
+                }
+            }
+		}
+
+        public ref struct SystemUpdater_1<TSlice> : ISystemUpdater<SystemUpdater_1<TSlice>, TSlice>
+            where TSlice : IArchTypeSlice<TSlice, Position.Vectorized, Position.Array>, allows ref struct
+        {
+            LayerSystem system;
+
+            public SystemUpdater_1(LayerSystem system)
+            {
+                this.system = system;
+            }
+
+            public void Invoke(nint remaining, TSlice slice)
+            {
+                ref Position.Vectorized vec = ref slice.GetVec();
+                ref Position.Array single = ref slice.GetSingle();
+
+                for (int i = 0; i < remaining; i++)
+                {
+                    Position comp = Position.FromArray(ref single, i);
+                    system.Update2(ref comp);
+                }
+            }
+		}
+    }
 
 	partial class Ecs
 	{
@@ -171,26 +399,30 @@ namespace Runner
 				.ArchType(x =>
 				{
 					x.ArchType<Position, Velocity, TestResource>("Wall");
-					x.ArchType<Position, TestResource>("Tile");
+					//x.ArchType<Position, TestResource>("Tile");
 					x.ArchType<TestComp123>("Cam");
 				})
 				.System(x =>
 				{
-					x.System<PositionSystem>();
+					//x.System<PositionSystem>();
 					x.System<PrintSystem>();
 					x.System<PerfSystem>();
 					x.System<LayerSystem>();
 				})
 				.World(x =>
 				{
-					x.World<Ecs.Wall, Ecs.Tile, Ecs.Cam>("MainWorld");
+					//x.World<Ecs.Wall, Ecs.Tile, Ecs.Cam>("MainWorld");
+					x.World<Ecs.Wall, Ecs.Cam>("MainWorld");
 				})
 				.Resource(x =>
 				{
-					x.ResourceManager<MeshResourceManager>();
+					//x.ResourceManager<MeshResourceManager>();
 				})
 				.Build<Ecs>();
+			/*
+			*/
 
+			/*
 			PositionSystem position = new();
 			LayerSystem layerSystem = new();
 
@@ -239,37 +471,44 @@ namespace Runner
             Console.WriteLine("PrintSystem:");
 			LoopGeneric<Ecs.MainWorld, PrintSystem>(ecs, new PrintSystem());
 			mainWorld.Loop(layerSystem);
-
-			//ArchTypeContainerNew<Ecs.Tile, Position, Position.Vectorized, Position.Array> testContainer = new();
-			//testContainer.Set(r, new Position());
-
-			/*
-			PositionSystem system = new();
-			var e = containerManager.GetEnumerator(system);
-
-			system.Update(ref e);
-
-			//containerManager.GetEnumerable(out ArchTypeEnumerable<TArchType, Position, Position.Vectorized, Position.Array, Velocity, Velocity.Vectorized, Velocity.Array> e2);
-
-			var e2 = containerManager.GetEnumerator(system);
-			while (e2.MoveNext())
-			{
-				var item = e2.Current;
-
-				for (int i = 0; i < Position.Array.Size; i++)
-				{
-					Console.WriteLine($"Actual: {item.item1Single.x[i]}");
-				}
-			}
-			foreach (var item in e2)
-			{
-				for (int i = 0; i < Position.Array.Size; i++)
-				{
-					Console.WriteLine($"Actual: {item.item1Single.x[i]}");
-				}
-			}
 			*/
-		}
+
+			ArchTypeContainer<Wall.Vectorized, Wall> containerWall = new();
+			containerWall.Create(new Wall.Vectorized());
+			containerWall.Create(new Wall.Vectorized());
+			containerWall.Create(new Wall.Vectorized());
+			containerWall.Create(new Wall.Vectorized());
+			containerWall.Create(new Wall.Vectorized());
+			containerWall.Create(new Wall.Vectorized());
+			containerWall.Create(new Wall.Vectorized());
+			containerWall.Create(new Wall.Vectorized());
+			containerWall.Create(new Wall.Vectorized());
+			var r = containerWall.Create(new Wall.Vectorized());
+
+			Wall wall = containerWall.Get(r);
+			wall.Position.Set(new Vector3(5, 0, 0));
+
+            //ComponentEnumerable<Position, Position.Vectorized, Position.Array> testEnumerable = new();
+            //var s = testEnumerable.GetEnumerator(containerWall.AsSpan(), (int)containerWall.Entities);
+
+            //SequentialEnumerator<ArchTypeSlice<Position.Vectorized, Position>, ArchTypeContainer<Wall.Vectorized, Wall>, Wall.Vectorized, > s = new(containerWall);
+
+            //SequentialEnumerator<ArchTypeSlice<Position.Vectorized, Position.Array>, ArchTypeContainer<Wall.Vectorized, Wall>, Wall.Vectorized, Slicer<Wall.Vectorized, Position, Position.Vectorized, Position.Array>> s = new(ref containerWall);
+            var posEnum = EnumeratorCreator<Wall.Vectorized, Position.Slice, Position.Slicer<Wall.Vectorized>>.CreateSequential(ref containerWall);
+			var velEnum = EnumeratorCreator<Wall.Vectorized, Velocity.Slice, Velocity.Slicer<Wall.Vectorized>>.CreateSequential(ref containerWall);
+
+            PrintSystem printSystem = new();
+			PrintSystem.SystemUpdater_0<Position.Slice> positionUpdater = new(printSystem);
+
+            LayerSystem layerSystem = new();
+            LayerSystem.SystemUpdater_0<Velocity.Slice> layerUpdater_0 = new(layerSystem);
+            LayerSystem.SystemUpdater_1<Position.Slice> layerUpdater_1 = new(layerSystem);
+
+            Looper<Position.Slice>.Loop(ref posEnum, positionUpdater);
+            Looper<Velocity.Slice, Position.Slice>.Loop(ref velEnum, layerUpdater_0, ref posEnum, layerUpdater_1);
+			/*
+			*/
+        }
 
 		static void LoopGeneric<T, TSystem0>(Ecs ecs, TSystem0 system)
 			where T : IWorld<Ecs, TSystem0>, allows ref struct
@@ -277,9 +516,112 @@ namespace Runner
 		{
 			T.Loop(ecs, system);
 		}
-	}
 
-	[SimpleJob(RuntimeMoniker.Net90)]
+		static void PositionAction(Position pos)
+		{
+        }
+
+		static void PositionActionVec(ref Position.Vectorized pos)
+		{
+        }
+
+		static void VelocityAction(Velocity vel)
+		{
+        }
+    }
+
+    public ref struct Slicer<TSlice, TArch, TComp, TVec, TSingle> : IArchSlicer<TSlice, TArch>
+        where TSlice : IArchTypeSlice<TSlice, TVec, TSingle>, allows ref struct
+        where TArch : unmanaged, IArchType<TArch, TComp, TVec, TSingle>
+        where TComp : IComponent<TComp, TVec, TSingle>, allows ref struct
+        where TVec : unmanaged
+        where TSingle : unmanaged
+    {
+		public static TSlice Slice(ref TArch arch)
+        {
+            return TSlice.Create(ref TComp.GetVec(ref arch), ref TComp.GetSingle(ref arch));
+        }
+    }
+
+	public interface ISystemUpdater<TSelf, TSlice>
+		where TSelf : ISystemUpdater<TSelf, TSlice>, allows ref struct
+        where TSlice : allows ref struct
+    {
+		void Invoke(nint remaining, TSlice slice);
+    }
+
+    public delegate void LoopAction<TVec>(ref TVec vec) where TVec : unmanaged;
+
+    static class Looper<TSlice1>
+        where TSlice1 : allows ref struct
+    {
+        public static void Loop<TEnumerator1, TUpdater1>(ref TEnumerator1 enum1, TUpdater1 updater1)
+            where TEnumerator1 : IArchEnumerator<TEnumerator1, TSlice1>, allows ref struct
+            where TUpdater1 : ISystemUpdater<TUpdater1, TSlice1>, allows ref struct
+        {
+            enum1.Reset();
+            while (enum1.MoveNext())
+            {
+				updater1.Invoke(enum1.Remaining, enum1.Current);
+            }
+        }
+    }
+
+    static class Looper<TSlice1, TSlice2>
+        where TSlice1 : allows ref struct
+        where TSlice2 : allows ref struct
+    {
+        public static void Loop<TEnumerator1, TUpdater1, TEnumerator2, TUpdater2>(ref TEnumerator1 enum1, TUpdater1 updater1, ref TEnumerator2 enum2, TUpdater2 updater2)
+            where TEnumerator1 : IArchEnumerator<TEnumerator1, TSlice1>, allows ref struct
+            where TUpdater1 : ISystemUpdater<TUpdater1, TSlice1>, allows ref struct
+            where TEnumerator2 : IArchEnumerator<TEnumerator2, TSlice2>, allows ref struct
+            where TUpdater2 : ISystemUpdater<TUpdater2, TSlice2>, allows ref struct
+        {
+            enum1.Reset();
+            while (enum1.MoveNext())
+            {
+                updater1.Invoke(enum1.Remaining, enum1.Current);
+
+                Looper<TSlice2>.Loop(ref enum2, updater2);
+            }
+        }
+    }
+
+    /*
+	static class Looper<TSlice1>
+        where TSlice1 : allows ref struct
+    {
+        public static void Loop<TEnumerator1>(ref TEnumerator1 enum1, Action<nint, TSlice1> layer1Action)
+            where TEnumerator1 : IArchEnumerator<TEnumerator1, TSlice1>, allows ref struct
+        {
+            enum1.Reset();
+            while (enum1.MoveNext())
+            {
+                layer1Action(enum1.Remaining, enum1.Current);
+            }
+        }
+    }
+
+    static class Looper<TSlice1, TSlice2>
+        where TSlice1 : allows ref struct
+        where TSlice2 : allows ref struct
+    {
+        public static void Loop<TEnumerator1, TEnumerator2>(ref TEnumerator1 enum1, ref TEnumerator2 enum2, Action<nint, TSlice1> layer1Action, Action<nint, TSlice2> layer2Action)
+            where TEnumerator1 : IArchEnumerator<TEnumerator1, TSlice1>, allows ref struct
+            where TEnumerator2 : IArchEnumerator<TEnumerator2, TSlice2>, allows ref struct
+        {
+            enum1.Reset();
+            while (enum1.MoveNext())
+            {
+                layer1Action(enum1.Remaining, enum1.Current);
+
+                Looper<TSlice2>.Loop(ref enum2, layer2Action);
+            }
+        }
+    }
+	*/
+
+    [SimpleJob(RuntimeMoniker.Net90)]
 	[MemoryDiagnoser]
 	public class PerfTests
 	{
@@ -291,7 +633,7 @@ namespace Runner
 		public void Setup()
 		{
 			MeshResourceManager meshResourceManager = new();
-			ecs = new(meshResourceManager);
+			ecs = new();
 
 			Ecs.MainWorld mainWorld = ecs.GetMainWorld();
 			for (int i = 0; i < 1_000_000; i++)

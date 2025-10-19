@@ -39,7 +39,7 @@ namespace $namespace
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop($systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
 			{
-				$systemContainers~>var enum|$containerName| = new ComponentEnumerableNew<$containerComponents~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<|$containerName|.Vectorized>(container|$containerName|.AsSpan(), (int)container|$containerName|.Entities);
+				$systemContainers~>var enum|$containerName| = new ComponentEnumerable<$containerComponents~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<|$containerName|.Vectorized>(container|$containerName|.AsSpan(), (int)container|$containerName|.Entities);
 				<~
 				$systemGroups~>system.Update($groupContainers~>ref enum|$containerName|<~~>, <~$groupResourceManagers~>, $resourceManagerName<~$groupContextArguments~>, ref context$contextType<~);<~~>\n				<~
 			}<~~>\n\n			<~
