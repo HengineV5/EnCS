@@ -1,6 +1,7 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
+using UtilLib.Memory;
 
 namespace $namespace
 {
@@ -29,7 +30,7 @@ namespace $namespace
 
 		public struct Vectorized
 		{
-			$members|$arraySize < 2|~>public Vector|$bits|<$type> $name;<~|$arraySize > 1|~>public FixedArray|$arraySize|<Vector|$bits|<$type>> $name;<~~>\n			<~\n
+			$members|$arraySize < 2|~>public Vector|$bits|<$type> $name;<~|$arraySize > 1|~>public FixedBuffer|$arraySize|<Vector|$bits|<$type>> $name;<~~>\n			<~\n
 		}
 
 		public struct Comp
@@ -47,7 +48,7 @@ namespace $namespace
 		{
 			public const int Size = $arraySize;
 
-			$members~>public FixedArray8<$type> $name;<~~>\n			<~
+			$members~>public FixedBuffer8<$type> $name;<~~>\n			<~
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
