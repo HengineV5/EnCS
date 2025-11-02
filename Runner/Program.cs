@@ -25,7 +25,7 @@ namespace Runner
 		public uint id;
 	}
 
-	//[ResourceManager]
+	[ResourceManager]
 	public partial class MeshResourceManager : IResourceManager<TestResource, TestResourceId>
 	{
 		Memory<Runner.TestResource> resource = new Runner.TestResource[8];
@@ -102,8 +102,8 @@ namespace Runner
 		}
 	}
 
-	//[System]
-	//[UsingResource<MeshResourceManager>]
+	[System]
+	[UsingResource<MeshResourceManager>]
 	partial class PositionSystem
 	{
 		static Vector256<float> vf = Vector256.Create(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
@@ -139,7 +139,7 @@ namespace Runner
         }
 
         public ref struct SystemUpdater_0<TArch> : ISystemUpdater<SystemUpdater_0<TArch>, TArch>
-            where TArch : unmanaged, IArchType<TArch, Position, Position.Vectorized, Position.Array>
+            where TArch : unmanaged, IArchType<TArch, Position.Vectorized, Position.Array>
         {
             PrintSystem system;
 
@@ -179,7 +179,7 @@ namespace Runner
         }
 
         public ref struct SystemUpdater_0<TArch> : ISystemUpdater<SystemUpdater_0<TArch>, TArch>
-            where TArch : unmanaged, IArchType<TArch, Position, Position.Vectorized, Position.Array>, IArchType<TArch, Velocity, Velocity.Vectorized, Velocity.Array>
+            where TArch : unmanaged, IArchType<TArch, Position.Vectorized, Position.Array>, IArchType<TArch, Velocity.Vectorized, Velocity.Array>
         {
             PrintSystem_2 system;
 
@@ -190,10 +190,10 @@ namespace Runner
 
             public void Invoke(nint remaining, ref TArch slice)
             {
-                ref Position.Vectorized vec1 = ref ArchGetter<TArch, Position, Position.Vectorized, Position.Array>.GetVec(ref slice);
-                ref Position.Array single1 = ref ArchGetter<TArch, Position, Position.Vectorized, Position.Array>.GetSingle(ref slice);
-                ref Velocity.Vectorized vec2 = ref ArchGetter<TArch, Velocity, Velocity.Vectorized, Velocity.Array>.GetVec(ref slice);
-                ref Velocity.Array single2 = ref ArchGetter<TArch, Velocity, Velocity.Vectorized, Velocity.Array>.GetSingle(ref slice);
+                ref Position.Vectorized vec1 = ref ArchGetter<TArch, Position.Vectorized, Position.Array>.GetVec(ref slice);
+                ref Position.Array single1 = ref ArchGetter<TArch, Position.Vectorized, Position.Array>.GetSingle(ref slice);
+                ref Velocity.Vectorized vec2 = ref ArchGetter<TArch, Velocity.Vectorized, Velocity.Array>.GetVec(ref slice);
+                ref Velocity.Array single2 = ref ArchGetter<TArch, Velocity.Vectorized, Velocity.Array>.GetSingle(ref slice);
 
                 for (int i = 0; i < remaining; i++)
                 {
@@ -222,7 +222,7 @@ namespace Runner
 		}
 
         public ref struct SystemUpdater_0<TArch> : ISystemUpdater<SystemUpdater_0<TArch>, TArch>
-            where TArch : unmanaged, IArchType<TArch, Velocity, Velocity.Vectorized, Velocity.Array>
+            where TArch : unmanaged, IArchType<TArch, Velocity.Vectorized, Velocity.Array>
         {
             LayerSystem system;
 
@@ -245,7 +245,7 @@ namespace Runner
 		}
 
         public ref struct SystemUpdater_1<TArch> : ISystemUpdater<SystemUpdater_1<TArch>, TArch>
-            where TArch : unmanaged, IArchType<TArch, Position, Position.Vectorized, Position.Array>
+            where TArch : unmanaged, IArchType<TArch, Position.Vectorized, Position.Array>
         {
             LayerSystem system;
 
@@ -298,17 +298,17 @@ namespace Runner
 				.World(x =>
 				{
 					//x.World<Ecs.Wall, Ecs.Tile, Ecs.Cam>("MainWorld");
-					//x.World<Ecs.Wall, Ecs.Cam>("MainWorld");
+					x.World<Ecs.Wall, Ecs.Cam>("MainWorld");
 				})
 				.Resource(x =>
 				{
-					//x.ResourceManager<MeshResourceManager>();
+					x.ResourceManager<MeshResourceManager>();
 				})
 				.Build<Ecs>();
 			/*
 			*/
 
-			ArchTypeContainer<Wall.Vectorized, Wall> containerWall = new();
+			IndexedContainer<Wall.Vectorized, Wall> containerWall = new();
 			containerWall.Create(new Wall.Vectorized());
 			containerWall.Create(new Wall.Vectorized());
 			containerWall.Create(new Wall.Vectorized());
@@ -320,7 +320,7 @@ namespace Runner
 			containerWall.Create(new Wall.Vectorized());
 			var r = containerWall.Create(new Wall.Vectorized());
 
-			Wall wall = containerWall.Get(r);
+			Wall wall = containerWall.Get(r, new());
 			wall.Position.Set(new Vector3(5, 0, 0));
 
             PrintSystem printSystem = new();

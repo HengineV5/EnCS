@@ -547,7 +547,7 @@ namespace EnCS.Generator
 	{
 		public string name;
 		public EquatableArray<ResourceManager> resourceManagers;
-		public EquatableArray<SystemGroup> groups;
+		public EquatableArray<SystemGroup> groups; // Rename from group to layer
 		public EquatableArray<SystemContext> contexts;
 
         public System()
@@ -623,7 +623,7 @@ namespace EnCS.Generator
 	struct SystemGroup : IEquatable<SystemGroup>
 	{
 		public int idx;
-		public int chunk;
+		public int chunk; // TODO: Remove chunks
 		public EquatableArray<MethodComponent> components;
 		public EquatableArray<SystemMethod> methods;
 		public EquatableArray<SystemMethod> preLoops;

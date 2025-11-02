@@ -10,7 +10,7 @@ namespace $namespace
 	public partial class $name
 	{
 		$resourceManagers~>[Component]
-		public ref struct $resourceManagerInType : IComponent<$resourceManagerInType, |$resourceManagerInType|.Vectorized, |$resourceManagerInType|.Array>
+		public ref struct $resourceManagerInType
 		{
 			public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| |$resourceManagerInType|Prop => ref resourceManager.Get(id);
 
@@ -37,13 +37,13 @@ namespace $namespace
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerInType|, Vectorized, Array>
+			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 			{
 				return ref TArch.GetVec(ref arch);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, |$resourceManagerInType|, Vectorized, Array>
+			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 			{
 				return ref TArch.GetSingle(ref arch);
 			}

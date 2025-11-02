@@ -3,6 +3,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
 using EnCS.Attributes;
+using UtilLib.Memory;
 
 // TODO: Refactor when template import is supported in language
 namespace Runner
@@ -10,7 +11,7 @@ namespace Runner
 	public partial class MeshResourceManager
 	{
 		[Component]
-		public ref struct TestResource : IComponent<TestResource, TestResource.Vectorized, TestResource.Array>
+		public ref struct TestResource
 		{
 			public ref Runner.TestResourceId TestResourceProp => ref resourceManager.Get(id);
 
@@ -33,17 +34,17 @@ namespace Runner
 			{
 				public const int Size = 8;
 
-				public FixedArray8<uint> id;
+				public FixedBuffer8<uint> id;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, TestResource, Vectorized, Array>
+			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 			{
 				return ref TArch.GetVec(ref arch);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, TestResource, Vectorized, Array>
+			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 			{
 				return ref TArch.GetSingle(ref arch);
 			}

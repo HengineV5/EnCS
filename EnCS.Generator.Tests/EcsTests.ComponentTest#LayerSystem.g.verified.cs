@@ -7,52 +7,84 @@ namespace Runner
 {
 	public partial class LayerSystem
 	{
-		public void Update<T0Arch, T1Arch>(
-			ref ComponentEnumerableNew<Runner.TestComp123, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>.Enumerator<T0Arch> en0, 
-			ref ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.Enumerator<T1Arch> en1)
-			where T0Arch : unmanaged, IArchType<T0Arch, Runner.TestComp123, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>
-			where T1Arch : unmanaged, IArchType<T1Arch, Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>
+		public ref struct SystemUpdater_0<TArch> : ISystemUpdater<SystemUpdater_0<TArch>, TArch, Context>
+            where TArch : unmanaged, IArchType<TArch, Runner.TestComp123.Vectorized, Runner.TestComp123.Array> 
+        {
+            LayerSystem system;
+
+			
+
+            public SystemUpdater_0(LayerSystem system)
+            {
+                this.system = system;
+				
+            }
+
+            public void Invoke(nint remaining, ref TArch slice, ref Context context)
+            {
+				
+
+                ref Runner.TestComp123.Vectorized vec1 = ref ArchGetter<TArch, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>.GetVec(ref slice);
+                ref Runner.TestComp123.Array single1 = ref ArchGetter<TArch, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>.GetSingle(ref slice);// Components
+
+                // Resource
+
+                for (int i = 0; i < remaining; i++)
+                {
+                    var comp1 = Runner.TestComp123.FromArray(ref single1, i);// Components
+
+					// Resource Managers
+
+                    system.Update(ref comp1);
+                }
+
+				
+            }
+        }
+
+		public ref struct SystemUpdater_1<TArch> : ISystemUpdater<SystemUpdater_1<TArch>, TArch, Context>
+            where TArch : unmanaged, IArchType<TArch, Runner.Position.Vectorized, Runner.Position.Array> 
+        {
+            LayerSystem system;
+
+			
+
+            public SystemUpdater_1(LayerSystem system)
+            {
+                this.system = system;
+				
+            }
+
+            public void Invoke(nint remaining, ref TArch slice, ref Context context)
+            {
+				
+
+                ref Runner.Position.Vectorized vec1 = ref ArchGetter<TArch, Runner.Position.Vectorized, Runner.Position.Array>.GetVec(ref slice);
+                ref Runner.Position.Array single1 = ref ArchGetter<TArch, Runner.Position.Vectorized, Runner.Position.Array>.GetSingle(ref slice);// Components
+
+                // Resource
+
+                for (int i = 0; i < remaining; i++)
+                {
+                    var comp1 = Runner.Position.FromArray(ref single1, i);// Components
+
+					// Resource Managers
+
+                    system.Update(ref comp1);
+                }
+
+				
+            }
+        } 
+
+		public ref struct Context
 		{
-			// Not the best, but my templating language does not handle recusion the best atm
 			
-			
-			while (en0.MoveNext())
+
+			public Context()
 			{
-				var item0 = en0.Current;
-				var remaining0 = en0.Remaining;
-				
-				
-				for (int i = 0; i < remaining0; i++)
-				{
-					var arg0_1 = Runner.TestComp123.FromArray(ref item0.item1Single, i);
-
-					Update1(ref arg0_1);
-					//Update1(Runner.TestComp123.FromArray(ref item0.item1Single, i));
-				}
-				
-
-			
-			
-			while (en1.MoveNext())
-			{
-				var item1 = en1.Current;
-				var remaining1 = en1.Remaining;
-				
-				
-				for (int i = 0; i < remaining1; i++)
-				{
-					var arg1_1 = Runner.Position.FromArray(ref item1.item1Single, i);
-
-					Update2(ref arg1_1);
-					//Update2(Runner.Position.FromArray(ref item1.item1Single, i));
-				}
 				
 			}
-			
-			en1.Reset();
-			}
-			
-			en0.Reset();
 		}
 	}
 }

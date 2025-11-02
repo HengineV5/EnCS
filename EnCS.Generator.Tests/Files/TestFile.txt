@@ -14,6 +14,16 @@ using System.Text.Json;
 
 namespace Runner
 {
+	public struct TestContext
+	{
+		public float data;
+	}
+
+	public struct TestContext2
+	{
+		public float data;
+	}
+
 	public struct TestResource
 	{
 		public string name;
@@ -159,6 +169,56 @@ namespace Runner
 		}
 	}
 
+	[SystemAttribute]
+	[SystemContext<TestContext, TestContext2>]
+	[UsingResource<MeshResourceManager>]
+	public partial class ResourceSystem
+	{
+		[SystemPreLoop, SystemLayer(0)]
+		public void PreLoop1(ref TestContext context)
+		{
+
+		}
+
+		[SystemUpdate, SystemLayer(1)]
+		public void Update(ref Position.Vectorized scale)
+		{
+		}
+
+		[SystemUpdate, SystemLayer(1)]
+		public void Update(Position.Ref scale)
+		{
+		}
+
+		[SystemPostLoop, SystemLayer(0)]
+		public void PostLoop1()
+		{
+
+		}
+
+		[SystemPreLoop, SystemLayer(1)]
+		public void PreLoop()
+		{
+
+		}
+
+		[SystemUpdate, SystemLayer(0, 16)]
+		public void Update(ref TestContext context, Position.Ref position, Velocity.Ref velocity, ref TestResourceId mesh)
+		{
+		}
+
+		[SystemUpdate, SystemLayer(0, 16)]
+		public void Update(ref TestContext context, ref Position.Vectorized position, ref Velocity.Vectorized velocity)
+		{
+		}
+
+		[SystemPostLoop, SystemLayer(1)]
+		public void PostLoop()
+		{
+
+		}
+	}
+
 	partial class Ecs
 	{
 
@@ -185,6 +245,7 @@ namespace Runner
 					x.System<PrintSystem>();
 					x.System<PerfSystem>();
 					x.System<LayerSystem>();
+					x.System<ResourceSystem>();
 				})
 				.World(x =>
 				{

@@ -7,33 +7,51 @@ namespace Runner
 {
 	public partial class PositionSystem
 	{
-		public void Update<T0Arch>(
-			ref ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.Enumerator<T0Arch> en0, 
-			Runner.MeshResourceManager MeshResourceManager)
-			where T0Arch : unmanaged, IArchType<T0Arch, Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>, IArchType<T0Arch, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>
-		{
-			// Not the best, but my templating language does not handle recusion the best atm
-			
-			
-			while (en0.MoveNext())
-			{
-				var item0 = en0.Current;
-				var remaining0 = en0.Remaining;
-				
-				
-				for (int i = 0; i < remaining0; i++)
-				{
-					var arg0_1 = Runner.Position.FromArray(ref item0.item1Single, i);
-					ref var arg0_2 = ref Runner.MeshResourceManager.TestResource.FromArray(ref item0.item2Single, i, MeshResourceManager).TestResourceProp;
+		public ref struct SystemUpdater_0<TArch> : ISystemUpdater<SystemUpdater_0<TArch>, TArch, Context>
+            where TArch : unmanaged, IArchType<TArch, Runner.Position.Vectorized, Runner.Position.Array>, IArchType<TArch, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array> 
+        {
+            PositionSystem system;
 
-					Update(ref arg0_1, ref arg0_2);
-					//Update(Runner.Position.FromArray(ref item0.item1Single, i), ref Runner.MeshResourceManager.TestResource.FromArray(ref item0.item2Single, i, MeshResourceManager).TestResource);
-				}
-				Update(ref item0.item1Vec);
+			Runner.MeshResourceManager MeshResourceManager;
+
+            public SystemUpdater_0(PositionSystem system, Runner.MeshResourceManager MeshResourceManager)
+            {
+                this.system = system;
+				this.MeshResourceManager = MeshResourceManager;
+            }
+
+            public void Invoke(nint remaining, ref TArch slice, ref Context context)
+            {
+				
+
+                ref Runner.Position.Vectorized vec1 = ref ArchGetter<TArch, Runner.Position.Vectorized, Runner.Position.Array>.GetVec(ref slice);
+                ref Runner.Position.Array single1 = ref ArchGetter<TArch, Runner.Position.Vectorized, Runner.Position.Array>.GetSingle(ref slice);// Components
+
+                ref Runner.MeshResourceManager.TestResource.Array single2 = ref ArchGetter<TArch, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.GetSingle(ref slice);// Resource
+
+                for (int i = 0; i < remaining; i++)
+                {
+                    var comp1 = Runner.Position.FromArray(ref single1, i);// Components
+
+					ref var comp2 = ref Runner.MeshResourceManager.TestResource.FromArray(ref single2, i, MeshResourceManager).TestResourceProp;// Resource Managers
+
+                    system.Update(ref comp1, ref comp2);
+                }
+
+				system.Update(ref vec1);
+
+				
+            }
+        } 
+
+		public ref struct Context
+		{
+			
+
+			public Context()
+			{
 				
 			}
-			
-			en0.Reset();
 		}
 	}
 }

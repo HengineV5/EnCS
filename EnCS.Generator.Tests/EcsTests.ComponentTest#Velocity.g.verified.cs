@@ -2,10 +2,11 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
+using UtilLib.Memory;
 
 namespace Runner
 {
-	public ref partial struct Velocity : IComponent<Velocity, Velocity.Vectorized, Velocity.Array>
+	public ref partial struct Velocity
 	{
 		public Velocity()
 		{
@@ -17,6 +18,13 @@ namespace Runner
 			this.x = ref x;
 			this.y = ref y;
 			this.z = ref z;
+		}
+
+		public void Set(Comp c)
+		{
+			this.x = c.x;
+			this.y = c.y;
+			this.z = c.z;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -51,23 +59,21 @@ namespace Runner
 		{
 			public const int Size = 8;
 
-			public FixedArray8<int> x;
-			public FixedArray8<int> y;
-			public FixedArray8<int> z;
+			public FixedBuffer8<int> x;
+			public FixedBuffer8<int> y;
+			public FixedBuffer8<int> z;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Velocity, Vectorized, Array>
+		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 		{
 			return ref TArch.GetVec(ref arch);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Velocity, Vectorized, Array>
+		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 		{
 			return ref TArch.GetSingle(ref arch);
 		}
-
-		public static implicit operator Velocity(Comp c) => new(ref Unsafe.AsRef(c.x), ref Unsafe.AsRef(c.y), ref Unsafe.AsRef(c.z));
 	}
 }

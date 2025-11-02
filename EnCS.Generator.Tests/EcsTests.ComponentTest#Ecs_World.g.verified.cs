@@ -7,15 +7,15 @@ namespace Runner
 {
 	public partial class Ecs
 	{
-		public ref struct MainWorld : IWorld<Ecs, PositionSystem  >, IWorld<Ecs, PrintSystem  >, IWorld<Ecs, PerfSystem  >, IWorld<Ecs, LayerSystem  >
+		public ref struct MainWorld
 		{
-			ref ArchTypeContainer<Wall.Vectorized, Wall> containerWall;
-			ref ArchTypeContainer<Tile.Vectorized, Tile> containerTile;
-			ref ArchTypeContainer<Cam.Vectorized, Cam> containerCam;
+			ref IndexedContainer<Wall.Vectorized, Wall> containerWall;
+			ref IndexedContainer<Tile.Vectorized, Tile> containerTile;
+			ref IndexedContainer<Cam.Vectorized, Cam> containerCam;
 
 			Runner.MeshResourceManager MeshResourceManager;
 
-			public MainWorld(ref ArchTypeContainer<Wall.Vectorized, Wall> containerWall, ref ArchTypeContainer<Tile.Vectorized, Tile> containerTile, ref ArchTypeContainer<Cam.Vectorized, Cam> containerCam, Runner.MeshResourceManager MeshResourceManager)
+			public MainWorld(ref IndexedContainer<Wall.Vectorized, Wall> containerWall, ref IndexedContainer<Tile.Vectorized, Tile> containerTile, ref IndexedContainer<Cam.Vectorized, Cam> containerCam, Runner.MeshResourceManager MeshResourceManager)
 			{
 				this.containerWall = ref containerWall;
 				this.containerTile = ref containerTile;
@@ -78,42 +78,59 @@ namespace Runner
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(PositionSystem system)
 			{
-				var enumWall = new ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.Enumerator<Wall.Vectorized>(containerWall.AsSpan(), (int)containerWall.Entities);
-				var enumTile = new ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array, Runner.MeshResourceManager.TestResource, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.Enumerator<Tile.Vectorized>(containerTile.AsSpan(), (int)containerTile.Entities);
-				
-				system.Update(ref enumWall, MeshResourceManager);
-				system.Update(ref enumTile, MeshResourceManager);
+				PositionSystem.SystemUpdater_0<Wall.Vectorized> updaterWall_0 = new(systems, MeshResourceManager);
+
+				PositionSystem.SystemUpdater_0<Tile.Vectorized> updaterTile_0 = new(systems, MeshResourceManager);
+
+				PositionSystem.Context context = new();
+
+				Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, updaterWall_0, ref context);
+				Looper<Tile.Vectorized>.LoopIndexed(ref containerTile, updaterTile_0, ref context);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(PrintSystem system)
 			{
-				var enumWall = new ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.Enumerator<Wall.Vectorized>(containerWall.AsSpan(), (int)containerWall.Entities);
-				var enumTile = new ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.Enumerator<Tile.Vectorized>(containerTile.AsSpan(), (int)containerTile.Entities);
-				
-				system.Update(ref enumWall);
-				system.Update(ref enumTile);
+				PrintSystem.SystemUpdater_0<Wall.Vectorized> updaterWall_0 = new(systems);
+
+				PrintSystem.SystemUpdater_0<Tile.Vectorized> updaterTile_0 = new(systems);
+
+				PrintSystem.Context context = new();
+
+				Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, updaterWall_0, ref context);
+				Looper<Tile.Vectorized>.LoopIndexed(ref containerTile, updaterTile_0, ref context);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(PerfSystem system)
 			{
-				var enumWall = new ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.Enumerator<Wall.Vectorized>(containerWall.AsSpan(), (int)containerWall.Entities);
-				var enumTile = new ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.Enumerator<Tile.Vectorized>(containerTile.AsSpan(), (int)containerTile.Entities);
-				
-				system.Update(ref enumWall);
-				system.Update(ref enumTile);
+				PerfSystem.SystemUpdater_0<Wall.Vectorized> updaterWall_0 = new(systems);
+
+				PerfSystem.SystemUpdater_0<Tile.Vectorized> updaterTile_0 = new(systems);
+
+				PerfSystem.Context context = new();
+
+				Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, updaterWall_0, ref context);
+				Looper<Tile.Vectorized>.LoopIndexed(ref containerTile, updaterTile_0, ref context);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(LayerSystem system)
 			{
-				var enumCam = new ComponentEnumerableNew<Runner.TestComp123, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>.Enumerator<Cam.Vectorized>(containerCam.AsSpan(), (int)containerCam.Entities);
-				var enumWall = new ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.Enumerator<Wall.Vectorized>(containerWall.AsSpan(), (int)containerWall.Entities);
-				var enumTile = new ComponentEnumerableNew<Runner.Position, Runner.Position.Vectorized, Runner.Position.Array>.Enumerator<Tile.Vectorized>(containerTile.AsSpan(), (int)containerTile.Entities);
-				
-				system.Update(ref enumCam, ref enumWall);
-				system.Update(ref enumCam, ref enumTile);
+				LayerSystem.SystemUpdater_0<Cam.Vectorized> updaterCam_0 = new(systems);
+				LayerSystem.SystemUpdater_1<Cam.Vectorized> updaterCam_1 = new(systems);
+
+				LayerSystem.SystemUpdater_0<Wall.Vectorized> updaterWall_0 = new(systems);
+				LayerSystem.SystemUpdater_1<Wall.Vectorized> updaterWall_1 = new(systems);
+
+				LayerSystem.SystemUpdater_0<Tile.Vectorized> updaterTile_0 = new(systems);
+				LayerSystem.SystemUpdater_1<Tile.Vectorized> updaterTile_1 = new(systems);
+
+				LayerSystem.Context context = new();
+
+				Looper<Cam.Vectorized>.LoopIndexed(ref containerCam, updaterCam_0, updaterCam_1, ref context);
+				Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, updaterWall_0, updaterWall_1, ref context);
+				Looper<Tile.Vectorized>.LoopIndexed(ref containerTile, updaterTile_0, updaterTile_1, ref context);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

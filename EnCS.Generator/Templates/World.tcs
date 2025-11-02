@@ -6,13 +6,13 @@ namespace $namespace
 {
 	public partial class $ecsName
 	{
-		$worlds~>public ref struct $worldName : $worldSystems~>IWorld<$ecsName, $systemName $systemContextArguments~>, $contextType<~ ><~~>, <~
+		$worlds~>public ref struct $worldName
 		{
-			$worldArchTypes~>ref ArchTypeContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|;<~~>\n			<~
+			$worldArchTypes~>ref IndexedContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|;<~~>\n			<~
 
 			$worldResourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName;<~~>\n			<~
 
-			public $worldName($worldArchTypes~>ref ArchTypeContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|<~~>, <~$worldResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
+			public $worldName($worldArchTypes~>ref IndexedContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|<~~>, <~$worldResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
 			{
 				$worldArchTypes~>this.container|$archTypeName| = ref container|$archTypeName|;<~~>\n				<~
 
@@ -39,9 +39,11 @@ namespace $namespace
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop($systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
 			{
-				$systemContainers~>var enum|$containerName| = new ComponentEnumerable<$containerComponents~>$compName, |$compName|.Vectorized, |$compName|.Array<~~>, <~>.Enumerator<|$containerName|.Vectorized>(container|$containerName|.AsSpan(), (int)container|$containerName|.Entities);
-				<~
-				$systemGroups~>system.Update($groupContainers~>ref enum|$containerName|<~~>, <~$groupResourceManagers~>, $resourceManagerName<~$groupContextArguments~>, ref context$contextType<~);<~~>\n				<~
+				$systemContainers~>$systemLayers~>|$systemName|.SystemUpdater_|$groupIdx|<|$containerName|.Vectorized> updater|$containerName|_|$groupIdx| = new(systems$containerResourceManagers~>, $resourceManagerName<~);<~~>\n				<~<~~>\n\n				<~
+
+				|$systemName|.Context context = new($systemContextArguments~>ref context$contextType<~~>, <~);
+
+				$systemContainers~>Looper<|$containerName|.Vectorized>.LoopIndexed(ref container|$containerName|, $systemLayers~>updater|$containerName|_|$groupIdx|, <~ref context);<~~>\n				<~
 			}<~~>\n\n			<~
 
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]

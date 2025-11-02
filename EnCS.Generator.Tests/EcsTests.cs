@@ -1,10 +1,44 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using System.Collections.Immutable;
+using System.Text;
 
 namespace EnCS.Generator.Tests
 {
-	public static class TestHelper
+    public class SimpleAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
+    {
+        private readonly AnalyzerConfigOptions _globalOptions;
+
+        public SimpleAnalyzerConfigOptionsProvider(IDictionary<string, string> options)
+        {
+            _globalOptions = new SimpleAnalyzerConfigOptions(options);
+        }
+
+        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
+
+        public override AnalyzerConfigOptions GetOptions(Microsoft.CodeAnalysis.SyntaxTree tree)
+            => _globalOptions;
+
+        public override AnalyzerConfigOptions GetOptions(Microsoft.CodeAnalysis.AdditionalText textFile)
+            => _globalOptions;
+
+        private class SimpleAnalyzerConfigOptions : AnalyzerConfigOptions
+        {
+            private readonly ImmutableDictionary<string, string> _options;
+
+            public SimpleAnalyzerConfigOptions(IDictionary<string, string> options)
+            {
+                _options = options.ToImmutableDictionary();
+            }
+
+            public override bool TryGetValue(string key, out string value)
+                => _options.TryGetValue(key, out value);
+        }
+    }
+
+    public static class TestHelper
 	{
 		public static Task Verify(params string[] source)
 		{
@@ -20,8 +54,15 @@ namespace EnCS.Generator.Tests
 			CSharpCompilation compilation = CSharpCompilation.Create("Tests", trees, references: r);
 			var diag = compilation.GetDiagnostics();
 
+            var analyzerProvider = new SimpleAnalyzerConfigOptionsProvider(new Dictionary<string, string>
+			{
+				{"build_property.TemplateGenerator_LogFilePath", "True"},
+				{"build_property.TemplateGenerator_LogLevel", "Trace"}
+			});
+
             GeneratorDriver driver = CSharpGeneratorDriver.Create(new TemplateGenerator());
-			driver = driver.RunGenerators(compilation);
+			driver.WithUpdatedAnalyzerConfigOptions(analyzerProvider);
+            driver = driver.RunGenerators(compilation);
 			
 			return Verifier.Verify(driver);
 		}

@@ -2,10 +2,11 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
+using UtilLib.Memory;
 
 namespace Runner
 {
-	public ref partial struct Position : IComponent<Position, Position.Vectorized, Position.Array>
+	public ref partial struct Position
 	{
 		public Position()
 		{
@@ -58,19 +59,19 @@ namespace Runner
 		{
 			public const int Size = 8;
 
-			public FixedArray8<float> x;
-			public FixedArray8<float> y;
-			public FixedArray8<float> z;
+			public FixedBuffer8<float> x;
+			public FixedBuffer8<float> y;
+			public FixedBuffer8<float> z;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Position, Vectorized, Array>
+		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 		{
 			return ref TArch.GetVec(ref arch);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Position, Vectorized, Array>
+		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 		{
 			return ref TArch.GetSingle(ref arch);
 		}

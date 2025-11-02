@@ -5,17 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace EnCS
 {
-	public struct ArchRef<TArch> where TArch : allows ref struct
-	{
-		public readonly nint idx;
-
-		internal ArchRef(nint idx)
-		{
-			this.idx = idx;
-		}
-	}
-
-	public unsafe struct ArchTypeContainer<TArch, TPtr> : IIndexedContainer<ArchTypeContainer<TArch, TPtr>, TArch>
+	public unsafe struct IndexedContainer<TArch, TPtr> : IIndexedContainer<IndexedContainer<TArch, TPtr>, TArch>
 		where TArch : unmanaged
 		where TPtr : allows ref struct
 	{
@@ -33,7 +23,7 @@ namespace EnCS
 		nint[] map;
 		Stack<nint> deleted;
 
-		public ArchTypeContainer()
+		public IndexedContainer()
 		{
 			buff = (TArch*)NativeMemory.AllocZeroed(INITIAL_CONTAINER_SIZE * DataSize);
 			map = new nint[INITIAL_CONTAINER_SIZE];

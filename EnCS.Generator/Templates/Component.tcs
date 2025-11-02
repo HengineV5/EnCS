@@ -5,7 +5,7 @@ using UtilLib.Memory;
 
 namespace $namespace
 {
-	public ref partial struct $compName : IComponent<$compName, |$compName|.Vectorized, |$compName|.Array>
+	public ref partial struct $compName
 	{
 		public $compName()
 		{
@@ -52,13 +52,13 @@ namespace $namespace
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, $compName, Vectorized, Array>
+		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 		{
 			return ref TArch.GetVec(ref arch);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, $compName, Vectorized, Array>
+		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 		{
 			return ref TArch.GetSingle(ref arch);
 		}

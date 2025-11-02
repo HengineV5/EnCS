@@ -215,7 +215,8 @@ namespace EnCS.Generator
 					name = system.name,
 					groups = new(containerGroups.ToArray()),
 					containers = new(systemContainers.ToArray()),
-					resourceManagers = new(systemResourceManagers.ToArray())
+					resourceManagers = new(systemResourceManagers.ToArray()),
+					layers = system.groups
 				});
 			}
 
@@ -383,6 +384,7 @@ namespace EnCS.Generator
 		public EquatableArray<Container> containers;
 		public EquatableArray<ContainerGroup> groups;
 		public EquatableArray<ResourceManager> resourceManagers;
+		public EquatableArray<SystemGroup> layers;
 
         public WorldSystem()
         {
@@ -390,8 +392,8 @@ namespace EnCS.Generator
 			containers = EquatableArray<Container>.Empty;
 			groups = EquatableArray<ContainerGroup>.Empty;
 			resourceManagers = EquatableArray<ResourceManager>.Empty;
-
-		}
+			layers = EquatableArray<SystemGroup>.Empty;
+        }
 
         public Model<ReturnType> GetModel()
 		{
@@ -402,8 +404,9 @@ namespace EnCS.Generator
 			model.Set("systemGroups".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(groups.Select(x => x.GetModel())));
 			model.Set("systemResourceManagers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(resourceManagers.Select(x => x.GetModel())));
 			model.Set("systemContextArguments".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(groups.SelectMany(x => x.contextArguments).GroupBy(x => x.type).Select(x => x.First()).Select(x => x.GetModel())));
+			model.Set("systemLayers".AsSpan(), Parameter.CreateEnum<IModel<ReturnType>>(layers.Select(x => x.GetModel())));
 
-			return model;
+            return model;
 		}
 
 		public bool Equals(WorldSystem other)

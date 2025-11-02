@@ -6,17 +6,17 @@ namespace Runner
 {
 	public partial class Ecs
 	{
-		ArchTypeContainer<Wall.Vectorized, Wall> containerWall;
-		ArchTypeContainer<Tile.Vectorized, Tile> containerTile;
-		ArchTypeContainer<Cam.Vectorized, Cam> containerCam;
+		IndexedContainer<Wall.Vectorized, Wall> containerWall;
+		IndexedContainer<Tile.Vectorized, Tile> containerTile;
+		IndexedContainer<Cam.Vectorized, Cam> containerCam;
 		
 		Runner.MeshResourceManager MeshResourceManager;
 
 		public Ecs(Runner.MeshResourceManager MeshResourceManager)
 		{
-			containerWall = new ArchTypeContainer<Wall.Vectorized, Wall>();
-			containerTile = new ArchTypeContainer<Tile.Vectorized, Tile>();
-			containerCam = new ArchTypeContainer<Cam.Vectorized, Cam>();
+			containerWall = new IndexedContainer<Wall.Vectorized, Wall>();
+			containerTile = new IndexedContainer<Tile.Vectorized, Tile>();
+			containerCam = new IndexedContainer<Cam.Vectorized, Cam>();
 
 			this.MeshResourceManager = MeshResourceManager;
 		}
@@ -31,7 +31,7 @@ namespace Runner
 	/*
 	static class Ecs_Intercept
 	{
-		[InterceptsLocation(@"", 197, 5)]
+		[InterceptsLocation(@"", 258, 5)]
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public static Ecs InterceptBuild(this EcsBuilder builder)

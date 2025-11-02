@@ -5,13 +5,13 @@ namespace $namespace
 {
 	public partial class $name
 	{
-		$archTypes~>ArchTypeContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|;<~~>\n		<~
+		$archTypes~>IndexedContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|;<~~>\n		<~
 		
 		$resourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName;<~~>\n		<~
 
 		public $name($resourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~~>, <~)
 		{
-			$archTypes~>container|$archTypeName| = new ArchTypeContainer<|$archTypeName|.Vectorized, $archTypeName>();<~~>\n			<~
+			$archTypes~>container|$archTypeName| = new IndexedContainer<|$archTypeName|.Vectorized, $archTypeName>();<~~>\n			<~
 
 			$resourceManagers~>this.|$resourceManagerName| = $resourceManagerName;<~~>\n			<~
 		}

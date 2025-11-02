@@ -2,9 +2,8 @@
 
 namespace EnCS
 {
-	public interface IArchType<TSelf, TType, TTypeVec, TTypeSingle>
-		where TSelf : unmanaged, IArchType<TSelf, TType, TTypeVec, TTypeSingle>
-		where TType : IComponent<TType, TTypeVec, TTypeSingle>, allows ref struct
+	public interface IArchType<TSelf, TTypeVec, TTypeSingle>
+		where TSelf : unmanaged, IArchType<TSelf, TTypeVec, TTypeSingle>
 		where TTypeVec : unmanaged
 		where TTypeSingle : unmanaged
 	{
