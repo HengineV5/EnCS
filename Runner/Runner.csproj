@@ -10,6 +10,8 @@
 		<Features>InterceptorsPreview</Features>
 		<InterceptorsPreviewNamespaces>Runner</InterceptorsPreviewNamespaces>
 		<IsPackable>false</IsPackable>
+
+		<Configurations>Debug;Release;Debug (local-deps);Release (local-deps)</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -33,4 +35,8 @@
 		<Analyzer Include="..\EnCS.Generator\bin\$(Configuration)\netstandard2.0\TemplateGenerator.dll" />
 	</ItemGroup>
 
+	<PropertyGroup>
+		<TemplateGenerator_LogFilePath>True</TemplateGenerator_LogFilePath>
+		<TemplateGenerator_LogLevel>Trace</TemplateGenerator_LogLevel>
+	</PropertyGroup>
 </Project>

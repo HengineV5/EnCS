@@ -8,7 +8,8 @@ namespace Runner
 	public partial class PerfSystem
 	{
 		public ref struct SystemUpdater_0<TArch> : ISystemUpdater<SystemUpdater_0<TArch>, TArch, Context>
-            where TArch : unmanaged, IArchType<TArch, Runner.Position.Vectorized, Runner.Position.Array> 
+            where TArch : unmanaged, IArchType<TArch, Runner.Position.Vectorized, Runner.Position.Array>
+
         {
             PerfSystem system;
 

@@ -24,7 +24,8 @@ namespace EnCS
         public static void LoopIndexed<TContainer1, TUpdater1, TContext>(ref TContainer1 container1, TUpdater1 updater1, ref TContext context)
             where TContainer1 : IIndexedContainer<TContainer1, TArch1>
             where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
-        {
+            where TContext : allows ref struct
+		{
             var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
             @enum.Reset();
 
@@ -46,7 +47,8 @@ namespace EnCS
             where TContainer1 : IIndexedContainer<TContainer1, TArch1>
             where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
             where TUpdater2 : ISystemUpdater<TUpdater2, TArch1, TContext>, allows ref struct
-            => Looper<TArch1, TArch1>.LoopIndexed(ref enum1, updater1, ref enum1, updater2, ref context);
+			where TContext : allows ref struct
+			=> Looper<TArch1, TArch1>.LoopIndexed(ref enum1, updater1, ref enum1, updater2, ref context);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LoopIndexed<TContainer1, TUpdater1, TUpdater2, TUpdater3>(ref TContainer1 container1, TUpdater1 updater1, TUpdater2 updater2, TUpdater3 updater3)
@@ -62,7 +64,8 @@ namespace EnCS
             where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
             where TUpdater2 : ISystemUpdater<TUpdater2, TArch1, TContext>, allows ref struct
             where TUpdater3 : ISystemUpdater<TUpdater3, TArch1, TContext>, allows ref struct
-            => Looper<TArch1, TArch1, TArch1>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref context);
+			where TContext : allows ref struct
+			=> Looper<TArch1, TArch1, TArch1>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref context);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LoopIndexed<TContainer1, TUpdater1, TUpdater2, TUpdater3, TUpdater4>(ref TContainer1 container1, TUpdater1 updater1, TUpdater2 updater2, TUpdater3 updater3, TUpdater4 updater4)
@@ -80,7 +83,8 @@ namespace EnCS
             where TUpdater2 : ISystemUpdater<TUpdater2, TArch1, TContext>, allows ref struct
             where TUpdater3 : ISystemUpdater<TUpdater3, TArch1, TContext>, allows ref struct
             where TUpdater4 : ISystemUpdater<TUpdater4, TArch1, TContext>, allows ref struct
-            => IndexedLooper<TArch1, TArch1, TArch1, TArch1>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref container1, updater4, ref context);
+			where TContext : allows ref struct
+			=> IndexedLooper<TArch1, TArch1, TArch1, TArch1>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref container1, updater4, ref context);
     }
 
     public static partial class Looper<TArch1, TArch2>
@@ -109,7 +113,8 @@ namespace EnCS
             where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
             where TContainer2 : IIndexedContainer<TContainer2, TArch2>
             where TUpdater2 : ISystemUpdater<TUpdater2, TArch2, TContext>, allows ref struct
-        {
+			where TContext : allows ref struct
+		{
             var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
             @enum.Reset();
 
@@ -153,7 +158,8 @@ namespace EnCS
             where TUpdater2 : ISystemUpdater<TUpdater2, TArch2, TContext>, allows ref struct
             where TContainer3 : IIndexedContainer<TContainer3, TArch3>
             where TUpdater3 : ISystemUpdater<TUpdater3, TArch3, TContext>, allows ref struct
-        {
+			where TContext : allows ref struct
+		{
             var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
             @enum.Reset();
 
@@ -201,7 +207,8 @@ namespace EnCS
             where TUpdater3 : ISystemUpdater<TUpdater3, TArch3, TContext>, allows ref struct
             where TContainer4 : IIndexedContainer<TContainer4, TArch4>
             where TUpdater4 : ISystemUpdater<TUpdater4, TArch4, TContext>, allows ref struct
-        {
+			where TContext : allows ref struct
+		{
             var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
             @enum.Reset();
 

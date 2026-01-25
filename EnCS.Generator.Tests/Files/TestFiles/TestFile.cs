@@ -1,4 +1,4 @@
-﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using EnCS;
@@ -36,15 +36,15 @@ namespace Runner
 		Memory<Runner.TestResource> resource = new Runner.TestResource[8];
 		Memory<Runner.TestResourceId> resourceids = new Runner.TestResourceId[8];
 
-        public MeshResourceManager()
-        {
+		public MeshResourceManager()
+		{
 			resource.Span[0] = new() { name = "yay" };
 			resourceids.Span[0] = new() { id = 0 };
 			resource.Span[1] = new() { name = "nay" };
 			resourceids.Span[1] = new() { id = 1 };
-        }
+		}
 
-        public ref Runner.TestResourceId Get(uint id)
+		public ref Runner.TestResourceId Get(uint id)
 		{
 			return ref resourceids.Span[(int)id];
 		}
@@ -60,15 +60,15 @@ namespace Runner
 	{
 		//public string wow;
 		public ref int tag;
-    }
+	}
 
 	[Component]
 	ref partial struct Position
-    {
+	{
 		public ref float x;
 		public ref float y;
 		public ref float z;
-    }
+	}
 
 	static class Comp_Extensions
 	{
@@ -86,7 +86,7 @@ namespace Runner
 		public ref int x;
 		public ref int y;
 		public ref int z;
-    }
+	}
 
 	[System]
 	partial class PerfSystem
@@ -117,15 +117,15 @@ namespace Runner
 		[SystemUpdate]
 		public void Update(ref TestContext context, ref Position position, ref TestResourceId resource)
 		{
-            position.x = Random.Shared.Next(0, 100);
-            Console.WriteLine(resource.id);
-            //position.x = MathF.Sqrt(position.x);
-        }
+			position.x = Random.Shared.Next(0, 100);
+			Console.WriteLine(resource.id);
+			//position.x = MathF.Sqrt(position.x);
+		}
 
 		[SystemUpdate]
 		public void Update(ref TestContext context, ref Position.Vectorized position)
 		{
-            position.x = Vector256.Sqrt(position.x);
+			position.x = Vector256.Sqrt(position.x);
 		}
 	}
 
@@ -135,15 +135,15 @@ namespace Runner
 		[SystemUpdate]
 		public void Update(ref Position position)
 		{
-            Console.WriteLine($"Print System: {position.x}");
-        }
+			Console.WriteLine($"Print System: {position.x}");
+		}
 
 		[SystemUpdate]
 		public void Update(ref Position.Vectorized position)
 		{
-            Console.WriteLine($"Vec Print System: {position.x}");
-        }
-    }
+			Console.WriteLine($"Vec Print System: {position.x}");
+		}
+	}
 
 	[System]
 	partial class PrintSystem_2
@@ -151,19 +151,19 @@ namespace Runner
 		[SystemUpdate]
 		public void Update(ref Position position, ref Velocity velocity)
 		{
-            Console.WriteLine($"Print System: {position.x}");
-        }
+			Console.WriteLine($"Print System: {position.x}");
+		}
 
 		[SystemUpdate]
 		public void Update(ref Position.Vectorized position, ref Velocity.Vectorized velocity)
 		{
-            Console.WriteLine($"Vec Print System: {position.x}");
-        }
+			Console.WriteLine($"Vec Print System: {position.x}");
+		}
 	}
 
 	[System]
 	partial class LayerSystem
-    {
+	{
 		[SystemUpdate, SystemLayer(0)]
 		public void Update1(ref Velocity velocity)
 		{
@@ -182,7 +182,7 @@ namespace Runner
 
 	}
 
-    internal class Program
+	internal class Program
 	{
 		static void Main(string[] args)
 		{
@@ -251,10 +251,10 @@ namespace Runner
             //Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, layerUpdater_0, layerUpdater_1);
 			*/
 		}
-    }
+	}
 
 
-    /*
+	/*
     [SimpleJob(RuntimeMoniker.Net90)]
     [MemoryDiagnoser]
     public class PerfTests

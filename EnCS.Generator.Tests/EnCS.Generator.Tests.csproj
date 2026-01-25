@@ -11,6 +11,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Files\TestFiles\TestFile.cs" />
+	  <Compile Remove="Files\TestFiles\TestFile2.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Files\TestFiles\TestFile.cs">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Include="Files\TestFiles\TestFile2.cs">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -36,12 +50,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="Files\TestFile2.txt">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Files\TestFile.txt">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
+	  <Compile Update="Files\Common\AttributeSource.cs">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Compile>
+	  <Compile Update="Files\Common\FixedArraySource.cs">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Compile>
+	  <Compile Update="Files\Common\InterfaceSource.cs">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Compile>
 	</ItemGroup>
 
 </Project>

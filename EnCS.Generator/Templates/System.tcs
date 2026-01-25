@@ -7,7 +7,7 @@ namespace $namespace
 	public partial class $name
 	{
 		$groups~>public ref struct SystemUpdater_|$groupIdx|<TArch> : ISystemUpdater<SystemUpdater_|$groupIdx|<TArch>, TArch, Context>
-            where TArch : unmanaged, $groupComponents~>IArchType<TArch, |$compName|.Vectorized, |$compName|.Array><~~>, <~ 
+            where TArch : unmanaged, $groupComponents|$compType == "Component"|~>IArchType<TArch, |$compName|.Vectorized, |$compName|.Array><~|$compType == "Resource"|~>IArchType<TArch, |$compName|.Vectorized, |$compName|.Array><~~>, <~ \n
         {
             $name system;
 
@@ -21,7 +21,7 @@ namespace $namespace
 
             public void Invoke(nint remaining, ref TArch slice, ref Context context)
             {
-				$groupPreLoops~>|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
+				$groupPreLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
 
                 $groupComponents|$compType == "Component"|~>ref |$compName|.Vectorized vec|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref slice);
                 ref |$compName|.Array single|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref slice);<~~>\n				<~ // Components
@@ -34,16 +34,16 @@ namespace $namespace
 
 					$methodComponents|$compType == "Resource"|~>ref var comp|$compIdx| = ref |$compResourceManager.resourceManagerNamespace|.|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerInType|.FromArray(ref single|$compIdx|, i, |$compResourceManager.resourceManagerName|).|$compResourceManager.resourceManagerInType|Prop;<~~>\n					<~ // Resource Managers
 
-                    system.Update($methodComponents|$compType == "Component"|~>ref comp|$compIdx|<~|$compType == "Resource"|~>ref comp|$compIdx|<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );
-                }<~|$methodType == "Vector"|~>system.Update($methodComponents|$compType == "Component"|~>ref vec|$compIdx|<~~>, <~ );<~|$compType == "Context"|~>ref context.|$compName|<~~>\n\n				<~\n
+                    system.|$methodName|($methodComponents|$compType == "Component"|~>ref comp|$compIdx|<~|$compType == "Resource"|~>ref comp|$compIdx|<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );
+                }<~|$methodType == "Vector"|~>system.|$methodName|($methodComponents|$compType == "Component"|~>ref vec|$compIdx|<~~>, <~ );<~|$compType == "Context"|~>ref context.|$compName|<~~>\n\n				<~\n
 
-				$groupPostLoops~>|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
+				$groupPostLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
             }
         }<~~>\n\n		<~ 
 
 		public ref struct Context
 		{
-			$contexts~>ref |$contextType| $contextType;<~~>\n			<~
+			$contexts~>public ref |$contextType| $contextType;<~~>\n			<~
 
 			public Context($contexts~>ref |$contextType| $contextType<~)
 			{

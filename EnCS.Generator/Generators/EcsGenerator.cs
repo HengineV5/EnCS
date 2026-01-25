@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using TemplateGenerator;
+using TemplateGenerator.Helpers;
 
 namespace EnCS.Generator
 {

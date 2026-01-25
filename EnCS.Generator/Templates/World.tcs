@@ -6,7 +6,7 @@ namespace $namespace
 {
 	public partial class $ecsName
 	{
-		$worlds~>public ref struct $worldName
+		$worlds~>public ref struct $worldName : $worldSystems~>IWorld<$systemName, |$ecsName|$systemContextArguments~>, $contextType<~ ><~~>, <~
 		{
 			$worldArchTypes~>ref IndexedContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|;<~~>\n			<~
 
@@ -39,7 +39,7 @@ namespace $namespace
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop($systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
 			{
-				$systemContainers~>$systemLayers~>|$systemName|.SystemUpdater_|$groupIdx|<|$containerName|.Vectorized> updater|$containerName|_|$groupIdx| = new(systems$containerResourceManagers~>, $resourceManagerName<~);<~~>\n				<~<~~>\n\n				<~
+				$systemContainers~>$systemLayers~>|$systemName|.SystemUpdater_|$groupIdx|<|$containerName|.Vectorized> updater|$containerName|_|$groupIdx| = new(system$containerResourceManagers~>, $resourceManagerName<~);<~~>\n				<~<~~>\n\n				<~
 
 				|$systemName|.Context context = new($systemContextArguments~>ref context$contextType<~~>, <~);
 
@@ -47,8 +47,8 @@ namespace $namespace
 			}<~~>\n\n			<~
 
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public static void Loop($ecsName ecs, $systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
-					=> ecs.Get|$worldName|().Loop(system$systemContextArguments~>, ref context$contextType<~);<~~>\n\n			<~
+			public static void Loop($systemName system, $ecsName ecs$systemContextArguments~>, ref $contextType context$contextType<~)
+				=> ecs.Get|$worldName|().Loop(system$systemContextArguments~>, ref context$contextType<~);<~~>\n\n			<~
 		}<~~>\n\n		<~
 	}
 }

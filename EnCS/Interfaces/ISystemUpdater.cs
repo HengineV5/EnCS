@@ -10,6 +10,7 @@
 	public interface ISystemUpdater<TSelf, TArch, TContext>
 		where TSelf : ISystemUpdater<TSelf, TArch, TContext>, allows ref struct
         where TArch : unmanaged
+        where TContext : allows ref struct
     {
         void Invoke(nint remaining, ref TArch arch, ref TContext context);
     }

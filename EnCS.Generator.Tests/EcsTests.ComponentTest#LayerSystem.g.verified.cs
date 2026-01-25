@@ -8,7 +8,8 @@ namespace Runner
 	public partial class LayerSystem
 	{
 		public ref struct SystemUpdater_0<TArch> : ISystemUpdater<SystemUpdater_0<TArch>, TArch, Context>
-            where TArch : unmanaged, IArchType<TArch, Runner.TestComp123.Vectorized, Runner.TestComp123.Array> 
+            where TArch : unmanaged, IArchType<TArch, Runner.Velocity.Vectorized, Runner.Velocity.Array>
+
         {
             LayerSystem system;
 
@@ -24,18 +25,18 @@ namespace Runner
             {
 				
 
-                ref Runner.TestComp123.Vectorized vec1 = ref ArchGetter<TArch, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>.GetVec(ref slice);
-                ref Runner.TestComp123.Array single1 = ref ArchGetter<TArch, Runner.TestComp123.Vectorized, Runner.TestComp123.Array>.GetSingle(ref slice);// Components
+                ref Runner.Velocity.Vectorized vec1 = ref ArchGetter<TArch, Runner.Velocity.Vectorized, Runner.Velocity.Array>.GetVec(ref slice);
+                ref Runner.Velocity.Array single1 = ref ArchGetter<TArch, Runner.Velocity.Vectorized, Runner.Velocity.Array>.GetSingle(ref slice);// Components
 
                 // Resource
 
                 for (int i = 0; i < remaining; i++)
                 {
-                    var comp1 = Runner.TestComp123.FromArray(ref single1, i);// Components
+                    var comp1 = Runner.Velocity.FromArray(ref single1, i);// Components
 
 					// Resource Managers
 
-                    system.Update(ref comp1);
+                    system.Update1(ref comp1);
                 }
 
 				
@@ -43,7 +44,8 @@ namespace Runner
         }
 
 		public ref struct SystemUpdater_1<TArch> : ISystemUpdater<SystemUpdater_1<TArch>, TArch, Context>
-            where TArch : unmanaged, IArchType<TArch, Runner.Position.Vectorized, Runner.Position.Array> 
+            where TArch : unmanaged, IArchType<TArch, Runner.Position.Vectorized, Runner.Position.Array>
+
         {
             LayerSystem system;
 
@@ -70,7 +72,7 @@ namespace Runner
 
 					// Resource Managers
 
-                    system.Update(ref comp1);
+                    system.Update2(ref comp1);
                 }
 
 				

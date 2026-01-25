@@ -8,7 +8,8 @@ namespace Runner
 	public partial class PositionSystem
 	{
 		public ref struct SystemUpdater_0<TArch> : ISystemUpdater<SystemUpdater_0<TArch>, TArch, Context>
-            where TArch : unmanaged, IArchType<TArch, Runner.Position.Vectorized, Runner.Position.Array>, IArchType<TArch, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array> 
+            where TArch : unmanaged, IArchType<TArch, Runner.Position.Vectorized, Runner.Position.Array>, IArchType<TArch, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>
+
         {
             PositionSystem system;
 
@@ -35,10 +36,8 @@ namespace Runner
 
 					ref var comp2 = ref Runner.MeshResourceManager.TestResource.FromArray(ref single2, i, MeshResourceManager).TestResourceProp;// Resource Managers
 
-                    system.Update(ref comp1, ref comp2);
+                    system.Update(ref context.TestContext, ref comp1, ref comp2);
                 }
-
-				system.Update(ref vec1);
 
 				
             }
@@ -46,11 +45,11 @@ namespace Runner
 
 		public ref struct Context
 		{
-			
+			public ref TestContext TestContext;
 
-			public Context()
+			public Context(ref TestContext TestContext)
 			{
-				
+				this.TestContext = ref TestContext;
 			}
 		}
 	}
