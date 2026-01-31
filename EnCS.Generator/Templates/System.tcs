@@ -39,6 +39,27 @@ namespace $namespace
 
 				$groupPostLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
             }
+
+            public void Invoke(int idx, ref TArch slice, ref Context context)
+            {
+				$groupPreLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
+
+                $groupComponents|$compType == "Component"|~>ref |$compName|.Vectorized vec|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref slice);
+                ref |$compName|.Array single|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref slice);<~~>\n				<~ // Components
+
+                $groupComponents|$compType == "Resource"|~>ref |$compName|.Array single|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref slice);<~~>\n				<~ // Resource
+
+                $groupMethods|$methodType == "Single"|~>
+                {
+                    $methodComponents|$compType == "Component"|~>var comp|$compIdx| = |$compName|.FromArray(ref single|$compIdx|, idx);<~~>\n					<~ // Components
+
+					$methodComponents|$compType == "Resource"|~>ref var comp|$compIdx| = ref |$compResourceManager.resourceManagerNamespace|.|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerInType|.FromArray(ref single|$compIdx|, idx, |$compResourceManager.resourceManagerName|).|$compResourceManager.resourceManagerInType|Prop;<~~>\n					<~ // Resource Managers
+
+                    system.|$methodName|($methodComponents|$compType == "Component"|~>ref comp|$compIdx|<~|$compType == "Resource"|~>ref comp|$compIdx|<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );
+                }<~~>\n\n				<~\n
+
+				$groupPostLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
+            }
         }<~~>\n\n		<~ 
 
 		public ref struct Context

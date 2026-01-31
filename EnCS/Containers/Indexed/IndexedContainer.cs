@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 
 namespace EnCS
 {
-	public unsafe struct IndexedContainer<TArch, TPtr> : IIndexedContainer<IndexedContainer<TArch, TPtr>, TArch>
+	public unsafe struct IndexedContainer<TArch, TPtr> : IIndexedContainer<IndexedContainer<TArch, TPtr>, TArch, TPtr>
 		where TArch : unmanaged
 		where TPtr : allows ref struct
 	{
-		const int INITIAL_CONTAINER_SIZE = 1_000_000;
+		const int INITIAL_CONTAINER_SIZE = 1024;
 
 		static nuint DataSize = (nuint)sizeof(TArch);
 
@@ -61,13 +61,13 @@ namespace EnCS
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ref TArch GetVec(ArchRef<TPtr> ptr)
+		public ref TArch GetValue(ArchRef<TPtr> ptr)
 		{
 			return ref buff[map[ptr.idx]];
 		}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref TArch Get(nint idx)
+        public ref TArch GetValue(nint idx)
         {
             return ref buff[idx];
         }

@@ -64,6 +64,40 @@ namespace Runner
 			public FixedBuffer8<float> z;
 		}
 
+		public struct Memory
+		{
+			public Memory<float> x;
+			public Memory<float> y;
+			public Memory<float> z;
+
+			public Memory(int length)
+			{
+				this.x = new float[length];
+				this.y = new float[length];
+				this.z = new float[length];
+			}
+
+			public Position.Span AsSpan()
+			{
+				return new Position.Span(in this);
+			}
+		}
+
+		public ref struct Span
+		{
+			public Span<float> x;
+			public Span<float> y;
+			public Span<float> z;
+
+			public Span(ref readonly Memory<Position.Memory> memory)
+			{
+				this.x = memory.Span.x;
+				this.y = memory.Span.y;
+				this.z = memory.Span.z;
+			}
+		}
+
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 		{

@@ -52,6 +52,32 @@ namespace Runner
 			public FixedBuffer8<int> tag;
 		}
 
+		public struct Memory
+		{
+			public Memory<int> tag;
+
+			public Memory(int length)
+			{
+				this.tag = new int[length];
+			}
+
+			public TestComp123.Span AsSpan()
+			{
+				return new TestComp123.Span(in this);
+			}
+		}
+
+		public ref struct Span
+		{
+			public Span<int> tag;
+
+			public Span(ref readonly Memory<TestComp123.Memory> memory)
+			{
+				this.tag = memory.Span.tag;
+			}
+		}
+
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 		{

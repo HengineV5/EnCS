@@ -51,6 +51,32 @@ namespace $namespace
 			$members~>public FixedBuffer8<$type> $name;<~~>\n			<~
 		}
 
+		public struct Memory
+		{
+			$members~>public Memory<$type> $name;<~~>\n			<~
+
+			public Memory(int length)
+			{
+				$members~>this.$name = new $type[length];<~~>\n				<~
+			}
+
+			public |$compName|.Span AsSpan()
+			{
+				return new |$compName|.Span(in this);
+			}
+		}
+
+		public ref struct Span
+		{
+			$members~>public Span<$type> $name;<~~>\n			<~
+
+			public Span(ref readonly Memory<|$compName|.Memory> memory)
+			{
+				$members~>this.$name = memory.Span.$name;<~~>\n				<~
+			}
+		}
+
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
 		{

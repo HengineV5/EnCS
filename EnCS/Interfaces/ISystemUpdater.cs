@@ -5,6 +5,8 @@
         where TArch : unmanaged
     {
 		void Invoke(nint remaining, ref TArch arch);
+
+		void Invoke(int idx, ref TArch arch);
     }
 
 	public interface ISystemUpdater<TSelf, TArch, TContext>
@@ -13,5 +15,7 @@
         where TContext : allows ref struct
     {
         void Invoke(nint remaining, ref TArch arch, ref TContext context);
+
+        void Invoke(int idx, ref TArch arch, ref TContext context);
     }
 }

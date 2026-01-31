@@ -41,6 +41,27 @@ namespace Runner
 
 				
             }
+
+            public void Invoke(int idx, ref TArch slice, ref Context context)
+            {
+				
+
+                ref Runner.Position.Vectorized vec1 = ref ArchGetter<TArch, Runner.Position.Vectorized, Runner.Position.Array>.GetVec(ref slice);
+                ref Runner.Position.Array single1 = ref ArchGetter<TArch, Runner.Position.Vectorized, Runner.Position.Array>.GetSingle(ref slice);// Components
+
+                ref Runner.MeshResourceManager.TestResource.Array single2 = ref ArchGetter<TArch, Runner.MeshResourceManager.TestResource.Vectorized, Runner.MeshResourceManager.TestResource.Array>.GetSingle(ref slice);// Resource
+
+                
+                {
+                    var comp1 = Runner.Position.FromArray(ref single1, idx);// Components
+
+					ref var comp2 = ref Runner.MeshResourceManager.TestResource.FromArray(ref single2, idx, MeshResourceManager).TestResourceProp;// Resource Managers
+
+                    system.Update(ref context.TestContext, ref comp1, ref comp2);
+                }
+
+				
+            }
         } 
 
 		public ref struct Context

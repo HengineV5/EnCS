@@ -11,5 +11,12 @@ namespace EnCS
         {
 			return new SequentialEnumerator<TContainer, TArch>(ref container);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static MappedEnumerator<TContainer, TArch> CreateMapped<TContainer>(ref TContainer container, ReadOnlySpan<int> map)
+            where TContainer : IIndexedContainer<TContainer, TArch>
+        {
+            return new MappedEnumerator<TContainer, TArch>(ref container, map);
+        }
 	}
 }

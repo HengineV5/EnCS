@@ -37,6 +37,31 @@ namespace $namespace
 					return ref arch._$compVarName;
 				}<~~>\n\n				<~
 			}
+
+			public struct Memory
+			{
+				$archTypeComponents~>public |$compName|.Memory $compVarName;<~~>\n				<~
+
+				public Memory(int length)
+				{
+					$archTypeComponents~>this.$compVarName = new |$compName|(length);<~~>\n					<~
+				}
+
+				public |$archTypeName|.Span AsSpan()
+				{
+					return new |$archTypeName|.Span(in this);
+				}
+			}
+
+			public ref struct Span
+			{
+				$archTypeComponents~>public |$compName|.Span $compVarName;<~~>\n				<~
+
+				public Span(ref readonly |$archTypeName|.Memory memory)
+				{
+					$archTypeComponents~>this.$compVarName = new(memory.$compVarName);<~~>\n					<~
+				}
+			}
 		}<~~>\n\n		<~
 	}
 
@@ -47,7 +72,7 @@ namespace $namespace
 		$archTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static |$ecsName|.|$archTypeName| Get(this ref IndexedContainer<|$ecsName|.|$archTypeName|.Vectorized, |$ecsName|.|$archTypeName|> container, ArchRef<|$ecsName|.$archTypeName> ptr$archTypeResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
 		{
-			return |$ecsName|.|$archTypeName|.FromArchType(ref container.GetVec(ptr), (int)ptr.idx & 7$archTypeResourceManagers~>, $resourceManagerName<~);
+			return |$ecsName|.|$archTypeName|.FromArchType(ref container.GetValue(ptr), (int)ptr.idx & 7$archTypeResourceManagers~>, $resourceManagerName<~);
 		}<~~>\n\n		<~
 	}
 }

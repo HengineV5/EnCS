@@ -5,7 +5,8 @@ using System.Text;
 
 namespace EnCS
 {
-    public static partial class Looper<TArch1>
+
+	public static partial class Looper<TArch1>
         where TArch1 : unmanaged
     {
         public static void LoopIndexed<TContainer1, TUpdater1>(ref TContainer1 container1, TUpdater1 updater1)
