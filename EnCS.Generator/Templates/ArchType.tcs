@@ -6,7 +6,7 @@ namespace $namespace
 {
 	public partial class $ecsName
 	{
-		$archTypes~>public ref struct $archTypeName
+		$archTypes~>public ref struct $archTypeName : $archTypeComponents~>IArchType<|$archTypeName|, |$compName|><~~>, <~
 		{
 			$archTypeComponents~>public |$compName| $compVarName;<~~>\n			<~
 
@@ -15,64 +15,72 @@ namespace $namespace
 				$archTypeComponents~>this.$compVarName = $compVarName;<~~>\n				<~
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static $archTypeName FromArchType(ref |$archTypeName|.Vectorized archType, int idx$archTypeResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
+			$archTypeComponents~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			static ref |$compName| IArchType<|$archTypeName|, |$compName|>.Get(ref |$archTypeName| arch)
 			{
-				return new |$archTypeName|($archTypeComponents|$compType == "Component"|~>|$compName|.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType._$compVarName), idx)<~|$compType == "Resource"|~>|$compName|.FromArray(ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref archType._$compVarName), idx, |$compResourceManager.resourceManagerName|)<~~>, \n					<~ );
-			}
+				return ref arch.$compVarName;
+			}<~~>\n\n			<~
 
-			public struct Vectorized : $archTypeComponents~>IArchType<|$archTypeName|.Vectorized, |$compName|.Vectorized, |$compName|.Array><~~>, <~
+			public ref struct Vectorized : $archTypeComponents~>IArchType<|$archTypeName|.Vectorized, |$compName|.Vectorized><~~>, <~
 			{
 				$archTypeComponents~>public |$compName|.Vectorized _$compVarName;<~~>\n				<~
 
 				$archTypeComponents~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				static ref |$compName|.Array IArchType<|$archTypeName|.Vectorized, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref |$archTypeName|.Vectorized arch)
-				{
-					return ref Unsafe.As<|$compName|.Vectorized, |$compName|.Array>(ref arch._$compVarName);
-				}
-
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				static ref |$compName|.Vectorized IArchType<|$archTypeName|.Vectorized, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref |$archTypeName|.Vectorized arch)
+				static ref |$compName|.Vectorized IArchType<|$archTypeName|.Vectorized, |$compName|.Vectorized>.Get(ref |$archTypeName|.Vectorized arch)
 				{
 					return ref arch._$compVarName;
 				}<~~>\n\n				<~
 			}
 
-			public struct Memory
+			public struct Memory : IArchMemory<Memory, |$archTypeName|.Vectorized, |$archTypeName|>
 			{
 				$archTypeComponents~>public |$compName|.Memory $compVarName;<~~>\n				<~
 
 				public Memory(int length)
 				{
-					$archTypeComponents~>this.$compVarName = new |$compName|(length);<~~>\n					<~
+					$archTypeComponents~>this.$compVarName = new |$compName|.Memory(length);<~~>\n					<~
 				}
 
-				public |$archTypeName|.Span AsSpan()
+				|$archTypeName|.Vectorized IArchMemory<Memory, |$archTypeName|.Vectorized, |$archTypeName|>.GetVec(nint idx)
 				{
-					return new |$archTypeName|.Span(in this);
+					return new |$archTypeName|.Vectorized
+					{
+						$archTypeComponents~>_$compVarName = this.|$compVarName|.GetVec((int)idx),<~~>\n						<~
+					};
+				}
+
+				|$archTypeName| IArchMemory<Memory, |$archTypeName|.Vectorized, |$archTypeName|>.GetSingle(nint idx)
+				{
+					return new |$archTypeName|
+					{
+						$archTypeComponents~>$compVarName = this.|$compVarName|.GetSingle((int)idx),<~~>\n						<~
+					};
+				}
+
+				UtilLib.Memory.FixedRefBuffer8<|$archTypeName|> IArchMemory<Memory, |$archTypeName|.Vectorized, |$archTypeName|>.GetSingleArray(nint idx)
+				{
+					UtilLib.Memory.FixedRefBuffer8<|$archTypeName|> buffer = new();
+					nint start = idx / 8;
+
+					/* TODO FIX
+					buffer[0] = this.GetSingle(start + 0);
+					buffer[1] = this.GetSingle(start + 1);
+					buffer[2] = this.GetSingle(start + 2);
+					buffer[3] = this.GetSingle(start + 3);
+					buffer[4] = this.GetSingle(start + 4);
+					buffer[5] = this.GetSingle(start + 5);
+					buffer[6] = this.GetSingle(start + 6);
+					buffer[7] = this.GetSingle(start + 7);
+					*/
+
+					return buffer;
+				}
+
+				static Memory IArchMemory<Memory, |$archTypeName|.Vectorized, |$archTypeName|>.Create(int length)
+				{
+					return new Memory(length);
 				}
 			}
-
-			public ref struct Span
-			{
-				$archTypeComponents~>public |$compName|.Span $compVarName;<~~>\n				<~
-
-				public Span(ref readonly |$archTypeName|.Memory memory)
-				{
-					$archTypeComponents~>this.$compVarName = new(memory.$compVarName);<~~>\n					<~
-				}
-			}
-		}<~~>\n\n		<~
-	}
-
-	public static class |$ecsName|_ContainerExtensions
-	{
-		// TODO: Generate create method
-
-		$archTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static |$ecsName|.|$archTypeName| Get(this ref IndexedContainer<|$ecsName|.|$archTypeName|.Vectorized, |$ecsName|.|$archTypeName|> container, ArchRef<|$ecsName|.$archTypeName> ptr$archTypeResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
-		{
-			return |$ecsName|.|$archTypeName|.FromArchType(ref container.GetValue(ptr), (int)ptr.idx & 7$archTypeResourceManagers~>, $resourceManagerName<~);
 		}<~~>\n\n		<~
 	}
 }

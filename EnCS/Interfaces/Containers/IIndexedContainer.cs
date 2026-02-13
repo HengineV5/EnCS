@@ -1,17 +1,22 @@
-﻿namespace EnCS
-{
-	public interface IIndexedContainer<TSelf, TArch> : IContainer<TSelf, TArch>
-		where TSelf : IIndexedContainer<TSelf, TArch>, allows ref struct
-		where TArch : unmanaged
-	{
-		ref TArch GetValue(nint idx);
-    }
+﻿using System.Runtime.CompilerServices;
+using UtilLib.Memory;
 
-	public interface IIndexedContainer<TSelf, TArch, TPtr> : IIndexedContainer<TSelf, TArch>
-		where TSelf : IIndexedContainer<TSelf, TArch>, allows ref struct
-		where TArch : unmanaged
-		where TPtr : allows ref struct
+namespace EnCS
+{
+	public interface IIndexedContainer<TVec, TSingle> : IContainer
+		where TVec : allows ref struct
+		where TSingle : allows ref struct
 	{
-		ref TArch GetValue(ArchRef<TPtr> ptr);
-    }
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		TSingle GetSingle(nint idx);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		TSingle GetSingle(ref readonly ArchRef<TSingle> ptr);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		FixedRefBuffer8<TSingle> GetSingleArray(nint idx);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		TVec GetVec(nint idx);
+	}
 }

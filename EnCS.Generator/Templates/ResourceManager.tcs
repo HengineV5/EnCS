@@ -1,5 +1,6 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using EnCS;
 using EnCS.Attributes;
 using UtilLib.Memory;
@@ -12,53 +13,59 @@ namespace $namespace
 		$resourceManagers~>[Component]
 		public ref struct $resourceManagerInType
 		{
-			public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| |$resourceManagerInType|Prop => ref resourceManager.Get(id);
-
 			ref uint id;
-			$resourceManagerName resourceManager;
 
-			public |$resourceManagerInType|(ref uint id, $resourceManagerName resourceManager)
+			public |$resourceManagerInType|(ref uint id)
 			{
 				this.id = ref id;
-				this.resourceManager = resourceManager;
 			}
 
-			public struct Vectorized
+			public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| Get($resourceManagerName resourceManager)
 			{
-				public Vector256<uint> id;
+				return ref resourceManager.Get(id);
 			}
 
-			[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-			public struct Array
+			public ref struct Vectorized
 			{
-				public const int Size = 8;
-
-				public FixedBuffer8<uint> id;
+				public ref Vector256<uint> id;
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
+			public struct Memory
 			{
-				return ref TArch.GetVec(ref arch);
+				public Memory<uint> id;
+
+				public Memory(int length)
+				{
+					this.id = new uint[length];
+				}
+
+				public |$resourceManagerInType|.Vectorized GetVec(int idx)
+				{
+					idx /= 8;
+					idx *= 8;
+
+					return new |$resourceManagerInType|.Vectorized
+					{
+						id = ref Unsafe.As<uint, Vector256<uint>>(ref this.id.Span[idx]),
+					};
+				}
+
+				public |$resourceManagerInType| GetSingle(int idx)
+				{
+					return new |$resourceManagerInType|
+					(
+						ref this.id.Span[idx]
+					);
+				}
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
-			{
-				return ref TArch.GetSingle(ref arch);
-			}
-
+			/*
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Set(in |$resourceManagerTypeNamespace|.|$resourceManagerInType| data)
 			{
 				this.id = resourceManager.Store(data);
 			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static $resourceManagerInType FromArray(ref Array array, int idx, $resourceManagerName resourceManager)
-			{
-				return new |$resourceManagerInType|(ref array.id[idx], resourceManager);
-			}
+			*/
 		}<~~>\n		<~
 	}
 }

@@ -1,16 +1,13 @@
 ﻿namespace EnCS
 {
-	public interface IHierarchicalContainer<TSelf, TArch, TPtr> : IContainer<TSelf, TArch>
-		where TSelf : IHierarchicalContainer<TSelf, TArch, TPtr>, allows ref struct
-		where TArch : unmanaged
-		where TPtr : allows ref struct
+	public interface IHierarchicalContainer<TVec, TSingle> : IContainer
+		where TVec : allows ref struct
+		where TSingle : allows ref struct
 	{
-		ChildrenEnumerator<TPtr, TArch> GetChildren(in ArchRef<TPtr> parentPtr);
+		ChildrenEnumerator<TSingle> GetChildren(ref readonly ArchRef<TSingle> parentPtr);
 
-		Span<TArch> GetChildrenValues(ArchRef<TPtr> parentPtr);
+		ArchRef<TSingle> GetRoot();
 
-		ArchRef<TPtr> GetRoot();
-
-		ref TArch GetValue(ArchRef<TPtr> ptr);
+		TSingle GetSingle(ref readonly ArchRef<TSingle> ptr);
 	}
 }

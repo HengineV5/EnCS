@@ -1,5 +1,6 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using EnCS;
 using UtilLib.Memory;
 
@@ -22,15 +23,9 @@ namespace $namespace
 			$members~>this.$name = c.|$name|;<~~>\n			<~
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static $compName FromArray(ref Array array, int idx)
+		public ref struct Vectorized
 		{
-			return new |$compName|($members~>ref array.$name[idx]<~~>, <~);
-		}
-
-		public struct Vectorized
-		{
-			$members|$arraySize < 2|~>public Vector|$bits|<$type> $name;<~|$arraySize > 1|~>public FixedBuffer|$arraySize|<Vector|$bits|<$type>> $name;<~~>\n			<~\n
+			$members|$arraySize < 2|~>public ref Vector|$bits|<$type> $name;<~|$arraySize > 1|~>public ref FixedBuffer|$arraySize|<Vector|$bits|<$type>> $name;<~~>\n			<~\n
 		}
 
 		public struct Comp
@@ -43,14 +38,6 @@ namespace $namespace
 			}
 		}
 
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-		public struct Array
-		{
-			public const int Size = $arraySize;
-
-			$members~>public FixedBuffer8<$type> $name;<~~>\n			<~
-		}
-
 		public struct Memory
 		{
 			$members~>public Memory<$type> $name;<~~>\n			<~
@@ -60,33 +47,24 @@ namespace $namespace
 				$members~>this.$name = new $type[length];<~~>\n				<~
 			}
 
-			public |$compName|.Span AsSpan()
+			public |$compName|.Vectorized GetVec(int idx)
 			{
-				return new |$compName|.Span(in this);
+				idx /= 8;
+				idx *= 8;
+
+				return new |$compName|.Vectorized
+				{
+					$members|$arraySize < 2|~> |$name| = ref Unsafe.As<$type, Vector|$bits|<$type>>(ref this.|$name|.Span[idx]),<~|$arraySize > 1|~> |$name| = ref Unsafe.As<$type, FixedBuffer|$arraySize|<Vector|$bits|<$type>>>(ref this.|$name|.Span.Slice[idx]),<~~>\n					<~///
+				};
 			}
-		}
 
-		public ref struct Span
-		{
-			$members~>public Span<$type> $name;<~~>\n			<~
-
-			public Span(ref readonly Memory<|$compName|.Memory> memory)
+			public |$compName| GetSingle(int idx)
 			{
-				$members~>this.$name = memory.Span.$name;<~~>\n				<~
+				return new |$compName|
+				(
+					$members~>ref this.|$name|.Span[idx]<~~>, \n					<~
+				);
 			}
-		}
-
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
-		{
-			return ref TArch.GetVec(ref arch);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
-		{
-			return ref TArch.GetSingle(ref arch);
 		}
 	}
 }

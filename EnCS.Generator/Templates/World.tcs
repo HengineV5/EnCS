@@ -8,21 +8,17 @@ namespace $namespace
 	{
 		$worlds~>public ref struct $worldName : $worldSystems~>IWorld<$systemName, |$ecsName|$systemContextArguments~>, $contextType<~ ><~~>, <~
 		{
-			$worldArchTypes~>ref IndexedContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|;<~~>\n			<~
+			$worldArchTypes~>ref IndexedContainer<|$archTypeName|.Memory, |$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|;<~~>\n			<~
 
-			$worldResourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName;<~~>\n			<~
-
-			public $worldName($worldArchTypes~>ref IndexedContainer<|$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|<~~>, <~$worldResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
+			public $worldName($worldArchTypes~>ref IndexedContainer<|$archTypeName|.Memory, |$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|<~~>, <~)
 			{
 				$worldArchTypes~>this.container|$archTypeName| = ref container|$archTypeName|;<~~>\n				<~
-
-				$worldResourceManagers~>this.|$resourceManagerName| = $resourceManagerName;<~~>\n				<~
 			}
 
 			$worldArchTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public ArchRef<$archTypeName> Create(ref readonly |$archTypeName|.Vectorized data)
+			ArchRef<$archTypeName> Create|$archTypeName|()
 			{
-				return container|$archTypeName|.Create(data);
+				return container|$archTypeName|.Create();
 			}
 
 			public void Delete(ref readonly ArchRef<$archTypeName> ptr)
@@ -33,17 +29,17 @@ namespace $namespace
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public |$archTypeName| Get(ref readonly ArchRef<$archTypeName> ptr)
 			{
-				return container|$archTypeName|.Get(ptr$archTypeResourceManagers~>, $resourceManagerName<~);
+				return container|$archTypeName|.GetSingle(ptr);
 			}<~~>\n\n			<~
 
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop($systemName system$systemContextArguments~>, ref $contextType context$contextType<~)
 			{
-				$systemContainers~>$systemLayers~>|$systemName|.SystemUpdater_|$groupIdx|<|$containerName|.Vectorized> updater|$containerName|_|$groupIdx| = new(system$containerResourceManagers~>, $resourceManagerName<~);<~~>\n				<~<~~>\n\n				<~
+				$systemContainers~>$systemLayers~>|$systemName|.SystemUpdater_|$groupIdx|<|$containerName|.Vectorized, |$containerName|> updater|$containerName|_|$groupIdx| = new(system$containerResourceManagers~>, $resourceManagerName<~);<~~>\n				<~<~~>\n\n				<~
 
 				|$systemName|.Context context = new($systemContextArguments~>ref context$contextType<~~>, <~);
 
-				$systemContainers~>Looper<|$containerName|.Vectorized>.LoopIndexed(ref container|$containerName|, $systemLayers~>updater|$containerName|_|$groupIdx|, <~ref context);<~~>\n				<~
+				$systemContainers~>Looper<|$containerName|.Vectorized, |$containerName|>.LoopIndexed(ref container|$containerName|, $systemLayers~>updater|$containerName|_|$groupIdx|, <~ref context);<~~>\n				<~
 			}<~~>\n\n			<~
 
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]

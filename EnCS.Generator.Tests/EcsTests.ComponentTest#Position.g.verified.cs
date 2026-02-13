@@ -27,17 +27,11 @@ namespace Runner
 			this.z = c.z;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Position FromArray(ref Array array, int idx)
+		public ref struct Vectorized
 		{
-			return new Position(ref array.x[idx], ref array.y[idx], ref array.z[idx]);
-		}
-
-		public struct Vectorized
-		{
-			public Vector256<float> x;
-			public Vector256<float> y;
-			public Vector256<float> z;
+			public ref Vector256<float> x;
+			public ref Vector256<float> y;
+			public ref Vector256<float> z;
 		}
 
 		public struct Comp
@@ -54,16 +48,6 @@ namespace Runner
 			}
 		}
 
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-		public struct Array
-		{
-			public const int Size = 8;
-
-			public FixedBuffer8<float> x;
-			public FixedBuffer8<float> y;
-			public FixedBuffer8<float> z;
-		}
-
 		public struct Memory
 		{
 			public Memory<float> x;
@@ -75,6 +59,27 @@ namespace Runner
 				this.x = new float[length];
 				this.y = new float[length];
 				this.z = new float[length];
+			}
+
+			public Position.Vectorized GetVec(int idx)
+			{
+				idx /= 8;
+
+				return new Position.Vectorized
+				{
+					 x = ref MemoryMarshal.AsRef<Vector256<float>>(this.x.Span.Slice(idx, 8)),
+					 y = ref MemoryMarshal.AsRef<Vector256<float>>(this.y.Span.Slice(idx, 8)),
+					 z = ref MemoryMarshal.AsRef<Vector256<float>>(this.z.Span.Slice(idx, 8)),//
+				};
+			}
+
+			public Position GetSingle(int idx)
+			{
+				return new Position(
+					ref this.x.Span[idx],
+					ref this.y.Span[idx],
+					ref this.z.Span[idx],
+				);
 			}
 
 			public Position.Span AsSpan()
@@ -95,19 +100,6 @@ namespace Runner
 				this.y = memory.Span.y;
 				this.z = memory.Span.z;
 			}
-		}
-
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
-		{
-			return ref TArch.GetVec(ref arch);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
-		{
-			return ref TArch.GetSingle(ref arch);
 		}
 	}
 }

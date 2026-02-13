@@ -13,52 +13,69 @@ namespace Runner
 		[Component]
 		public ref struct TestResource
 		{
-			public ref Runner.TestResourceId TestResourceProp => ref resourceManager.Get(id);
-
 			ref uint id;
-			MeshResourceManager resourceManager;
 
-			public TestResource(ref uint id, MeshResourceManager resourceManager)
+			public TestResource(ref uint id)
 			{
 				this.id = ref id;
-				this.resourceManager = resourceManager;
 			}
 
-			public struct Vectorized
+			public Runner.TestResourceId Get(MeshResourceManager resourceManager)
 			{
-				public Vector256<uint> id;
+				return resourceManager.Get(id);
 			}
 
-			[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-			public struct Array
+			public ref struct Vectorized
 			{
-				public const int Size = 8;
-
-				public FixedBuffer8<uint> id;
+				public ref Vector256<uint> id;
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
+			public struct Memory
 			{
-				return ref TArch.GetVec(ref arch);
+				public Memory<uint> id;
+
+				public Memory(int length)
+				{
+					this.id = new uint[length];
+				}
+
+				public TestResource.Vectorized GetVec(int idx)
+				{
+					idx /= 8;
+
+					return new TestResource.Vectorized
+					{
+						id = ref MemoryMarshal.AsRef<Vector256<uint>>(this.id.Span.Slice(idx, 8)),
+					};
+				}
+
+				public TestResource GetSingle(int idx)
+				{
+					return new TestResource(
+						ref this.id.Span[idx]
+					);
+				}
+
+				public TestResource.Span AsSpan()
+				{
+					return new TestResource.Span(in this);
+				}
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
+			public ref struct Span
 			{
-				return ref TArch.GetSingle(ref arch);
+				public Span<uint> id;
+
+				public Span(ref readonly Memory<TestResource.Memory> memory)
+				{
+					this.id = memory.Span.id;
+				}
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Set(in Runner.TestResource data)
 			{
 				this.id = resourceManager.Store(data);
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static TestResource FromArray(ref Array array, int idx, MeshResourceManager resourceManager)
-			{
-				return new TestResource(ref array.id[idx], resourceManager);
 			}
 		}
 	}

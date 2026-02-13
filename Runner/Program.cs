@@ -165,13 +165,13 @@ namespace Runner
 	partial class LayerSystem
     {
 		[SystemUpdate, SystemLayer(0)]
-		public void Update1(ref Velocity velocity)
+		public void Update1(scoped ref Velocity velocity)
 		{
 			Console.WriteLine($"Tag: {velocity.x}");
 		}
 
 		[SystemUpdate, SystemLayer(1)]
-		public void Update2(ref Position position)
+		public void Update2(scoped ref Position position)
 		{
 			Console.WriteLine($"\t{position.x}");
 		}
@@ -217,46 +217,46 @@ namespace Runner
 			/*
 			*/
 
-			IndexedContainer<Wall.Vectorized, Wall> containerWall = new();
-			var r0 = containerWall.Create(new Wall.Vectorized());
+			IndexedContainer<Wall.Memory, Wall.Vectorized, Wall> containerWall = new();
+			var r0 = containerWall.Create();
 
 			{
-				Wall w = containerWall.Get(r0, new());
+				Wall w = containerWall.GetSingle(in r0);
 				w.Position.Set(new Vector3(2, 0, 0));
 			}
 
-			containerWall.Create(new Wall.Vectorized());
-			containerWall.Create(new Wall.Vectorized());
-			containerWall.Create(new Wall.Vectorized());
-			containerWall.Create(new Wall.Vectorized());
-			containerWall.Create(new Wall.Vectorized());
-			containerWall.Create(new Wall.Vectorized());
-			containerWall.Create(new Wall.Vectorized());
-			containerWall.Create(new Wall.Vectorized());
-			var r = containerWall.Create(new Wall.Vectorized());
+			containerWall.Create();
+			containerWall.Create();
+			containerWall.Create();
+			containerWall.Create();
+			containerWall.Create();
+			containerWall.Create();
+			containerWall.Create();
+			containerWall.Create();
+			var r = containerWall.Create();
 
-			Wall wall = containerWall.Get(r, new());
+			Wall wall = containerWall.GetSingle(r);
 			wall.Position.Set(new Vector3(5, 0, 0));
 
-			HierarchicalContainer<Wall.Vectorized, Wall> containerWallH = new();
+			HierarchicalContainer<Wall.Memory, Wall.Vectorized, Wall> containerWallH = new();
 
 
 			PrintSystem printSystem = new();
-			PrintSystem.SystemUpdater_0<Wall.Vectorized> positionUpdater = new(printSystem);
+			PrintSystem.SystemUpdater_0<Wall.Vectorized, Wall> positionUpdater = new(printSystem);
 
             PrintSystem_2 printSystem2 = new();
-			PrintSystem_2.SystemUpdater_0<Wall.Vectorized> position2Updater = new(printSystem2);
+			PrintSystem_2.SystemUpdater_0<Wall.Vectorized, Wall> position2Updater = new(printSystem2);
 			PrintSystem_2.Context printSystemContext = new();
 
 			LayerSystem layerSystem = new();
-            LayerSystem.SystemUpdater_0<Wall.Vectorized> layerUpdater_0 = new(layerSystem);
-            LayerSystem.SystemUpdater_1<Wall.Vectorized> layerUpdater_1 = new(layerSystem);
-
+            LayerSystem.SystemUpdater_0<Wall.Vectorized, Wall> layerUpdater_0 = new(layerSystem);
+            LayerSystem.SystemUpdater_1<Wall.Vectorized, Wall> layerUpdater_1 = new(layerSystem);
+			
             //Looper<Wall.Vectorized>.Loop(ref posEnum, positionUpdater);
             //Looper<Wall.Vectorized>.Loop(ref posEnum, position2Updater);
-            Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, position2Updater, ref printSystemContext);
-            Looper<Wall.Vectorized>.LoopMapped(ref containerWall, position2Updater, [0, 1, 8, 9, 10], ref printSystemContext);
-            Looper<Wall.Vectorized>.LoopHierarchical(ref containerWallH, position2Updater, containerWallH.GetRoot(), ref printSystemContext);
+            Looper<Wall.Vectorized, Wall>.LoopIndexed(ref containerWall, position2Updater, ref printSystemContext);
+            Looper<Wall.Vectorized, Wall>.LoopMapped(ref containerWall, position2Updater, [0, 1, 8, 9, 10], ref printSystemContext);
+            Looper<Wall.Vectorized, Wall>.LoopHierarchical(ref containerWallH, position2Updater, containerWallH.GetRoot(), ref printSystemContext);
             //Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, layerUpdater_0, layerUpdater_1);
 		}
     }

@@ -6,217 +6,227 @@ using System.Text;
 namespace EnCS
 {
 
-	public static partial class Looper<TArch1>
-        where TArch1 : unmanaged
+	public static partial class Looper<TVec, TSingle>
+        where TVec : allows ref struct
+        where TSingle : allows ref struct
     {
         public static void LoopIndexed<TContainer1, TUpdater1>(ref TContainer1 container1, TUpdater1 updater1)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1>, allows ref struct
+            where TContainer1 : IIndexedContainer<TVec, TSingle>
+            where TUpdater1 : ISystemUpdater<TVec, TSingle>, allows ref struct
         {
-            var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
+            var @enum = EnumeratorCreator<TVec, TSingle>.CreateSequential(ref container1);
             @enum.Reset();
 
             while (@enum.MoveNext())
             {
-                updater1.Invoke(@enum.Remaining, ref @enum.Current);
+                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray);
             }
         }
 
         public static void LoopIndexed<TContainer1, TUpdater1, TContext>(ref TContainer1 container1, TUpdater1 updater1, ref TContext context)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
+            where TContainer1 : IIndexedContainer<TVec, TSingle>
+            where TUpdater1 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
             where TContext : allows ref struct
 		{
-            var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
+            var @enum = EnumeratorCreator<TVec, TSingle>.CreateSequential(ref container1);
             @enum.Reset();
 
             while (@enum.MoveNext())
             {
-                updater1.Invoke(@enum.Remaining, ref @enum.Current, ref context);
+                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray, ref context);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LoopIndexed<TContainer1, TUpdater1, TUpdater2>(ref TContainer1 enum1, TUpdater1 updater1, TUpdater2 updater2)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1>, allows ref struct
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch1>, allows ref struct
-            => Looper<TArch1, TArch1>.LoopIndexed(ref enum1, updater1, ref enum1, updater2);
+            where TContainer1 : IIndexedContainer<TVec, TSingle>
+            where TUpdater1 : ISystemUpdater<TVec, TSingle>, allows ref struct
+            where TUpdater2 : ISystemUpdater<TVec, TSingle>, allows ref struct
+            => Looper<TVec, TSingle, TVec, TSingle>.LoopIndexed(ref enum1, updater1, ref enum1, updater2);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LoopIndexed<TContainer1, TUpdater1, TUpdater2, TContext>(ref TContainer1 enum1, TUpdater1 updater1, TUpdater2 updater2, ref TContext context)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch1, TContext>, allows ref struct
+            where TContainer1 : IIndexedContainer<TVec, TSingle>
+            where TUpdater1 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
+            where TUpdater2 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
 			where TContext : allows ref struct
-			=> Looper<TArch1, TArch1>.LoopIndexed(ref enum1, updater1, ref enum1, updater2, ref context);
+			=> Looper<TVec, TSingle, TVec, TSingle>.LoopIndexed(ref enum1, updater1, ref enum1, updater2, ref context);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LoopIndexed<TContainer1, TUpdater1, TUpdater2, TUpdater3>(ref TContainer1 container1, TUpdater1 updater1, TUpdater2 updater2, TUpdater3 updater3)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1>, allows ref struct
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch1>, allows ref struct
-            where TUpdater3 : ISystemUpdater<TUpdater3, TArch1>, allows ref struct
-            => Looper<TArch1, TArch1, TArch1>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3);
+            where TContainer1 : IIndexedContainer<TVec, TSingle>
+            where TUpdater1 : ISystemUpdater<TVec, TSingle>, allows ref struct
+            where TUpdater2 : ISystemUpdater<TVec, TSingle>, allows ref struct
+            where TUpdater3 : ISystemUpdater<TVec, TSingle>, allows ref struct
+            => Looper<TVec, TSingle, TVec, TSingle, TVec, TSingle>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LoopIndexed<TContainer1, TUpdater1, TUpdater2, TUpdater3, TContext>(ref TContainer1 container1, TUpdater1 updater1, TUpdater2 updater2, TUpdater3 updater3, ref TContext context)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch1, TContext>, allows ref struct
-            where TUpdater3 : ISystemUpdater<TUpdater3, TArch1, TContext>, allows ref struct
+            where TContainer1 : IIndexedContainer<TVec, TSingle>
+            where TUpdater1 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
+            where TUpdater2 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
+            where TUpdater3 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
 			where TContext : allows ref struct
-			=> Looper<TArch1, TArch1, TArch1>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref context);
+			=> Looper<TVec, TSingle, TVec, TSingle, TVec, TSingle>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref context);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LoopIndexed<TContainer1, TUpdater1, TUpdater2, TUpdater3, TUpdater4>(ref TContainer1 container1, TUpdater1 updater1, TUpdater2 updater2, TUpdater3 updater3, TUpdater4 updater4)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1>, allows ref struct
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch1>, allows ref struct
-            where TUpdater3 : ISystemUpdater<TUpdater3, TArch1>, allows ref struct
-            where TUpdater4 : ISystemUpdater<TUpdater4, TArch1>, allows ref struct
-            => IndexedLooper<TArch1, TArch1, TArch1, TArch1>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref container1, updater4);
+            where TContainer1 : IIndexedContainer<TVec, TSingle>
+            where TUpdater1 : ISystemUpdater<TVec, TSingle>, allows ref struct
+            where TUpdater2 : ISystemUpdater<TVec, TSingle>, allows ref struct
+            where TUpdater3 : ISystemUpdater<TVec, TSingle>, allows ref struct
+            where TUpdater4 : ISystemUpdater<TVec, TSingle>, allows ref struct
+            => IndexedLooper<TVec, TSingle, TVec, TSingle, TVec, TSingle, TVec, TSingle>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref container1, updater4);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LoopIndexed<TContainer1, TUpdater1, TUpdater2, TUpdater3, TUpdater4, TContext>(ref TContainer1 container1, TUpdater1 updater1, TUpdater2 updater2, TUpdater3 updater3, TUpdater4 updater4, ref TContext context)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch1, TContext>, allows ref struct
-            where TUpdater3 : ISystemUpdater<TUpdater3, TArch1, TContext>, allows ref struct
-            where TUpdater4 : ISystemUpdater<TUpdater4, TArch1, TContext>, allows ref struct
+            where TContainer1 : IIndexedContainer<TVec, TSingle>
+            where TUpdater1 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
+            where TUpdater2 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
+            where TUpdater3 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
+            where TUpdater4 : ISystemUpdater<TVec, TSingle, TContext>, allows ref struct
 			where TContext : allows ref struct
-			=> IndexedLooper<TArch1, TArch1, TArch1, TArch1>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref container1, updater4, ref context);
+			=> IndexedLooper<TVec, TSingle, TVec, TSingle, TVec, TSingle, TVec, TSingle>.LoopIndexed(ref container1, updater1, ref container1, updater2, ref container1, updater3, ref container1, updater4, ref context);
     }
 
-    public static partial class Looper<TArch1, TArch2>
-        where TArch1 : unmanaged
-        where TArch2 : unmanaged
+    public static partial class Looper<T1Vec, T1Single, T2Vec, T2Single>
+        where T1Vec : allows ref struct
+        where T1Single : allows ref struct
+		where T2Vec : allows ref struct
+		where T2Single : allows ref struct
     {
         public static void LoopIndexed<TContainer1, TUpdater1, TContainer2, TUpdater2>(ref TContainer1 container1, TUpdater1 updater1, ref TContainer2 container2, TUpdater2 updater2)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1>, allows ref struct
-            where TContainer2 : IIndexedContainer<TContainer2, TArch2>
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch2>, allows ref struct
+            where TContainer1 : IIndexedContainer<T1Vec, T1Single>
+            where TUpdater1 : ISystemUpdater<T1Vec, T1Single>, allows ref struct
+            where TContainer2 : IIndexedContainer<T2Vec, T2Single>
+            where TUpdater2 : ISystemUpdater<T2Vec, T2Single>, allows ref struct
         {
-            var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
+            var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
 
             while (@enum.MoveNext())
             {
-                updater1.Invoke(@enum.Remaining, ref @enum.Current);
+                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray);
 
-                Looper<TArch2>.LoopIndexed(ref container2, updater2);
+                Looper<T2Vec, T2Single>.LoopIndexed(ref container2, updater2);
             }
         }
 
         public static void LoopIndexed<TContainer1, TUpdater1, TContainer2, TUpdater2, TContext>(ref TContainer1 container1, TUpdater1 updater1, ref TContainer2 container2, TUpdater2 updater2, ref TContext context)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
-            where TContainer2 : IIndexedContainer<TContainer2, TArch2>
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch2, TContext>, allows ref struct
+            where TContainer1 : IIndexedContainer<T1Vec, T1Single>
+            where TUpdater1 : ISystemUpdater<T1Vec, T1Single, TContext>, allows ref struct
+            where TContainer2 : IIndexedContainer<T2Vec, T2Single>
+            where TUpdater2 : ISystemUpdater<T2Vec, T2Single, TContext>, allows ref struct
 			where TContext : allows ref struct
 		{
-            var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
+            var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
 
             while (@enum.MoveNext())
             {
-                updater1.Invoke(@enum.Remaining, ref @enum.Current, ref context);
+                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray, ref context);
 
-                Looper<TArch2>.LoopIndexed(ref container2, updater2, ref context);
+                Looper<T2Vec, T2Single>.LoopIndexed(ref container2, updater2, ref context);
             }
         }
     }
 
-    public static partial class Looper<TArch1, TArch2, TArch3>
-        where TArch1 : unmanaged
-        where TArch2 : unmanaged
-        where TArch3 : unmanaged
+    public static partial class Looper<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single>
+        where T1Vec : allows ref struct
+		where T1Single : allows ref struct
+		where T2Vec : allows ref struct
+		where T2Single : allows ref struct
+		where T3Vec : allows ref struct
+		where T3Single : allows ref struct
     {
         public static void LoopIndexed<TContainer1, TUpdater1, TContainer2, TUpdater2, TContainer3, TUpdater3>(ref TContainer1 container1, TUpdater1 updater1, ref TContainer2 container2, TUpdater2 updater2, ref TContainer3 container3, TUpdater3 updater3)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1>, allows ref struct
-            where TContainer2 : IIndexedContainer<TContainer2, TArch2>
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch2>, allows ref struct
-            where TContainer3 : IIndexedContainer<TContainer3, TArch3>
-            where TUpdater3 : ISystemUpdater<TUpdater3, TArch3>, allows ref struct
+            where TContainer1 : IIndexedContainer<T1Vec, T1Single>
+            where TUpdater1 : ISystemUpdater<T1Vec, T1Single>, allows ref struct
+            where TContainer2 : IIndexedContainer<T2Vec, T2Single>
+            where TUpdater2 : ISystemUpdater<T2Vec, T2Single>, allows ref struct
+            where TContainer3 : IIndexedContainer<T3Vec, T3Single>
+            where TUpdater3 : ISystemUpdater<T3Vec, T3Single>, allows ref struct
         {
-            var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
+            var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
 
             while (@enum.MoveNext())
             {
-                updater1.Invoke(@enum.Remaining, ref @enum.Current);
+                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray);
 
-                Looper<TArch2, TArch3>.LoopIndexed(ref container2, updater2, ref container3, updater3);
+                Looper<T2Vec, T2Single, T3Vec, T3Single>.LoopIndexed(ref container2, updater2, ref container3, updater3);
             }
         }
 
         public static void LoopIndexed<TContainer1, TUpdater1, TContainer2, TUpdater2, TContainer3, TUpdater3, TContext>(ref TContainer1 container1, TUpdater1 updater1, ref TContainer2 container2, TUpdater2 updater2, ref TContainer3 container3, TUpdater3 updater3, ref TContext context)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
-            where TContainer2 : IIndexedContainer<TContainer2, TArch2>
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch2, TContext>, allows ref struct
-            where TContainer3 : IIndexedContainer<TContainer3, TArch3>
-            where TUpdater3 : ISystemUpdater<TUpdater3, TArch3, TContext>, allows ref struct
+            where TContainer1 : IIndexedContainer<T1Vec, T1Single>
+            where TUpdater1 : ISystemUpdater<T1Vec, T1Single, TContext>, allows ref struct
+            where TContainer2 : IIndexedContainer<T2Vec, T2Single>
+            where TUpdater2 : ISystemUpdater<T2Vec, T2Single, TContext>, allows ref struct
+            where TContainer3 : IIndexedContainer<T3Vec, T3Single>
+            where TUpdater3 : ISystemUpdater<T3Vec, T3Single, TContext>, allows ref struct
 			where TContext : allows ref struct
 		{
-            var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
+            var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
 
             while (@enum.MoveNext())
             {
-                updater1.Invoke(@enum.Remaining, ref @enum.Current, ref context);
+                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray, ref context);
 
-                Looper<TArch2, TArch3>.LoopIndexed(ref container2, updater2, ref container3, updater3, ref context);
+                Looper<T2Vec, T2Single, T3Vec, T3Single>.LoopIndexed(ref container2, updater2, ref container3, updater3, ref context);
             }
         }
     }
 
-    public static partial class IndexedLooper<TArch1, TArch2, TArch3, TArch4>
-        where TArch1 : unmanaged
-        where TArch2 : unmanaged
-        where TArch3 : unmanaged
-        where TArch4 : unmanaged
+    public static partial class IndexedLooper<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single>
+        where T1Vec : allows ref struct
+		where T1Single : allows ref struct
+		where T2Vec : allows ref struct
+		where T2Single : allows ref struct
+		where T3Vec : allows ref struct
+		where T3Single : allows ref struct
+		where T4Vec : allows ref struct
+		where T4Single : allows ref struct
     {
         public static void LoopIndexed<TContainer1, TUpdater1, TContainer2, TUpdater2, TContainer3, TUpdater3, TContainer4, TUpdater4>(ref TContainer1 container1, TUpdater1 updater1, ref TContainer2 container2, TUpdater2 updater2, ref TContainer3 container3, TUpdater3 updater3, ref TContainer4 container4, TUpdater4 updater4)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1>, allows ref struct
-            where TContainer2 : IIndexedContainer<TContainer2, TArch2>
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch2>, allows ref struct
-            where TContainer3 : IIndexedContainer<TContainer3, TArch3>
-            where TUpdater3 : ISystemUpdater<TUpdater3, TArch3>, allows ref struct
-            where TContainer4 : IIndexedContainer<TContainer4, TArch4>
-            where TUpdater4 : ISystemUpdater<TUpdater4, TArch4>, allows ref struct
+            where TContainer1 : IIndexedContainer<T1Vec, T1Single>
+            where TUpdater1 : ISystemUpdater<T1Vec, T1Single>, allows ref struct
+            where TContainer2 : IIndexedContainer<T2Vec, T2Single>
+            where TUpdater2 : ISystemUpdater<T2Vec, T2Single>, allows ref struct
+            where TContainer3 : IIndexedContainer<T3Vec, T3Single>
+            where TUpdater3 : ISystemUpdater<T3Vec, T3Single>, allows ref struct
+            where TContainer4 : IIndexedContainer<T4Vec, T4Single>
+            where TUpdater4 : ISystemUpdater<T4Vec, T4Single>, allows ref struct
         {
-            var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
+            var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
 
             while (@enum.MoveNext())
             {
-                updater1.Invoke(@enum.Remaining, ref @enum.Current);
-                Looper<TArch2, TArch3, TArch4>.LoopIndexed(ref container2, updater2, ref container3, updater3, ref container4, updater4);
+                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray);
+                Looper<T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single>.LoopIndexed(ref container2, updater2, ref container3, updater3, ref container4, updater4);
             }
         }
 
         public static void LoopIndexed<TContainer1, TUpdater1, TContainer2, TUpdater2, TContainer3, TUpdater3, TContainer4, TUpdater4, TContext>(ref TContainer1 container1, TUpdater1 updater1, ref TContainer2 container2, TUpdater2 updater2, ref TContainer3 container3, TUpdater3 updater3, ref TContainer4 container4, TUpdater4 updater4, ref TContext context)
-            where TContainer1 : IIndexedContainer<TContainer1, TArch1>
-            where TUpdater1 : ISystemUpdater<TUpdater1, TArch1, TContext>, allows ref struct
-            where TContainer2 : IIndexedContainer<TContainer2, TArch2>
-            where TUpdater2 : ISystemUpdater<TUpdater2, TArch2, TContext>, allows ref struct
-            where TContainer3 : IIndexedContainer<TContainer3, TArch3>
-            where TUpdater3 : ISystemUpdater<TUpdater3, TArch3, TContext>, allows ref struct
-            where TContainer4 : IIndexedContainer<TContainer4, TArch4>
-            where TUpdater4 : ISystemUpdater<TUpdater4, TArch4, TContext>, allows ref struct
+            where TContainer1 : IIndexedContainer<T1Vec, T1Single>
+            where TUpdater1 : ISystemUpdater<T1Vec, T1Single, TContext>, allows ref struct
+            where TContainer2 : IIndexedContainer<T2Vec, T2Single>
+            where TUpdater2 : ISystemUpdater<T2Vec, T2Single, TContext>, allows ref struct
+            where TContainer3 : IIndexedContainer<T3Vec, T3Single>
+            where TUpdater3 : ISystemUpdater<T3Vec, T3Single, TContext>, allows ref struct
+            where TContainer4 : IIndexedContainer<T4Vec, T4Single>
+            where TUpdater4 : ISystemUpdater<T4Vec, T4Single, TContext>, allows ref struct
 			where TContext : allows ref struct
 		{
-            var @enum = EnumeratorCreator<TArch1>.CreateSequential(ref container1);
+            var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
 
             while (@enum.MoveNext())
             {
-                updater1.Invoke(@enum.Remaining, ref @enum.Current, ref context);
-                Looper<TArch2, TArch3, TArch4>.LoopIndexed(ref container2, updater2, ref container3, updater3, ref container4, updater4, ref context);
+                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray, ref context);
+                Looper<T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single>.LoopIndexed(ref container2, updater2, ref container3, updater3, ref container4, updater4, ref context);
             }
         }
     }

@@ -27,17 +27,11 @@ namespace Runner
 			this.z = c.z;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Velocity FromArray(ref Array array, int idx)
+		public ref struct Vectorized
 		{
-			return new Velocity(ref array.x[idx], ref array.y[idx], ref array.z[idx]);
-		}
-
-		public struct Vectorized
-		{
-			public Vector256<int> x;
-			public Vector256<int> y;
-			public Vector256<int> z;
+			public ref Vector256<int> x;
+			public ref Vector256<int> y;
+			public ref Vector256<int> z;
 		}
 
 		public struct Comp
@@ -54,16 +48,6 @@ namespace Runner
 			}
 		}
 
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-		public struct Array
-		{
-			public const int Size = 8;
-
-			public FixedBuffer8<int> x;
-			public FixedBuffer8<int> y;
-			public FixedBuffer8<int> z;
-		}
-
 		public struct Memory
 		{
 			public Memory<int> x;
@@ -75,6 +59,27 @@ namespace Runner
 				this.x = new int[length];
 				this.y = new int[length];
 				this.z = new int[length];
+			}
+
+			public Velocity.Vectorized GetVec(int idx)
+			{
+				idx /= 8;
+
+				return new Velocity.Vectorized
+				{
+					 x = ref MemoryMarshal.AsRef<Vector256<int>>(this.x.Span.Slice(idx, 8)),
+					 y = ref MemoryMarshal.AsRef<Vector256<int>>(this.y.Span.Slice(idx, 8)),
+					 z = ref MemoryMarshal.AsRef<Vector256<int>>(this.z.Span.Slice(idx, 8)),//
+				};
+			}
+
+			public Velocity GetSingle(int idx)
+			{
+				return new Velocity(
+					ref this.x.Span[idx],
+					ref this.y.Span[idx],
+					ref this.z.Span[idx],
+				);
 			}
 
 			public Velocity.Span AsSpan()
@@ -95,19 +100,6 @@ namespace Runner
 				this.y = memory.Span.y;
 				this.z = memory.Span.z;
 			}
-		}
-
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
-		{
-			return ref TArch.GetVec(ref arch);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
-		{
-			return ref TArch.GetSingle(ref arch);
 		}
 	}
 }

@@ -1,13 +1,15 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
+using UtilLib.Memory;
 
 namespace $namespace
 {
 	public partial class $name
 	{
-		$groups~>public ref struct SystemUpdater_|$groupIdx|<TArch> : ISystemUpdater<SystemUpdater_|$groupIdx|<TArch>, TArch, Context>
-            where TArch : unmanaged, $groupComponents|$compType == "Component"|~>IArchType<TArch, |$compName|.Vectorized, |$compName|.Array><~|$compType == "Resource"|~>IArchType<TArch, |$compName|.Vectorized, |$compName|.Array><~~>, <~ \n
+		$groups~>public ref struct SystemUpdater_|$groupIdx|<TVec, TSingle> : ISystemUpdater<TVec, TSingle, Context>
+            where TVec : $groupComponents|$compType == "Component"|~>IArchType<TVec, |$compName|.Vectorized><~|$compType == "Resource"|~>IArchType<TVec, |$compName|.Vectorized><~~>, <~ , allows ref struct
+            where TSingle : $groupComponents|$compType == "Component"|~>IArchType<TSingle, |$compName|><~|$compType == "Resource"|~>IArchType<TSingle, |$compName|><~~>, <~ , allows ref struct
         {
             $name system;
 
@@ -19,44 +21,23 @@ namespace $namespace
 				$resourceManagers~>this.|$resourceManagerName| = $resourceManagerName;<~~>\n				<~
             }
 
-            public void Invoke(nint remaining, ref TArch slice, ref Context context)
+            public void Invoke(nint remaining, scoped TVec vec, scoped FixedRefBuffer8<TSingle> single, ref Context context)
             {
 				$groupPreLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
 
-                $groupComponents|$compType == "Component"|~>ref |$compName|.Vectorized vec|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref slice);
-                ref |$compName|.Array single|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref slice);<~~>\n				<~ // Components
-
-                $groupComponents|$compType == "Resource"|~>ref |$compName|.Array single|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref slice);<~~>\n				<~ // Resource
-
                 $groupMethods|$methodType == "Single"|~>for (int i = 0; i < remaining; i++)
                 {
-                    $methodComponents|$compType == "Component"|~>var comp|$compIdx| = |$compName|.FromArray(ref single|$compIdx|, i);<~~>\n					<~ // Components
-
-					$methodComponents|$compType == "Resource"|~>ref var comp|$compIdx| = ref |$compResourceManager.resourceManagerNamespace|.|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerInType|.FromArray(ref single|$compIdx|, i, |$compResourceManager.resourceManagerName|).|$compResourceManager.resourceManagerInType|Prop;<~~>\n					<~ // Resource Managers
-
-                    system.|$methodName|($methodComponents|$compType == "Component"|~>ref comp|$compIdx|<~|$compType == "Resource"|~>ref comp|$compIdx|<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );
-                }<~|$methodType == "Vector"|~>system.|$methodName|($methodComponents|$compType == "Component"|~>ref vec|$compIdx|<~~>, <~ );<~|$compType == "Context"|~>ref context.|$compName|<~~>\n\n				<~\n
+                    system.|$methodName|($methodComponents|$compType == "Component"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single[i])<~|$compType == "Resource"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single[i]).Get(|$compResourceManager.resourceManagerName|)<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );
+                }<~|$methodType == "Vector"|~>system.|$methodName|($methodComponents|$compType == "Component"|~>ref ArchGetter<TVec, |$compName|.Vectorized>.Get(ref vec)<~~>, <~ );<~|$compType == "Context"|~>ref context.|$compName|<~~>\n\n				<~\n
 
 				$groupPostLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
             }
 
-            public void Invoke(int idx, ref TArch slice, ref Context context)
+            public void Invoke(scoped TSingle single, ref Context context)
             {
 				$groupPreLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
 
-                $groupComponents|$compType == "Component"|~>ref |$compName|.Vectorized vec|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetVec(ref slice);
-                ref |$compName|.Array single|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref slice);<~~>\n				<~ // Components
-
-                $groupComponents|$compType == "Resource"|~>ref |$compName|.Array single|$compIdx| = ref ArchGetter<TArch, |$compName|.Vectorized, |$compName|.Array>.GetSingle(ref slice);<~~>\n				<~ // Resource
-
-                $groupMethods|$methodType == "Single"|~>
-                {
-                    $methodComponents|$compType == "Component"|~>var comp|$compIdx| = |$compName|.FromArray(ref single|$compIdx|, idx);<~~>\n					<~ // Components
-
-					$methodComponents|$compType == "Resource"|~>ref var comp|$compIdx| = ref |$compResourceManager.resourceManagerNamespace|.|$compResourceManager.resourceManagerName|.|$compResourceManager.resourceManagerInType|.FromArray(ref single|$compIdx|, idx, |$compResourceManager.resourceManagerName|).|$compResourceManager.resourceManagerInType|Prop;<~~>\n					<~ // Resource Managers
-
-                    system.|$methodName|($methodComponents|$compType == "Component"|~>ref comp|$compIdx|<~|$compType == "Resource"|~>ref comp|$compIdx|<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );
-                }<~~>\n\n				<~\n
+                $groupMethods|$methodType == "Single"|~>system.|$methodName|($methodComponents|$compType == "Component"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single)<~|$compType == "Resource"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single).Get(|$compResourceManager.resourceManagerName|)<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );<~~>\n\n				<~\n
 
 				$groupPostLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
             }

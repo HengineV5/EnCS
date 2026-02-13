@@ -2,18 +2,24 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using UtilLib.Memory;
 
 namespace EnCS
 {
-	public ref struct SequentialEnumerator<TContainer, TArch> : IArchEnumerator<SequentialEnumerator<TContainer, TArch>, TArch>
-		where TContainer : IIndexedContainer<TContainer, TArch>
-		where TArch : unmanaged
-    {
-		public ref TArch Current => ref container.GetValue(index);
+	public ref struct SequentialEnumerator<TContainer, TVec, TSingle> : IArchEnumerator<TVec, TSingle>
+		where TContainer : IIndexedContainer<TVec, TSingle>
+		where TVec : allows ref struct
+		where TSingle : allows ref struct
+	{
+		public TSingle Current => container.GetSingle(index);
 
-		public nint Remaining => nint.Min(8, container.Entities - index * 8);
+		public FixedRefBuffer8<TSingle> CurrentArray => container.GetSingleArray(index);
 
-        ref TContainer container;
+		public TVec CurrentVec => container.GetVec(index);
+
+		public nint Remaining => container.Entities - index;
+
+		ref TContainer container;
 		nint index;
 
         public SequentialEnumerator(ref TContainer container)
@@ -26,42 +32,7 @@ namespace EnCS
 		{
 			index++;
 
-			if (container.Entities - index * 8 <= 0)
-				return false;
-
-            return true;
-        }
-
-		public void Reset()
-		{
-			index = -1;
-        }
-	}
-
-	public ref struct MappedEnumerator<TContainer, TArch> : IArchEnumerator<SequentialEnumerator<TContainer, TArch>, TArch>
-		where TContainer : IIndexedContainer<TContainer, TArch>
-		where TArch : unmanaged
-	{
-		public ref TArch Current => ref container.GetValue(map[index] / 8);
-
-		public nint Remaining => map.Length - index;
-
-		ref TContainer container;
-		int index;
-		ReadOnlySpan<int> map;
-
-		public MappedEnumerator(ref TContainer container, ReadOnlySpan<int> map)
-		{
-			this.container = ref container;
-			this.index = -1;
-			this.map = map;
-		}
-
-		public bool MoveNext()
-		{
-			index++;
-
-			if (map.Length - index <= 0)
+			if (index >= container.Entities)
 				return false;
 
 			return true;
@@ -70,6 +41,6 @@ namespace EnCS
 		public void Reset()
 		{
 			index = -1;
-		}
+        }
 	}
 }

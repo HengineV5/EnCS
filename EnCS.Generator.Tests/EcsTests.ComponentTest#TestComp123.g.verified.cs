@@ -23,15 +23,9 @@ namespace Runner
 			this.tag = c.tag;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static TestComp123 FromArray(ref Array array, int idx)
+		public ref struct Vectorized
 		{
-			return new TestComp123(ref array.tag[idx]);
-		}
-
-		public struct Vectorized
-		{
-			public Vector256<int> tag;
+			public ref Vector256<int> tag;
 		}
 
 		public struct Comp
@@ -44,14 +38,6 @@ namespace Runner
 			}
 		}
 
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-		public struct Array
-		{
-			public const int Size = 8;
-
-			public FixedBuffer8<int> tag;
-		}
-
 		public struct Memory
 		{
 			public Memory<int> tag;
@@ -59,6 +45,23 @@ namespace Runner
 			public Memory(int length)
 			{
 				this.tag = new int[length];
+			}
+
+			public TestComp123.Vectorized GetVec(int idx)
+			{
+				idx /= 8;
+
+				return new TestComp123.Vectorized
+				{
+					 tag = ref MemoryMarshal.AsRef<Vector256<int>>(this.tag.Span.Slice(idx, 8)),//
+				};
+			}
+
+			public TestComp123 GetSingle(int idx)
+			{
+				return new TestComp123(
+					ref this.tag.Span[idx],
+				);
 			}
 
 			public TestComp123.Span AsSpan()
@@ -75,19 +78,6 @@ namespace Runner
 			{
 				this.tag = memory.Span.tag;
 			}
-		}
-
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Vectorized GetVec<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
-		{
-			return ref TArch.GetVec(ref arch);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref Array GetSingle<TArch>(ref TArch arch) where TArch : unmanaged, IArchType<TArch, Vectorized, Array>
-		{
-			return ref TArch.GetSingle(ref arch);
 		}
 	}
 }

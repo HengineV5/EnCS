@@ -6,15 +6,15 @@ namespace Runner
 {
 	public partial class Ecs
 	{
-		IndexedContainer<Wall.Vectorized, Wall> containerWall;
-		IndexedContainer<Cam.Vectorized, Cam> containerCam;
+		IndexedContainer<Wall.Memory, Wall.Vectorized, Wall> containerWall;
+		IndexedContainer<Cam.Memory, Cam.Vectorized, Cam> containerCam;
 		
 		Runner.MeshResourceManager MeshResourceManager;
 
 		public Ecs(Runner.MeshResourceManager MeshResourceManager)
 		{
-			containerWall = new IndexedContainer<Wall.Vectorized, Wall>();
-			containerCam = new IndexedContainer<Cam.Vectorized, Cam>();
+			containerWall = new IndexedContainer<Wall.Memory, Wall.Vectorized, Wall>();
+			containerCam = new IndexedContainer<Cam.Memory, Cam.Vectorized, Cam>();
 
 			this.MeshResourceManager = MeshResourceManager;
 		}

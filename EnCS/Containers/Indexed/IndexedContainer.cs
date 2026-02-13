@@ -2,21 +2,20 @@
 using System.Formats.Tar;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using UtilLib.Memory;
 
 namespace EnCS
 {
-	public unsafe struct IndexedContainer<TArch, TPtr> : IIndexedContainer<IndexedContainer<TArch, TPtr>, TArch, TPtr>
-		where TArch : unmanaged
-		where TPtr : allows ref struct
+	public struct IndexedContainer<TArchMem, TVec, TSingle> : IIndexedContainer<TVec, TSingle>
+		where TArchMem : IArchMemory<TArchMem, TVec, TSingle>
+		where TVec : allows ref struct
+		where TSingle : allows ref struct
 	{
 		const int INITIAL_CONTAINER_SIZE = 1024;
 
-		static nuint DataSize = (nuint)sizeof(TArch);
-
 		public readonly nint Entities => entityCount;
 
-		TArch* buff;
-		nuint length;
+		TArchMem memory;
 
 		nint entityCount;
 
@@ -25,16 +24,14 @@ namespace EnCS
 
 		public IndexedContainer()
 		{
-			buff = (TArch*)NativeMemory.AllocZeroed(INITIAL_CONTAINER_SIZE * DataSize);
-			map = new nint[INITIAL_CONTAINER_SIZE];
-			length = INITIAL_CONTAINER_SIZE;
+			memory = TArchMem.Create(INITIAL_CONTAINER_SIZE);
 			entityCount = 0;
-
+			map = new nint[INITIAL_CONTAINER_SIZE];
 			deleted = new();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ArchRef<TPtr> Create(in TArch data)
+		public ArchRef<TSingle> Create()
 		{
 			nint idx = entityCount;
 
@@ -45,37 +42,48 @@ namespace EnCS
 
 			entityCount++;
 
-			return new ArchRef<TPtr>(idx);
+			return new ArchRef<TSingle>(idx);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Delete(in ArchRef<TPtr> ptr)
+		public void Delete(ref readonly ArchRef<TSingle> ptr)
 		{
 			entityCount--;
 
 			// Replace deleted element with last element
-			buff[ptr.idx] = buff[entityCount];
-			map[entityCount] = ptr.idx;
 
+			map[ptr.idx] = map[entityCount];
 			deleted.Push(ptr.idx);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ref TArch GetValue(ArchRef<TPtr> ptr)
+		public TSingle GetSingle(nint idx)
 		{
-			return ref buff[map[ptr.idx]];
+			return memory.GetSingle(idx);
 		}
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref TArch GetValue(nint idx)
-        {
-            return ref buff[idx];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Span<TArch> AsSpan()
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public TSingle GetSingle(ref readonly ArchRef<TSingle> ptr)
 		{
-            return new Span<TArch>(buff, ((int)entityCount >> 3) + 1);
+			return memory.GetSingle(map[ptr.idx]);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public TVec GetVec(nint idx)
+		{
+			return memory.GetVec(idx);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public TVec GetVec(ref readonly ArchRef<TSingle> ptr)
+		{
+			return memory.GetVec(map[ptr.idx]);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public FixedRefBuffer8<TSingle> GetSingleArray(nint idx)
+		{
+			return memory.GetSingleArray(idx);
 		}
 	}
 }

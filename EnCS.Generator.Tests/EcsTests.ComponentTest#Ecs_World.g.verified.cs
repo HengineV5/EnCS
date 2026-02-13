@@ -9,12 +9,12 @@ namespace Runner
 	{
 		public ref struct MainWorld : IWorld<PrintSystem, Ecs >, IWorld<PerfSystem, Ecs >, IWorld<LayerSystem, Ecs >
 		{
-			ref IndexedContainer<Wall.Vectorized, Wall> containerWall;
-			ref IndexedContainer<Cam.Vectorized, Cam> containerCam;
+			ref IndexedContainer<Wall.Memory, Wall.Vectorized, Wall> containerWall;
+			ref IndexedContainer<Cam.Memory, Cam.Vectorized, Cam> containerCam;
 
 			Runner.MeshResourceManager MeshResourceManager;
 
-			public MainWorld(ref IndexedContainer<Wall.Vectorized, Wall> containerWall, ref IndexedContainer<Cam.Vectorized, Cam> containerCam, Runner.MeshResourceManager MeshResourceManager)
+			public MainWorld(ref IndexedContainer<Wall.Memory, Wall.Vectorized, Wall> containerWall, ref IndexedContainer<Cam.Memory, Cam.Vectorized, Cam> containerCam, Runner.MeshResourceManager MeshResourceManager)
 			{
 				this.containerWall = ref containerWall;
 				this.containerCam = ref containerCam;
@@ -23,9 +23,9 @@ namespace Runner
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public ArchRef<Wall> Create(ref readonly Wall.Vectorized data)
+			ArchRef<Wall> CreateWall()
 			{
-				return containerWall.Create(data);
+				return containerWall.Create();
 			}
 
 			public void Delete(ref readonly ArchRef<Wall> ptr)
@@ -40,9 +40,9 @@ namespace Runner
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public ArchRef<Cam> Create(ref readonly Cam.Vectorized data)
+			ArchRef<Cam> CreateCam()
 			{
-				return containerCam.Create(data);
+				return containerCam.Create();
 			}
 
 			public void Delete(ref readonly ArchRef<Cam> ptr)

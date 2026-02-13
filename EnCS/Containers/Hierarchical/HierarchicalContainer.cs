@@ -1,105 +1,85 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Text;
+using UtilLib.Memory;
 using UtilLib.Span;
 
 namespace EnCS
 {
-	public struct HierarchicalContainer<TArch, TPtr> : IHierarchicalContainer<HierarchicalContainer<TArch, TPtr>, TArch, TPtr>, IIndexedContainer<HierarchicalContainer<TArch, TPtr>, TArch, TPtr>
-		where TArch : unmanaged
-		where TPtr : allows ref struct
+	public struct HierarchicalContainer<TArchMem, TVec, TSingle> : IHierarchicalContainer<TVec, TSingle>, IIndexedContainer<TVec, TSingle>
+		where TArchMem : IArchMemory<TArchMem, TVec, TSingle>
+		where TVec : allows ref struct
+		where TSingle : allows ref struct
 	{
 		public readonly nint Entities => entityCount;
 
-		Memory<TArch> buff;
+		TArchMem memory;
+
+		Memory<int> map;
 		Memory<SpanHierarchy.Node> nodes;
 		int entityCount;
 
-		public HierarchicalContainer(nuint maxNodes)
+		public HierarchicalContainer(int maxNodes)
 		{
-			this.buff = new TArch[maxNodes];
+			this.map = new int[maxNodes];
+			this.memory = TArchMem.Create(maxNodes);
 			this.nodes =  new SpanHierarchy.Node[maxNodes];
 			this.entityCount = 0;
 		}
 
-		public ArchRef<TPtr> CreateRoot(in TArch data)
+		public ArchRef<TSingle> CreateRoot()
 		{
-			SpanHierarchy<TArch> hierarchy = new(buff.Span, nodes.Span, ref entityCount);
-			return new ArchRef<TPtr>(hierarchy.SetRoot(data));
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			return new ArchRef<TSingle>(hierarchy.SetRoot(entityCount));
 		}
 
-		public ArchRef<TPtr> CreateChild(in ArchRef<TPtr> parentPtr, in TArch data)
+		public ArchRef<TSingle> CreateChild(in ArchRef<TSingle> parentPtr)
 		{
-			SpanHierarchy<TArch> hierarchy = new(buff.Span, nodes.Span, ref entityCount);
-			return new ArchRef<TPtr>(hierarchy.CreateChild((int)parentPtr.idx, data));
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			return new ArchRef<TSingle>(hierarchy.CreateChild((int)parentPtr.idx, entityCount));
 		}
 
-		public void DeleteChild(in ArchRef<TPtr> ptr)
+		public void DeleteChild(in ArchRef<TSingle> ptr)
 		{
-			SpanHierarchy<TArch> hierarchy = new(buff.Span, nodes.Span, ref entityCount);
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount); // TODO: Delete is not entierly function, add delted map
 			hierarchy.DeleteNode((int)ptr.idx);
 		}
 
-		public ChildrenEnumerator<TPtr, TArch> GetChildren(in ArchRef<TPtr> parentPtr)
+		public ChildrenEnumerator<TSingle> GetChildren(ref readonly ArchRef<TSingle> parentPtr)
 		{
-			SpanHierarchy<TArch> hierarchy = new(buff.Span, nodes.Span, ref entityCount);
-			return new ChildrenEnumerator<TPtr, TArch>(hierarchy.GetChildren((int)parentPtr.idx));
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			return new ChildrenEnumerator<TSingle>(hierarchy.GetChildren((int)parentPtr.idx));
 		}
 
-		public Span<TArch> GetChildrenValues(ArchRef<TPtr> parentPtr)
+		public ArchRef<TSingle> GetRoot()
 		{
-			SpanHierarchy<TArch> hierarchy = new(buff.Span, nodes.Span, ref entityCount);
-			return buff.Span[hierarchy.GetChildren((int)parentPtr.idx)];
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			return new ArchRef<TSingle>(hierarchy.GetRoot());
 		}
 
-		public ArchRef<TPtr> GetRoot()
+		public TSingle GetSingle(ref readonly ArchRef<TSingle> ptr)
 		{
-			SpanHierarchy<TArch> hierarchy = new(buff.Span, nodes.Span, ref entityCount);
-			return new ArchRef<TPtr>(hierarchy.GetRoot());
+			return memory.GetSingle(ptr.idx);
 		}
 
-		public ref TArch GetValue(ArchRef<TPtr> ptr)
+		public TVec GetVec(ref readonly ArchRef<TSingle> ptr)
 		{
-			return ref buff.Span[(int)ptr.idx];
+			return memory.GetVec(ptr.idx);
 		}
 
-		public ref TArch GetValue(nint idx)
+		public TSingle GetSingle(nint idx)
 		{
-			return ref buff.Span[(int)idx];
-		}
-	}
-
-	public ref struct ChildrenEnumerator<TPtr, TArch>
-		where TArch : unmanaged
-		where TPtr : allows ref struct
-	{
-		public ArchRef<TPtr> Current => new ArchRef<TPtr>(currentIdx);
-
-		Range range;
-		int currentIdx;
-
-		public ChildrenEnumerator(Range range)
-		{
-			this.range = range;
-			this.currentIdx = range.Start.Value - 1;
+			return memory.GetSingle(idx);
 		}
 
-		public void Dispose()
+		public TVec GetVec(nint idx)
 		{
+			return memory.GetVec(idx);
 		}
 
-		public bool MoveNext()
+		public FixedRefBuffer8<TSingle> GetSingleArray(nint idx)
 		{
-			currentIdx++;
-
-			if (currentIdx >= range.End.Value)
-				return false;
-
-			return true;
-		}
-
-		public void Reset()
-		{
-			currentIdx = range.Start.Value - 1;
+			return memory.GetSingleArray(idx);
 		}
 	}
 }

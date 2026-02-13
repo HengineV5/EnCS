@@ -2,21 +2,14 @@
 
 namespace EnCS
 {
-	public static class ArchGetter<TArch, TVec, TSingle>
-        where TArch : unmanaged, IArchType<TArch, TVec, TSingle>
-        where TVec : unmanaged
-        where TSingle : unmanaged
+	public static class ArchGetter<TArch, TSingle>
+        where TArch : IArchType<TArch, TSingle>, allows ref struct
+		where TSingle : allows ref struct
     {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ref TVec GetVec(ref TArch slice)
+		public static ref TSingle Get(ref TArch slice)
 		{
-			return ref TArch.GetVec(ref slice);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ref TSingle GetSingle(ref TArch slice)
-        {
-            return ref TArch.GetSingle(ref slice);
+			return ref TArch.Get(ref slice);
         }
     }
 }

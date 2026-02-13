@@ -2,13 +2,10 @@
 
 namespace EnCS
 {
-	public interface IArchType<TSelf, TTypeVec, TTypeSingle>
-		where TSelf : unmanaged, IArchType<TSelf, TTypeVec, TTypeSingle>
-		where TTypeVec : unmanaged
-		where TTypeSingle : unmanaged
+	public interface IArchType<TSelf, TType>
+		where TSelf : IArchType<TSelf, TType>, allows ref struct
+		where TType : allows ref struct
 	{
-		static abstract ref TTypeVec GetVec(ref TSelf arch);
-
-		static abstract ref TTypeSingle GetSingle(ref TSelf arch);
+		static abstract ref TType Get(ref TSelf arch);
 	}
 }
