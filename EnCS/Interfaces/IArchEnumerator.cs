@@ -7,7 +7,7 @@ namespace EnCS
 	{
 		TSingle Current { get; }
 
-		nint Remaining { get; }
+		int Remaining { get; }
 
 		bool MoveNext();
 

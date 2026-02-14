@@ -47,7 +47,8 @@
 		<UseLocalProjects>true</UseLocalProjects>
 	</PropertyGroup>
 	<ItemGroup Condition="'$(UseLocalProjects)' != 'true'">
-		<PackageReference Include="Henke.UtilLib" Version="0.0.26" />
+		<!--<PackageReference Include="Henke.UtilLib" Version="0.0.26" />-->
+		<ProjectReference Include="..\..\UtilLib\UtilLib\UtilLib.csproj" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(UseLocalProjects)' == 'true'">
 		<ProjectReference Include="..\..\UtilLib\UtilLib\UtilLib.csproj" />

@@ -27,7 +27,7 @@ namespace $namespace
 
                 $groupMethods|$methodType == "Single"|~>for (int i = 0; i < remaining; i++)
                 {
-                    system.|$methodName|($methodComponents|$compType == "Component"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single[i])<~|$compType == "Resource"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single[i]).Get(|$compResourceManager.resourceManagerName|)<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );
+                    system.|$methodName|($methodComponents|$compType == "Component"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single.Get(i))<~|$compType == "Resource"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single.Get(i)).SetResourceManager(|$compResourceManager.resourceManagerName|).Get()<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );
                 }<~|$methodType == "Vector"|~>system.|$methodName|($methodComponents|$compType == "Component"|~>ref ArchGetter<TVec, |$compName|.Vectorized>.Get(ref vec)<~~>, <~ );<~|$compType == "Context"|~>ref context.|$compName|<~~>\n\n				<~\n
 
 				$groupPostLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
@@ -37,7 +37,7 @@ namespace $namespace
             {
 				$groupPreLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
 
-                $groupMethods|$methodType == "Single"|~>system.|$methodName|($methodComponents|$compType == "Component"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single)<~|$compType == "Resource"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single).Get(|$compResourceManager.resourceManagerName|)<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );<~~>\n\n				<~\n
+                $groupMethods|$methodType == "Single"|~>system.|$methodName|($methodComponents|$compType == "Component"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single)<~|$compType == "Resource"|~>ref ArchGetter<TSingle, |$compName|>.Get(ref single).SetResourceManager(|$compResourceManager.resourceManagerName|).Get()<~|$compType == "Context"|~>ref context.|$compName|<~~>, <~ );<~~>\n\n				<~\n
 
 				$groupPostLoops~>system.|$methodName|($methodComponents|$compType == "Context"|~>ref context|$compName|<~~>, <~ );<~~>\n				<~
             }

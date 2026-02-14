@@ -15,13 +15,15 @@ namespace EnCS
             where TUpdater1 : ISystemUpdater<TVec, TSingle>, allows ref struct
         {
             var @enum = EnumeratorCreator<TVec, TSingle>.CreateSequential(ref container1);
-            @enum.Reset();
+			@enum.Reset();
+			@enum.MoveNext();
 
-            while (@enum.MoveNext())
-            {
-                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray);
-            }
-        }
+			do
+			{
+				updater1.Invoke(int.Min(8, @enum.Remaining), @enum.CurrentVec, @enum.CurrentArray);
+			}
+			while (@enum.MoveNextArray());
+		}
 
         public static void LoopIndexed<TContainer1, TUpdater1, TContext>(ref TContainer1 container1, TUpdater1 updater1, ref TContext context)
             where TContainer1 : IIndexedContainer<TVec, TSingle>
@@ -30,11 +32,13 @@ namespace EnCS
 		{
             var @enum = EnumeratorCreator<TVec, TSingle>.CreateSequential(ref container1);
             @enum.Reset();
+            @enum.MoveNext();
 
-            while (@enum.MoveNext())
+            do
             {
-                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray, ref context);
+                updater1.Invoke(int.Min(8, @enum.Remaining), @enum.CurrentVec, @enum.CurrentArray, ref context);
             }
+            while (@enum.MoveNextArray());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -103,14 +107,16 @@ namespace EnCS
         {
             var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
+            @enum.MoveNext();
 
-            while (@enum.MoveNext())
+			do
             {
-                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray);
+                updater1.Invoke(int.Min(8, @enum.Remaining), @enum.CurrentVec, @enum.CurrentArray);
 
                 Looper<T2Vec, T2Single>.LoopIndexed(ref container2, updater2);
             }
-        }
+            while (@enum.MoveNextArray());
+		}
 
         public static void LoopIndexed<TContainer1, TUpdater1, TContainer2, TUpdater2, TContext>(ref TContainer1 container1, TUpdater1 updater1, ref TContainer2 container2, TUpdater2 updater2, ref TContext context)
             where TContainer1 : IIndexedContainer<T1Vec, T1Single>
@@ -121,13 +127,15 @@ namespace EnCS
 		{
             var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
+            @enum.MoveNext();
 
-            while (@enum.MoveNext())
+			do
             {
-                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray, ref context);
+                updater1.Invoke(int.Min(8, @enum.Remaining), @enum.CurrentVec, @enum.CurrentArray, ref context);
 
                 Looper<T2Vec, T2Single>.LoopIndexed(ref container2, updater2, ref context);
             }
+            while (@enum.MoveNextArray());
         }
     }
 
@@ -149,14 +157,16 @@ namespace EnCS
         {
             var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
+            @enum.MoveNext();
 
-            while (@enum.MoveNext())
+			do
             {
-                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray);
+                updater1.Invoke(int.Min(8, @enum.Remaining), @enum.CurrentVec, @enum.CurrentArray);
 
                 Looper<T2Vec, T2Single, T3Vec, T3Single>.LoopIndexed(ref container2, updater2, ref container3, updater3);
             }
-        }
+            while (@enum.MoveNextArray());
+		}
 
         public static void LoopIndexed<TContainer1, TUpdater1, TContainer2, TUpdater2, TContainer3, TUpdater3, TContext>(ref TContainer1 container1, TUpdater1 updater1, ref TContainer2 container2, TUpdater2 updater2, ref TContainer3 container3, TUpdater3 updater3, ref TContext context)
             where TContainer1 : IIndexedContainer<T1Vec, T1Single>
@@ -169,14 +179,16 @@ namespace EnCS
 		{
             var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
+            @enum.MoveNext();
 
-            while (@enum.MoveNext())
+            do
             {
-                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray, ref context);
+                updater1.Invoke(int.Min(8, @enum.Remaining), @enum.CurrentVec, @enum.CurrentArray, ref context);
 
                 Looper<T2Vec, T2Single, T3Vec, T3Single>.LoopIndexed(ref container2, updater2, ref container3, updater3, ref context);
             }
-        }
+            while (@enum.MoveNextArray());
+		}
     }
 
     public static partial class IndexedLooper<T1Vec, T1Single, T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single>
@@ -201,13 +213,15 @@ namespace EnCS
         {
             var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
+            @enum.MoveNext();
 
-            while (@enum.MoveNext())
+            do
             {
-                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray);
+                updater1.Invoke(int.Min(8, @enum.Remaining), @enum.CurrentVec, @enum.CurrentArray);
                 Looper<T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single>.LoopIndexed(ref container2, updater2, ref container3, updater3, ref container4, updater4);
             }
-        }
+            while (@enum.MoveNextArray());
+		}
 
         public static void LoopIndexed<TContainer1, TUpdater1, TContainer2, TUpdater2, TContainer3, TUpdater3, TContainer4, TUpdater4, TContext>(ref TContainer1 container1, TUpdater1 updater1, ref TContainer2 container2, TUpdater2 updater2, ref TContainer3 container3, TUpdater3 updater3, ref TContainer4 container4, TUpdater4 updater4, ref TContext context)
             where TContainer1 : IIndexedContainer<T1Vec, T1Single>
@@ -222,12 +236,14 @@ namespace EnCS
 		{
             var @enum = EnumeratorCreator<T1Vec, T1Single>.CreateSequential(ref container1);
             @enum.Reset();
+            @enum.MoveNext();
 
-            while (@enum.MoveNext())
+			do
             {
-                updater1.Invoke(@enum.Remaining, @enum.CurrentVec, @enum.CurrentArray, ref context);
+                updater1.Invoke(int.Min(8, @enum.Remaining), @enum.CurrentVec, @enum.CurrentArray, ref context);
                 Looper<T2Vec, T2Single, T3Vec, T3Single, T4Vec, T4Single>.LoopIndexed(ref container2, updater2, ref container3, updater3, ref container4, updater4, ref context);
             }
-        }
+            while (@enum.MoveNextArray());
+		}
     }
 }

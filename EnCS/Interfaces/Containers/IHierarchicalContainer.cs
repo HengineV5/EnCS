@@ -6,6 +6,8 @@
 	{
 		ChildrenEnumerator<TSingle> GetChildren(ref readonly ArchRef<TSingle> parentPtr);
 
+		ChildrenEnumerator<TSingle> GetChildrenAndSelf(ref readonly ArchRef<TSingle> parentPtr);
+
 		ArchRef<TSingle> GetRoot();
 
 		TSingle GetSingle(ref readonly ArchRef<TSingle> ptr);

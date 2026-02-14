@@ -3,50 +3,50 @@
 
 //--- Log: ---
 
-// [2026-02-10T19:14:35.9293423+01:00 | Trace] Registering attribute generator 'ComponentGenerator'
-// [2026-02-10T19:14:35.9305373+01:00 | Trace] Registering generator 'ArchTypeGenerator'
-// [2026-02-10T19:14:35.9307761+01:00 | Trace] Registering attribute generator 'SystemGenerator'
-// [2026-02-10T19:14:35.9309255+01:00 | Trace] Registering attribute generator 'SystemGenerator'
-// [2026-02-10T19:14:35.9310628+01:00 | Trace] Registering attribute generator 'SystemGenerator'
-// [2026-02-10T19:14:35.9312231+01:00 | Trace] Registering attribute generator 'SystemGenerator'
-// [2026-02-10T19:14:35.9314038+01:00 | Trace] Registering attribute generator 'SystemGenerator'
-// [2026-02-10T19:14:35.9316720+01:00 | Trace] Registering attribute generator 'SystemGenerator'
-// [2026-02-10T19:14:35.9318534+01:00 | Trace] Registering generator 'WorldGenerator'
-// [2026-02-10T19:14:35.9320076+01:00 | Trace] Registering generator 'EcsGenerator'
-// [2026-02-10T19:14:35.9321647+01:00 | Trace] Registering attribute generator 'ResourceManagerGenerator'
-// [2026-02-10T19:14:35.9958562+01:00 | Trace] Generator 'ComponentGenerator' will be run on node at 'SourceFile([1302..1401))' ('TestComp123')
-// [2026-02-10T19:14:35.9965683+01:00 | Trace] Generator 'ComponentGenerator' will be run on node at 'SourceFile([1406..1524))' ('Position')
-// [2026-02-10T19:14:35.9968675+01:00 | Trace] Generator 'ComponentGenerator' will be run on node at 'SourceFile([1727..1839))' ('Velocity')
-// [2026-02-10T19:14:36.0098711+01:00 | Trace] Executing generator 'Component Generator (TestComp123) (SourceFile([1302..1401)))'
-// [2026-02-10T19:14:36.0437363+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.0480808+01:00 | Trace] Executing generator 'Component Generator (Position) (SourceFile([1406..1524)))'
-// [2026-02-10T19:14:36.0639367+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.0643943+01:00 | Trace] Executing generator 'Component Generator (Velocity) (SourceFile([1727..1839)))'
-// [2026-02-10T19:14:36.0677330+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.0994083+01:00 | Trace] Generator 'ArchTypeGenerator' will be run on node at 'SourceFile([4106..4116))'
-// [2026-02-10T19:14:36.1394368+01:00 | Trace] Generator 'WorldGenerator' will be run on node at 'SourceFile([4106..4116))'
-// [2026-02-10T19:14:36.1501866+01:00 | Trace] Generator 'EcsGenerator' will be run on node at 'SourceFile([4106..4116))'
-// [2026-02-10T19:14:36.1654911+01:00 | Trace] Executing generator 'Component Generator (Runner.Ecs) (SourceFile([4102..4705)))'
-// [2026-02-10T19:14:36.1776892+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.1841480+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([1844..2277))' ('PerfSystem')
-// [2026-02-10T19:14:36.1856070+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([2282..2906))' ('PositionSystem')
-// [2026-02-10T19:14:36.1859409+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([2911..3226))' ('PrintSystem')
-// [2026-02-10T19:14:36.1862480+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([3231..3605))' ('PrintSystem_2')
-// [2026-02-10T19:14:36.1865748+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([3610..3923))' ('LayerSystem')
-// [2026-02-10T19:14:36.1973384+01:00 | Trace] Executing generator 'Component Generator (PerfSystem) (SourceFile([1844..2277)))'
-// [2026-02-10T19:14:36.2062572+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.2067272+01:00 | Trace] Executing generator 'Component Generator (PositionSystem) (SourceFile([2282..2906)))'
-// [2026-02-10T19:14:36.2116559+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.2120330+01:00 | Trace] Executing generator 'Component Generator (PrintSystem) (SourceFile([2911..3226)))'
-// [2026-02-10T19:14:36.2163413+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.2166746+01:00 | Trace] Executing generator 'Component Generator (PrintSystem_2) (SourceFile([3231..3605)))'
-// [2026-02-10T19:14:36.2210591+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.2213447+01:00 | Trace] Executing generator 'Component Generator (LayerSystem) (SourceFile([3610..3923)))'
-// [2026-02-10T19:14:36.2256679+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.2400703+01:00 | Trace] Executing generator 'Component Generator (Runner.Ecs) (SourceFile([4102..4705)))'
-// [2026-02-10T19:14:36.2503253+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.2611855+01:00 | Trace] Executing generator 'Component Generator (Runner.Ecs) (SourceFile([4102..4705)))'
-// [2026-02-10T19:14:36.2635338+01:00 | Trace] Generator finished
-// [2026-02-10T19:14:36.2692342+01:00 | Trace] Generator 'ResourceManagerGenerator' will be run on node at 'SourceFile([593..1297))' ('MeshResourceManager')
-// [2026-02-10T19:14:36.2799794+01:00 | Trace] Executing generator 'Component Generator (MeshResourceManager) ()'
-// [2026-02-10T19:14:36.2834091+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.4414573+01:00 | Trace] Registering attribute generator 'ComponentGenerator'
+// [2026-02-14T14:44:19.4427037+01:00 | Trace] Registering generator 'ArchTypeGenerator'
+// [2026-02-14T14:44:19.4429466+01:00 | Trace] Registering attribute generator 'SystemGenerator'
+// [2026-02-14T14:44:19.4431394+01:00 | Trace] Registering attribute generator 'SystemGenerator'
+// [2026-02-14T14:44:19.4433458+01:00 | Trace] Registering attribute generator 'SystemGenerator'
+// [2026-02-14T14:44:19.4436153+01:00 | Trace] Registering attribute generator 'SystemGenerator'
+// [2026-02-14T14:44:19.4570917+01:00 | Trace] Registering attribute generator 'SystemGenerator'
+// [2026-02-14T14:44:19.4573279+01:00 | Trace] Registering attribute generator 'SystemGenerator'
+// [2026-02-14T14:44:19.4575384+01:00 | Trace] Registering generator 'WorldGenerator'
+// [2026-02-14T14:44:19.4577600+01:00 | Trace] Registering generator 'EcsGenerator'
+// [2026-02-14T14:44:19.4580146+01:00 | Trace] Registering attribute generator 'ResourceManagerGenerator'
+// [2026-02-14T14:44:19.5215670+01:00 | Trace] Generator 'ComponentGenerator' will be run on node at 'SourceFile([1302..1401))' ('TestComp123')
+// [2026-02-14T14:44:19.5222434+01:00 | Trace] Generator 'ComponentGenerator' will be run on node at 'SourceFile([1406..1524))' ('Position')
+// [2026-02-14T14:44:19.5225271+01:00 | Trace] Generator 'ComponentGenerator' will be run on node at 'SourceFile([1727..1839))' ('Velocity')
+// [2026-02-14T14:44:19.5355188+01:00 | Trace] Executing generator 'Component Generator (TestComp123) (SourceFile([1302..1401)))'
+// [2026-02-14T14:44:19.5694868+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.5738666+01:00 | Trace] Executing generator 'Component Generator (Position) (SourceFile([1406..1524)))'
+// [2026-02-14T14:44:19.5904090+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.5910855+01:00 | Trace] Executing generator 'Component Generator (Velocity) (SourceFile([1727..1839)))'
+// [2026-02-14T14:44:19.5941385+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.6271461+01:00 | Trace] Generator 'ArchTypeGenerator' will be run on node at 'SourceFile([4106..4116))'
+// [2026-02-14T14:44:19.6684298+01:00 | Trace] Generator 'WorldGenerator' will be run on node at 'SourceFile([4106..4116))'
+// [2026-02-14T14:44:19.6798183+01:00 | Trace] Generator 'EcsGenerator' will be run on node at 'SourceFile([4106..4116))'
+// [2026-02-14T14:44:19.6942991+01:00 | Trace] Executing generator 'Component Generator (Runner.Ecs) (SourceFile([4102..4705)))'
+// [2026-02-14T14:44:19.7043273+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.7109688+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([1844..2277))' ('PerfSystem')
+// [2026-02-14T14:44:19.7130085+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([2282..2906))' ('PositionSystem')
+// [2026-02-14T14:44:19.7133803+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([2911..3226))' ('PrintSystem')
+// [2026-02-14T14:44:19.7137237+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([3231..3605))' ('PrintSystem_2')
+// [2026-02-14T14:44:19.7140137+01:00 | Trace] Generator 'SystemGenerator' will be run on node at 'SourceFile([3610..3923))' ('LayerSystem')
+// [2026-02-14T14:44:19.7249626+01:00 | Trace] Executing generator 'Component Generator (PerfSystem) (SourceFile([1844..2277)))'
+// [2026-02-14T14:44:19.7339582+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.7343929+01:00 | Trace] Executing generator 'Component Generator (PositionSystem) (SourceFile([2282..2906)))'
+// [2026-02-14T14:44:19.7388332+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.7391209+01:00 | Trace] Executing generator 'Component Generator (PrintSystem) (SourceFile([2911..3226)))'
+// [2026-02-14T14:44:19.7439209+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.7442197+01:00 | Trace] Executing generator 'Component Generator (PrintSystem_2) (SourceFile([3231..3605)))'
+// [2026-02-14T14:44:19.7484868+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.7488547+01:00 | Trace] Executing generator 'Component Generator (LayerSystem) (SourceFile([3610..3923)))'
+// [2026-02-14T14:44:19.7539745+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.7692891+01:00 | Trace] Executing generator 'Component Generator (Runner.Ecs) (SourceFile([4102..4705)))'
+// [2026-02-14T14:44:19.7798351+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.7904427+01:00 | Trace] Executing generator 'Component Generator (Runner.Ecs) (SourceFile([4102..4705)))'
+// [2026-02-14T14:44:19.7927386+01:00 | Trace] Generator finished
+// [2026-02-14T14:44:19.7988849+01:00 | Trace] Generator 'ResourceManagerGenerator' will be run on node at 'SourceFile([593..1297))' ('MeshResourceManager')
+// [2026-02-14T14:44:19.8098691+01:00 | Trace] Executing generator 'Component Generator (MeshResourceManager) ()'
+// [2026-02-14T14:44:19.8129718+01:00 | Trace] Generator finished

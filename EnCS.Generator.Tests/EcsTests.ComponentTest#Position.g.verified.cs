@@ -1,6 +1,7 @@
 ﻿//HintName: Position.g.cs
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using EnCS;
 using UtilLib.Memory;
 
@@ -20,6 +21,7 @@ namespace Runner
 			this.z = ref z;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Set(Comp c)
 		{
 			this.x = c.x;
@@ -64,41 +66,24 @@ namespace Runner
 			public Position.Vectorized GetVec(int idx)
 			{
 				idx /= 8;
+				idx *= 8;
 
 				return new Position.Vectorized
 				{
-					 x = ref MemoryMarshal.AsRef<Vector256<float>>(this.x.Span.Slice(idx, 8)),
-					 y = ref MemoryMarshal.AsRef<Vector256<float>>(this.y.Span.Slice(idx, 8)),
-					 z = ref MemoryMarshal.AsRef<Vector256<float>>(this.z.Span.Slice(idx, 8)),//
+					 x = ref Unsafe.As<float, Vector256<float>>(ref this.x.Span[idx]),
+					 y = ref Unsafe.As<float, Vector256<float>>(ref this.y.Span[idx]),
+					 z = ref Unsafe.As<float, Vector256<float>>(ref this.z.Span[idx]),//
 				};
 			}
 
 			public Position GetSingle(int idx)
 			{
-				return new Position(
-					ref this.x.Span[idx],
-					ref this.y.Span[idx],
-					ref this.z.Span[idx],
+				return new Position
+				(
+					ref this.x.Span[idx], 
+					ref this.y.Span[idx], 
+					ref this.z.Span[idx]
 				);
-			}
-
-			public Position.Span AsSpan()
-			{
-				return new Position.Span(in this);
-			}
-		}
-
-		public ref struct Span
-		{
-			public Span<float> x;
-			public Span<float> y;
-			public Span<float> z;
-
-			public Span(ref readonly Memory<Position.Memory> memory)
-			{
-				this.x = memory.Span.x;
-				this.y = memory.Span.y;
-				this.z = memory.Span.z;
 			}
 		}
 	}

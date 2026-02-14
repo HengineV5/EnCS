@@ -2,6 +2,7 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
+using UtilLib.Memory;
 
 namespace Runner
 {
@@ -27,9 +28,7 @@ namespace Runner
 
                 for (int i = 0; i < remaining; i++)
                 {
-					// Resource Managers
-
-                    system.Update1(ref ArchGetter<TVec, Runner.Velocity>.Get(ref single[i]));
+                    system.Update1(ref ArchGetter<TSingle, Runner.Velocity>.Get(ref single.Get(i)));
                 }
 
 				
@@ -65,9 +64,7 @@ namespace Runner
 
                 for (int i = 0; i < remaining; i++)
                 {
-					// Resource Managers
-
-                    system.Update2(ref ArchGetter<TVec, Runner.Position>.Get(ref single[i]));
+                    system.Update2(ref ArchGetter<TSingle, Runner.Position>.Get(ref single.Get(i)));
                 }
 
 				

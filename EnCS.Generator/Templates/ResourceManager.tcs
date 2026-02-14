@@ -14,15 +14,23 @@ namespace $namespace
 		public ref struct $resourceManagerInType
 		{
 			ref uint id;
+			$resourceManagerName resourceManager;
 
 			public |$resourceManagerInType|(ref uint id)
 			{
 				this.id = ref id;
 			}
 
-			public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| Get($resourceManagerName resourceManager)
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public ref |$resourceManagerTypeNamespace|.|$resourceManagerOutType| Get()
 			{
 				return ref resourceManager.Get(id);
+			}
+
+			public $resourceManagerInType SetResourceManager($resourceManagerName resourceManager)
+			{
+				this.resourceManager = resourceManager;
+				return this;
 			}
 
 			public ref struct Vectorized
@@ -59,13 +67,11 @@ namespace $namespace
 				}
 			}
 
-			/*
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Set(in |$resourceManagerTypeNamespace|.|$resourceManagerInType| data)
 			{
 				this.id = resourceManager.Store(data);
 			}
-			*/
 		}<~~>\n		<~
 	}
 }

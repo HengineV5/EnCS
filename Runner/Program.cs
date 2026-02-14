@@ -3,6 +3,7 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using EnCS;
 using EnCS.Attributes;
+using Microsoft.VisualBasic;
 using System;
 using System.Buffers;
 using System.ComponentModel;
@@ -11,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Text.Json;
+using UtilLib.Memory;
 using static Runner.Ecs;
 
 namespace Runner
@@ -194,20 +196,19 @@ namespace Runner
 				.ArchType(x =>
 				{
 					x.ArchType<Position, Velocity, TestResource>("Wall");
-					//x.ArchType<Position, TestResource>("Tile");
+					x.ArchType<Position, Velocity, TestResource>("Tile"); // TODO: Fix error when removeing velocity from this compo0nent, has to do with LayerSystem only fufilling one container inside main world.
 					x.ArchType<TestComp123>("Cam");
 				})
 				.System(x =>
 				{
-					//x.System<PositionSystem>();
+					x.System<PositionSystem>();
 					x.System<PrintSystem>();
 					x.System<PerfSystem>();
 					x.System<LayerSystem>();
 				})
 				.World(x =>
 				{
-					//x.World<Ecs.Wall, Ecs.Tile, Ecs.Cam>("MainWorld");
-					x.World<Ecs.Wall, Ecs.Cam>("MainWorld");
+					x.World<Ecs.Wall, Ecs.Tile, Ecs.Cam>("MainWorld");
 				})
 				.Resource(x =>
 				{
@@ -238,8 +239,21 @@ namespace Runner
 			Wall wall = containerWall.GetSingle(r);
 			wall.Position.Set(new Vector3(5, 0, 0));
 
-			HierarchicalContainer<Wall.Memory, Wall.Vectorized, Wall> containerWallH = new();
+			HierarchicalContainer<Wall.Memory, Wall.Vectorized, Wall> containerWallH = new(10);
+			var root = containerWallH.CreateRoot();
+			containerWallH.GetSingle(in root).Position.x = 1;
 
+			var c1 = containerWallH.CreateChild(in root);
+			containerWallH.GetSingle(in c1).Position.x = 2;
+
+			var c2 = containerWallH.CreateChild(in root);
+			containerWallH.GetSingle(in c2).Position.x = 3;
+
+			var gc1 = containerWallH.CreateChild(in c1);
+			containerWallH.GetSingle(in gc1).Position.x = 4;
+
+			var gc2 = containerWallH.CreateChild(in c1);
+			containerWallH.GetSingle(in gc2).Position.x = 5;
 
 			PrintSystem printSystem = new();
 			PrintSystem.SystemUpdater_0<Wall.Vectorized, Wall> positionUpdater = new(printSystem);
@@ -255,11 +269,21 @@ namespace Runner
             //Looper<Wall.Vectorized>.Loop(ref posEnum, positionUpdater);
             //Looper<Wall.Vectorized>.Loop(ref posEnum, position2Updater);
             Looper<Wall.Vectorized, Wall>.LoopIndexed(ref containerWall, position2Updater, ref printSystemContext);
-            Looper<Wall.Vectorized, Wall>.LoopMapped(ref containerWall, position2Updater, [0, 1, 8, 9, 10], ref printSystemContext);
+
+			Console.WriteLine();
+			Console.WriteLine($"Mapped:");
+            Looper<Wall.Vectorized, Wall>.LoopMapped(ref containerWall, position2Updater, [1, 0, 8, 9, 10], ref printSystemContext);
+
+			Console.WriteLine();
+			Console.WriteLine("Heirarchical:");
             Looper<Wall.Vectorized, Wall>.LoopHierarchical(ref containerWallH, position2Updater, containerWallH.GetRoot(), ref printSystemContext);
-            //Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, layerUpdater_0, layerUpdater_1);
+
+			Console.WriteLine();
+			Console.WriteLine("Heirarchical Indexed:");
+			Looper<Wall.Vectorized, Wall>.LoopIndexed(ref containerWallH, position2Updater, ref printSystemContext);
+			//Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, layerUpdater_0, layerUpdater_1);
 		}
-    }
+	}
 
 
     /*

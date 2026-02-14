@@ -17,10 +17,10 @@ namespace EnCS
 
 		public TVec CurrentVec => container.GetVec(index);
 
-		public nint Remaining => container.Entities - index;
+		public int Remaining => int.Max(0, (int)container.Entities - index);
 
 		ref TContainer container;
-		nint index;
+		int index;
 
         public SequentialEnumerator(ref TContainer container)
 		{
@@ -31,6 +31,16 @@ namespace EnCS
 		public bool MoveNext()
 		{
 			index++;
+
+			if (index >= container.Entities)
+				return false;
+
+			return true;
+		}
+
+		public bool MoveNextArray()
+		{
+			index += 8;
 
 			if (index >= container.Entities)
 				return false;

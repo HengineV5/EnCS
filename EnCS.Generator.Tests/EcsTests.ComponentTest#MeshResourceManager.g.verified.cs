@@ -1,6 +1,7 @@
 ﻿//HintName: MeshResourceManager.g.cs
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using EnCS;
 using EnCS.Attributes;
 using UtilLib.Memory;
@@ -14,15 +15,23 @@ namespace Runner
 		public ref struct TestResource
 		{
 			ref uint id;
+			MeshResourceManager resourceManager;
 
 			public TestResource(ref uint id)
 			{
 				this.id = ref id;
 			}
 
-			public Runner.TestResourceId Get(MeshResourceManager resourceManager)
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public ref Runner.TestResourceId Get()
 			{
-				return resourceManager.Get(id);
+				return ref resourceManager.Get(id);
+			}
+
+			public TestResource SetResourceManager(MeshResourceManager resourceManager)
+			{
+				this.resourceManager = resourceManager;
+				return this;
 			}
 
 			public ref struct Vectorized
@@ -42,33 +51,20 @@ namespace Runner
 				public TestResource.Vectorized GetVec(int idx)
 				{
 					idx /= 8;
+					idx *= 8;
 
 					return new TestResource.Vectorized
 					{
-						id = ref MemoryMarshal.AsRef<Vector256<uint>>(this.id.Span.Slice(idx, 8)),
+						id = ref Unsafe.As<uint, Vector256<uint>>(ref this.id.Span[idx]),
 					};
 				}
 
 				public TestResource GetSingle(int idx)
 				{
-					return new TestResource(
+					return new TestResource
+					(
 						ref this.id.Span[idx]
 					);
-				}
-
-				public TestResource.Span AsSpan()
-				{
-					return new TestResource.Span(in this);
-				}
-			}
-
-			public ref struct Span
-			{
-				public Span<uint> id;
-
-				public Span(ref readonly Memory<TestResource.Memory> memory)
-				{
-					this.id = memory.Span.id;
 				}
 			}
 

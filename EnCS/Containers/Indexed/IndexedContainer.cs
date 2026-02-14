@@ -83,7 +83,7 @@ namespace EnCS
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public FixedRefBuffer8<TSingle> GetSingleArray(nint idx)
 		{
-			return memory.GetSingleArray(idx);
+			return memory.GetSingleArray<TArchMem, TVec, TSingle>(idx);
 		}
 	}
 }

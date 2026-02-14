@@ -18,6 +18,7 @@ namespace $namespace
 			$members~>this.$name = ref $name;<~~>\n			<~
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Set(Comp c)
 		{
 			$members~>this.$name = c.|$name|;<~~>\n			<~

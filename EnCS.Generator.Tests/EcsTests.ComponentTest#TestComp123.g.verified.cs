@@ -1,6 +1,7 @@
 ﻿//HintName: TestComp123.g.cs
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using EnCS;
 using UtilLib.Memory;
 
@@ -18,6 +19,7 @@ namespace Runner
 			this.tag = ref tag;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Set(Comp c)
 		{
 			this.tag = c.tag;
@@ -50,33 +52,20 @@ namespace Runner
 			public TestComp123.Vectorized GetVec(int idx)
 			{
 				idx /= 8;
+				idx *= 8;
 
 				return new TestComp123.Vectorized
 				{
-					 tag = ref MemoryMarshal.AsRef<Vector256<int>>(this.tag.Span.Slice(idx, 8)),//
+					 tag = ref Unsafe.As<int, Vector256<int>>(ref this.tag.Span[idx]),//
 				};
 			}
 
 			public TestComp123 GetSingle(int idx)
 			{
-				return new TestComp123(
-					ref this.tag.Span[idx],
+				return new TestComp123
+				(
+					ref this.tag.Span[idx]
 				);
-			}
-
-			public TestComp123.Span AsSpan()
-			{
-				return new TestComp123.Span(in this);
-			}
-		}
-
-		public ref struct Span
-		{
-			public Span<int> tag;
-
-			public Span(ref readonly Memory<TestComp123.Memory> memory)
-			{
-				this.tag = memory.Span.tag;
 			}
 		}
 	}

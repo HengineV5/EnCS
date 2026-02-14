@@ -19,7 +19,7 @@ namespace $namespace
 		$worlds~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public $worldName Get|$worldName|()
 		{
-			return new |$worldName|($worldArchTypes~>ref container|$archTypeName|<~~>, <~);
+			return new |$worldName|($worldArchTypes~>ref container|$archTypeName|<~~>, <~$worldResourceManagers~>, $resourceManagerName<~);
 		}<~~>\n\n		<~
 	}
 

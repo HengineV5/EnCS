@@ -10,13 +10,17 @@ namespace $namespace
 		{
 			$worldArchTypes~>ref IndexedContainer<|$archTypeName|.Memory, |$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|;<~~>\n			<~
 
-			public $worldName($worldArchTypes~>ref IndexedContainer<|$archTypeName|.Memory, |$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|<~~>, <~)
+			$worldResourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName;<~~>\n			<~
+
+			public $worldName($worldArchTypes~>ref IndexedContainer<|$archTypeName|.Memory, |$archTypeName|.Vectorized, $archTypeName> container|$archTypeName|<~~>, <~$worldResourceManagers~>, |$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~)
 			{
 				$worldArchTypes~>this.container|$archTypeName| = ref container|$archTypeName|;<~~>\n				<~
+
+				$worldResourceManagers~>this.|$resourceManagerName| = $resourceManagerName;<~~>\n				<~
 			}
 
 			$worldArchTypes~>[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			ArchRef<$archTypeName> Create|$archTypeName|()
+			public ArchRef<$archTypeName> Create|$archTypeName|()
 			{
 				return container|$archTypeName|.Create();
 			}
@@ -29,7 +33,7 @@ namespace $namespace
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public |$archTypeName| Get(ref readonly ArchRef<$archTypeName> ptr)
 			{
-				return container|$archTypeName|.GetSingle(ptr);
+				return container|$archTypeName|.GetSingle(ptr).SetResourceManager($archTypeResourceManagers~>$resourceManagerName<~~>, <~);
 			}<~~>\n\n			<~
 
 			$worldSystems~>[MethodImpl(MethodImplOptions.AggressiveInlining)]

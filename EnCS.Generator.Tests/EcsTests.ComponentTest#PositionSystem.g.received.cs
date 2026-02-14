@@ -2,6 +2,7 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.CompilerServices;
 using EnCS;
+using UtilLib.Memory;
 
 namespace Runner
 {
@@ -27,9 +28,7 @@ namespace Runner
 
                 for (int i = 0; i < remaining; i++)
                 {
-					ref var comp2 = ref Runner.MeshResourceManager.TestResource.FromArray(ref single2, i, MeshResourceManager).TestResourceProp;// Resource Managers
-
-                    system.Update(ref context.TestContext, ref ArchGetter<TVec, Runner.Position>.Get(ref single[i]), ref ArchGetter<TVec, Runner.MeshResourceManager.TestResource>.Get(ref single[i]).Get(MeshResourceManager));
+                    system.Update(ref context.TestContext, ref ArchGetter<TSingle, Runner.Position>.Get(ref single.Get(i)), ref ArchGetter<TSingle, Runner.MeshResourceManager.TestResource>.Get(ref single.Get(i)).SetResourceManager(MeshResourceManager).Get());
                 }
 
 				
@@ -39,7 +38,7 @@ namespace Runner
             {
 				
 
-                system.Update(ref context.TestContext, ref ArchGetter<TSingle, Runner.Position>.Get(ref single), ref ArchGetter<TVec, Runner.MeshResourceManager.TestResource>.Get(ref single).Get(MeshResourceManager));
+                system.Update(ref context.TestContext, ref ArchGetter<TSingle, Runner.Position>.Get(ref single), ref ArchGetter<TSingle, Runner.MeshResourceManager.TestResource>.Get(ref single).SetResourceManager(MeshResourceManager).Get());
 
 				
             }

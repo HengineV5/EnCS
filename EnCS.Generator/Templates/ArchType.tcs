@@ -21,6 +21,12 @@ namespace $namespace
 				return ref arch.$compVarName;
 			}<~~>\n\n			<~
 
+			public $archTypeName SetResourceManager($archTypeResourceManagers~>|$resourceManagerNamespace|.|$resourceManagerName| $resourceManagerName<~~>, <~)
+			{
+				$archTypeResourceComponents~>this.|$compVarName|.SetResourceManager($compResourceManager.resourceManagerName);<~~>\n				<~
+				return this;
+			}
+
 			public ref struct Vectorized : $archTypeComponents~>IArchType<|$archTypeName|.Vectorized, |$compName|.Vectorized><~~>, <~
 			{
 				$archTypeComponents~>public |$compName|.Vectorized _$compVarName;<~~>\n				<~
@@ -55,25 +61,6 @@ namespace $namespace
 					{
 						$archTypeComponents~>$compVarName = this.|$compVarName|.GetSingle((int)idx),<~~>\n						<~
 					};
-				}
-
-				UtilLib.Memory.FixedRefBuffer8<|$archTypeName|> IArchMemory<Memory, |$archTypeName|.Vectorized, |$archTypeName|>.GetSingleArray(nint idx)
-				{
-					UtilLib.Memory.FixedRefBuffer8<|$archTypeName|> buffer = new();
-					nint start = idx / 8;
-
-					/* TODO FIX
-					buffer[0] = this.GetSingle(start + 0);
-					buffer[1] = this.GetSingle(start + 1);
-					buffer[2] = this.GetSingle(start + 2);
-					buffer[3] = this.GetSingle(start + 3);
-					buffer[4] = this.GetSingle(start + 4);
-					buffer[5] = this.GetSingle(start + 5);
-					buffer[6] = this.GetSingle(start + 6);
-					buffer[7] = this.GetSingle(start + 7);
-					*/
-
-					return buffer;
 				}
 
 				static Memory IArchMemory<Memory, |$archTypeName|.Vectorized, |$archTypeName|>.Create(int length)

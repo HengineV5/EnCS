@@ -7,7 +7,7 @@
 	{
 		public TSingle Current => container.GetSingle(map[index]);
 
-		public nint Remaining => map.Length - index;
+		public int Remaining => int.Max(0, map.Length - index);
 
 		ref TContainer container;
 		int index;

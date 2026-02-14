@@ -51,6 +51,12 @@ namespace EnCS
 			return new ChildrenEnumerator<TSingle>(hierarchy.GetChildren((int)parentPtr.idx));
 		}
 
+		public ChildrenEnumerator<TSingle> GetChildrenAndSelf(ref readonly ArchRef<TSingle> parentPtr)
+		{
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			return new ChildrenEnumerator<TSingle>(hierarchy.GetChildrenAndSelf((int)parentPtr.idx));
+		}
+
 		public ArchRef<TSingle> GetRoot()
 		{
 			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
@@ -79,7 +85,7 @@ namespace EnCS
 
 		public FixedRefBuffer8<TSingle> GetSingleArray(nint idx)
 		{
-			return memory.GetSingleArray(idx);
+			return memory.GetSingleArray<TArchMem, TVec, TSingle>(idx);
 		}
 	}
 }

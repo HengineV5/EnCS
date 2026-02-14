@@ -23,7 +23,7 @@ namespace Runner
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			ArchRef<Wall> CreateWall()
+			public ArchRef<Wall> CreateWall()
 			{
 				return containerWall.Create();
 			}
@@ -36,11 +36,11 @@ namespace Runner
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Wall Get(ref readonly ArchRef<Wall> ptr)
 			{
-				return containerWall.Get(ptr, MeshResourceManager);
+				return containerWall.GetSingle(ptr).SetResourceManager(MeshResourceManager);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			ArchRef<Cam> CreateCam()
+			public ArchRef<Cam> CreateCam()
 			{
 				return containerCam.Create();
 			}
@@ -53,38 +53,38 @@ namespace Runner
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Cam Get(ref readonly ArchRef<Cam> ptr)
 			{
-				return containerCam.Get(ptr);
+				return containerCam.GetSingle(ptr).SetResourceManager();
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(PrintSystem system)
 			{
-				PrintSystem.SystemUpdater_0<Wall.Vectorized> updaterWall_0 = new(system);
+				PrintSystem.SystemUpdater_0<Wall.Vectorized, Wall> updaterWall_0 = new(system);
 
 				PrintSystem.Context context = new();
 
-				Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, updaterWall_0, ref context);
+				Looper<Wall.Vectorized, Wall>.LoopIndexed(ref containerWall, updaterWall_0, ref context);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(PerfSystem system)
 			{
-				PerfSystem.SystemUpdater_0<Wall.Vectorized> updaterWall_0 = new(system);
+				PerfSystem.SystemUpdater_0<Wall.Vectorized, Wall> updaterWall_0 = new(system);
 
 				PerfSystem.Context context = new();
 
-				Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, updaterWall_0, ref context);
+				Looper<Wall.Vectorized, Wall>.LoopIndexed(ref containerWall, updaterWall_0, ref context);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Loop(LayerSystem system)
 			{
-				LayerSystem.SystemUpdater_0<Wall.Vectorized> updaterWall_0 = new(system);
-				LayerSystem.SystemUpdater_1<Wall.Vectorized> updaterWall_1 = new(system);
+				LayerSystem.SystemUpdater_0<Wall.Vectorized, Wall> updaterWall_0 = new(system);
+				LayerSystem.SystemUpdater_1<Wall.Vectorized, Wall> updaterWall_1 = new(system);
 
 				LayerSystem.Context context = new();
 
-				Looper<Wall.Vectorized>.LoopIndexed(ref containerWall, updaterWall_0, updaterWall_1, ref context);
+				Looper<Wall.Vectorized, Wall>.LoopIndexed(ref containerWall, updaterWall_0, updaterWall_1, ref context);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
