@@ -16,50 +16,50 @@ namespace EnCS
 		TArchMem memory;
 
 		Memory<int> map;
-		Memory<SpanHierarchy.Node> nodes;
+		Memory<SpanHierarchy<int>.Node> nodes;
 		int entityCount;
 
 		public HierarchicalContainer(int maxNodes)
 		{
 			this.map = new int[maxNodes];
 			this.memory = TArchMem.Create(maxNodes);
-			this.nodes =  new SpanHierarchy.Node[maxNodes];
+			this.nodes = new SpanHierarchy<int>.Node[maxNodes];
 			this.entityCount = 0;
 		}
 
 		public ArchRef<TSingle> CreateRoot()
 		{
-			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, entityCount);
 			return new ArchRef<TSingle>(hierarchy.SetRoot(entityCount));
 		}
 
 		public ArchRef<TSingle> CreateChild(in ArchRef<TSingle> parentPtr)
 		{
-			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, entityCount);
 			return new ArchRef<TSingle>(hierarchy.CreateChild((int)parentPtr.idx, entityCount));
 		}
 
 		public void DeleteChild(in ArchRef<TSingle> ptr)
 		{
-			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount); // TODO: Delete is not entierly function, add delted map
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, entityCount); // TODO: Delete is not entierly function, add delted map
 			hierarchy.DeleteNode((int)ptr.idx);
 		}
 
 		public ChildrenEnumerator<TSingle> GetChildren(ref readonly ArchRef<TSingle> parentPtr)
 		{
-			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, entityCount);
 			return new ChildrenEnumerator<TSingle>(hierarchy.GetChildren((int)parentPtr.idx));
 		}
 
 		public ChildrenEnumerator<TSingle> GetChildrenAndSelf(ref readonly ArchRef<TSingle> parentPtr)
 		{
-			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, entityCount);
 			return new ChildrenEnumerator<TSingle>(hierarchy.GetChildrenAndSelf((int)parentPtr.idx));
 		}
 
 		public ArchRef<TSingle> GetRoot()
 		{
-			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, ref entityCount);
+			SpanHierarchy<int> hierarchy = new(map.Span, nodes.Span, entityCount);
 			return new ArchRef<TSingle>(hierarchy.GetRoot());
 		}
 
