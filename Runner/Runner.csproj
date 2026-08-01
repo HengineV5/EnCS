@@ -10,8 +10,6 @@
 		<Features>InterceptorsPreview</Features>
 		<InterceptorsPreviewNamespaces>Runner</InterceptorsPreviewNamespaces>
 		<IsPackable>false</IsPackable>
-
-		<Configurations>Debug;Release;Debug (local-deps);Release (local-deps)</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>
